@@ -13,7 +13,6 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body>
 
 <header>
 <div class="navbar">
@@ -60,7 +59,7 @@
 <h2 class="section-title">આજનો બજાર ઝલક</h2>
 <p class="section-sub">Market Snapshot</p>
 
-<div class="market-grid">
+<div class="market-grid" id="marketCards">
 
 <div class="market-card">
 
@@ -70,7 +69,7 @@
 </div>
 
 <div class="market-price">₹2950</div>
-<div class="market-unit">per quintal</div>
+
 
 <div class="trend-pill trend-up">▲ +50 today</div>
 
@@ -84,7 +83,7 @@
 </div>
 
 <div class="market-price">₹1980</div>
-<div class="market-unit">per quintal</div>
+
 
 <div class="trend-pill trend-down">▼ -20 today</div>
 
@@ -122,35 +121,11 @@
 </tr>
 </thead>
 
-<tbody>
-
-<tr>
-<td>Kapasiya Khal</td>
-<td>Unjha</td>
-<td>₹2950</td>
-<td class="trend-up">▲ +50</td>
-</tr>
-
-<tr>
-<td>Binola Khol</td>
-<td>Mehsana</td>
-<td>₹1980</td>
-<td class="trend-down">▼ -20</td>
-</tr>
-
-<tr>
-<td>Maize</td>
-<td>Palanpur</td>
-<td>₹2150</td>
-<td>—</td>
-</tr>
-
+<tbody id="ratesTable">
 </tbody>
-
 </table>
 
 </div>
-
 
 <div id="subscribe" class="subscribe">
 

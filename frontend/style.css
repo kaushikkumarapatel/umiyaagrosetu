@@ -159,22 +159,25 @@ padding:40px 20px;
 }
 
 .market-grid{
-
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+grid-template-columns:repeat(4,1fr);
 gap:20px;
-
+margin-top:20px;
 }
 
 .market-card{
-
-background:white;
+background:#ffffff;
+border:1px solid #e5e5e5;
 border-radius:14px;
-padding:20px;
-box-shadow:0 8px 24px rgba(0,0,0,0.06);
-
+padding:18px;
+box-shadow:0 2px 8px rgba(0,0,0,0.05);
+transition:all 0.2s ease;
 }
 
+.market-card:hover{
+transform:translateY(-3px);
+box-shadow:0 6px 14px rgba(0,0,0,0.08);
+}
 .market-price{
 
 font-size:28px;

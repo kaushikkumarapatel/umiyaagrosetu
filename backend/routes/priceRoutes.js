@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
+const pool = require("../db");
 
 router.post("/prices", async (req, res) => {
 
@@ -53,5 +54,71 @@ router.post("/prices", async (req, res) => {
   }
 
 });
+router.get("/prices/all", async (req, res) => {
+
+  const result = await pool.query(`
+    SELECT 
+      dp.id,
+      dp.price_date,
+      f.name AS factory,
+      c.name AS commodity,
+      dp.price
+    FROM daily_prices dp
+    JOIN factories f ON dp.factory_id = f.id
+    JOIN commodities c ON dp.commodity_id = c.id
+    ORDER BY dp.price_date DESC, f.name
+  `);
+
+  res.json(result.rows);
+
+});
+
+router.get("/prices/today", async (req, res) => {
+
+  const result = await pool.query(`
+    SELECT 
+      dp.id,
+      dp.price_date,
+      f.name AS factory,
+      c.name AS commodity,
+      dp.price
+    FROM daily_prices dp
+    JOIN factories f ON dp.factory_id = f.id
+    JOIN commodities c ON dp.commodity_id = c.id
+    WHERE dp.price_date = CURRENT_DATE
+    ORDER BY f.name
+  `);
+
+  res.json(result.rows);
+
+});
+
+router.put("/prices/:id", async (req,res)=>{
+
+  const {id} = req.params;
+  const {price} = req.body;
+
+  await pool.query(
+    `UPDATE daily_prices SET price=$1 WHERE id=$2`,
+    [price,id]
+  );
+
+  res.json({success:true});
+
+});
+
+router.delete("/prices/:id", async (req,res)=>{
+
+  const {id} = req.params;
+
+  await pool.query(
+    `DELETE FROM daily_prices WHERE id=$1`,
+    [id]
+  );
+
+  res.json({success:true});
+
+});
+
 
 module.exports = router;

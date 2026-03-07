@@ -15,7 +15,10 @@ const app = express();
 app.use(express.json());
 
 // Serve HTML pages
+app.get("/admin", (req,res)=>{ res.sendFile(path.join(__dirname,"public/price-entry.html"));
+});
 app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "../frontend")));
 
 app.get("/", (req, res) => {
   res.send("Commodity Broker API Running 🚀");

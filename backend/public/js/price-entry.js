@@ -1,3 +1,9 @@
+let factoriesData = [];
+let commoditiesData = [];
+
+/* ---------------------------
+   Utility
+----------------------------*/
 function getToday(){
   return new Date().toISOString().split("T")[0];
 }
@@ -8,28 +14,31 @@ function getToday(){
 async function loadFactories(){
 
   const res = await fetch("/api/factories");
-  const factories = await res.json();
+  factoriesData = await res.json();
 
-  document.querySelectorAll(".factory").forEach(select => {
+  document.querySelectorAll(".factory").forEach(select=>{
+    populateFactoryDropdown(select);
+  });
 
-    select.innerHTML = "";
+}
 
-    const defaultOpt = document.createElement("option");
-    defaultOpt.value = "";
-    defaultOpt.textContent = "Select Factory";
-    defaultOpt.disabled = true;
-    defaultOpt.selected = true;
-    select.appendChild(defaultOpt);
+function populateFactoryDropdown(select){
 
-    factories.forEach(f => {
+  select.innerHTML = "";
 
-      const opt = document.createElement("option");
-      opt.value = f.id;
-      opt.textContent = f.name;
-      select.appendChild(opt);
+  const defaultOpt = document.createElement("option");
+  defaultOpt.value = "";
+  defaultOpt.textContent = "Select Factory";
+  defaultOpt.disabled = true;
+  defaultOpt.selected = true;
 
-    });
+  select.appendChild(defaultOpt);
 
+  factoriesData.forEach(f=>{
+    const opt = document.createElement("option");
+    opt.value = f.id;
+    opt.textContent = f.name;
+    select.appendChild(opt);
   });
 
 }
@@ -40,28 +49,31 @@ async function loadFactories(){
 async function loadCommodities(){
 
   const res = await fetch("/api/commodities");
-  const commodities = await res.json();
+  commoditiesData = await res.json();
 
-  document.querySelectorAll(".commodity").forEach(select => {
+  document.querySelectorAll(".commodity").forEach(select=>{
+    populateCommodityDropdown(select);
+  });
 
-    select.innerHTML = "";
+}
 
-    const defaultOpt = document.createElement("option");
-    defaultOpt.value = "";
-    defaultOpt.textContent = "Select Commodity";
-    defaultOpt.disabled = true;
-    defaultOpt.selected = true;
-    select.appendChild(defaultOpt);
+function populateCommodityDropdown(select){
 
-    commodities.forEach(c => {
+  select.innerHTML = "";
 
-      const opt = document.createElement("option");
-      opt.value = c.id;
-      opt.textContent = c.name;
-      select.appendChild(opt);
+  const defaultOpt = document.createElement("option");
+  defaultOpt.value = "";
+  defaultOpt.textContent = "Select Commodity";
+  defaultOpt.disabled = true;
+  defaultOpt.selected = true;
 
-    });
+  select.appendChild(defaultOpt);
 
+  commoditiesData.forEach(c=>{
+    const opt = document.createElement("option");
+    opt.value = c.id;
+    opt.textContent = c.name;
+    select.appendChild(opt);
   });
 
 }
@@ -70,11 +82,9 @@ async function loadCommodities(){
    Set Today Date
 ----------------------------*/
 function setTodayDate(){
-
   document.querySelectorAll(".price_date").forEach(d=>{
     d.value = getToday();
   });
-
 }
 
 /* ---------------------------
@@ -100,7 +110,7 @@ function addRow(){
   </td>
 
   <td>
-    <input type="text" class="form-control remarks" placeholder="Remarks (Gujarati supported)">
+    <input type="text" class="form-control remarks" placeholder="Remarks">
   </td>
 
   <td>
@@ -114,8 +124,9 @@ function addRow(){
 
   tbody.appendChild(row);
 
-  loadFactories();
-  loadCommodities();
+  populateFactoryDropdown(row.querySelector(".factory"));
+  populateCommodityDropdown(row.querySelector(".commodity"));
+  row.querySelector(".price_date").value = getToday();
 
 }
 
@@ -188,7 +199,7 @@ async function savePrices(){
 
   try{
 
-    const res = await fetch("/api/prices",{
+    await fetch("/api/prices",{
       method:"POST",
       headers:{
         "Content-Type":"application/json"
@@ -196,9 +207,8 @@ async function savePrices(){
       body: JSON.stringify({prices})
     });
 
-    const result = await res.json();
-
     showToast("Prices saved successfully");
+    loadAllRecords();
 
   }catch(err){
 
@@ -206,6 +216,82 @@ async function savePrices(){
     showToast("Error saving prices", true);
 
   }
+
+}
+
+/* ---------------------------
+   Load Records
+----------------------------*/
+async function loadAllRecords(){
+
+  const res = await fetch("/api/prices/all");
+  const data = await res.json();
+
+  const tbody = document.querySelector("#recordsTable tbody");
+  if(!tbody) return;
+
+  tbody.innerHTML = "";
+
+  data.forEach(r => {
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${r.id}</td>
+        <td>${r.factory}</td>
+        <td>${r.commodity}</td>
+        <td>${r.price}</td>
+        <td>${r.price_date}</td>
+        <td>
+          <button class="btn btn-warning btn-sm"
+            onclick="editPrice(${r.id}, ${r.price})">
+            Edit
+          </button>
+
+          <button class="btn btn-danger btn-sm"
+            onclick="deletePrice(${r.id})">
+            Delete
+          </button>
+        </td>
+      </tr>
+    `;
+
+  });
+
+}
+
+/* ---------------------------
+   Edit Price
+----------------------------*/
+async function editPrice(id,currentPrice){
+
+  const newPrice = prompt("Enter new price",currentPrice);
+
+  if(!newPrice) return;
+
+  await fetch(`/api/prices/${id}`,{
+    method:"PUT",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({price:newPrice})
+  });
+
+  loadAllRecords();
+
+}
+
+/* ---------------------------
+   Delete Price
+----------------------------*/
+async function deletePrice(id){
+
+  if(!confirm("Delete this record?")) return;
+
+  await fetch(`/api/prices/${id}`,{
+    method:"DELETE"
+  });
+
+  loadAllRecords();
 
 }
 
@@ -231,9 +317,7 @@ function showToast(message,isError=false){
 
   document.body.appendChild(toast);
 
-  setTimeout(()=>{
-    toast.remove();
-  },3000);
+  setTimeout(()=>toast.remove(),3000);
 
 }
 
@@ -251,33 +335,14 @@ document.addEventListener("change",function(e){
 
 });
 
-document.addEventListener("click", function(e){
-
-  if(e.target.classList.contains("delete-row")){
-
-    const table = document.getElementById("priceTable").querySelector("tbody");
-
-    const rows = table.querySelectorAll("tr");
-
-    if(rows.length === 1){
-      alert("At least one row must remain.");
-      return;
-    }
-
-    e.target.closest("tr").remove();
-  }
-
-});
-/**
- * Delete Row
- */
-
+/* ---------------------------
+   Delete Row
+----------------------------*/
 document.addEventListener("click", function(e){
 
   if(e.target.classList.contains("delete-row")){
 
     const tbody = document.querySelector("#priceTable tbody");
-
     const rows = tbody.querySelectorAll("tr");
 
     if(rows.length === 1){
@@ -289,6 +354,29 @@ document.addEventListener("click", function(e){
   }
 
 });
+
+/* ---------------------------
+   Excel Style Navigation
+----------------------------*/
+document.addEventListener("keydown", function(e){
+
+  if(e.key==="Enter"){
+
+    const inputs = Array.from(
+      document.querySelectorAll("input,select")
+    );
+
+    const index = inputs.indexOf(document.activeElement);
+
+    if(index>-1 && index<inputs.length-1){
+      inputs[index+1].focus();
+      e.preventDefault();
+    }
+
+  }
+
+});
+
 /* ---------------------------
    Page Load
 ----------------------------*/
@@ -296,6 +384,9 @@ window.onload = async ()=>{
 
   await loadFactories();
   await loadCommodities();
+
   setTodayDate();
+
+  loadAllRecords();
 
 };
