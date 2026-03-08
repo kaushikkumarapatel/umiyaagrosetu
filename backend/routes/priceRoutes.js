@@ -120,5 +120,35 @@ router.delete("/prices/:id", async (req,res)=>{
 
 });
 
+router.get("/prices/latest", async (req, res) => {
+
+try{
+
+const result = await pool.query(`
+
+SELECT DISTINCT ON (f.id, c.id)
+c.name as commodity,
+f.name as factory,
+dp.price,
+dp.price_date
+
+FROM daily_prices dp
+JOIN factories f ON dp.factory_id = f.id
+JOIN commodities c ON dp.commodity_id = c.id
+
+ORDER BY f.id, c.id, dp.price_date DESC
+
+`);
+
+res.json(result.rows);
+
+}catch(err){
+
+console.error(err);
+res.status(500).json({error:"Failed to fetch prices"});
+
+}
+
+});
 
 module.exports = router;

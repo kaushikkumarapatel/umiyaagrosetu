@@ -8,6 +8,7 @@ const commodityRoutes = require("./routes/commodityRoutes");
 const priceRoutes = require("./routes/priceRoutes");
 const broadcastRoutes = require("./routes/broadcastRoutes");
 const factoryRoutes = require("./routes/factoryRoutes");
+const visitorRoutes = require("./routes/visitorRoutes");
 
 
 const app = express();
@@ -39,9 +40,26 @@ app.use("/api", commodityRoutes);
 app.use("/api", priceRoutes);
 app.use("/api", broadcastRoutes);
 app.use("/api", factoryRoutes);
+app.use("/api", visitorRoutes);
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+//google SEO API call
+app.get("/api/visitor", (req,res)=>{
+
+const ip =
+req.headers['x-forwarded-for'] ||
+req.socket.remoteAddress;
+
+const userAgent = req.headers['user-agent'];
+
+res.json({
+ip,
+userAgent
+});
+
 });
