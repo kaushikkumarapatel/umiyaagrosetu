@@ -106,7 +106,7 @@ router.get('/dashboard', async (req, res) => {
         COUNT(t.id)                                                     AS trade_count,
         MAX(t.trade_date)                                               AS last_trade_date
       FROM broker_wholesalers bw
-      JOIN subscribers s ON s.id = bw.wholesaler_id
+      JOIN wholesalers s ON s.id = bw.wholesaler_id
       LEFT JOIN trades t ON t.wholesaler_id = s.id AND t.broker_id = $1
       WHERE bw.broker_id = $1
       GROUP BY s.id, s.name, s.mobile
@@ -139,14 +139,18 @@ router.get('/dropdowns', async (req, res) => {
   try {
     const [factories, wholesalers, commodities] = await Promise.all([
       pool.query(`
-        SELECT f.id, f.name FROM broker_factories bf
+        SELECT f.id, f.name
+        FROM broker_factories bf
         JOIN factories f ON f.id = bf.factory_id
-        WHERE bf.broker_id = $1 ORDER BY f.name
+        WHERE bf.broker_id = $1 AND f.is_active = true
+        ORDER BY f.name
       `, [brokerId]),
       pool.query(`
-        SELECT s.id, s.name, s.mobile, s.city FROM broker_wholesalers bw
-        JOIN subscribers s ON s.id = bw.wholesaler_id
-        WHERE bw.broker_id = $1 ORDER BY s.name
+        SELECT w.id, w.name, w.mobile, w.city
+        FROM broker_wholesalers bw
+        JOIN wholesalers w ON w.id = bw.wholesaler_id
+        WHERE bw.broker_id = $1 AND w.is_active = true
+        ORDER BY w.name
       `, [brokerId]),
       pool.query(`SELECT id, name FROM commodities ORDER BY name`),
     ]);
@@ -156,6 +160,7 @@ router.get('/dropdowns', async (req, res) => {
       commodities: commodities.rows,
     });
   } catch (err) {
+    console.error('[dropdowns]', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -201,7 +206,7 @@ router.get('/trades', async (req, res) => {
 
     const result = await pool.query(`
       SELECT
-        t.id, t.trade_date, t.bags, t.price_per_bag,
+        t.id, TO_CHAR(t.trade_date, 'YYYY-MM-DD') AS trade_date, t.bags, t.price_per_bag,
         t.factory_brokerage, t.wholesaler_brokerage, t.total_brokerage,
         t.remarks, t.created_at,
         f.name AS factory_name,
@@ -209,7 +214,7 @@ router.get('/trades', async (req, res) => {
         c.name AS commodity_name
       FROM trades t
       JOIN factories   f ON f.id = t.factory_id
-      JOIN subscribers s ON s.id = t.wholesaler_id
+      JOIN wholesalers s ON s.id = t.wholesaler_id
       JOIN commodities c ON c.id = t.commodity_id
       WHERE ${where.join(' AND ')}
       ORDER BY t.trade_date DESC, t.created_at DESC
@@ -324,7 +329,7 @@ router.get('/report', async (req, res) => {
              AND party_id=s.id AND financial_year=$3), 0
         )                                        AS balance_due
       FROM broker_wholesalers bw
-      JOIN subscribers s ON s.id = bw.wholesaler_id
+      JOIN wholesalers s ON s.id = bw.wholesaler_id
       LEFT JOIN trades t ON t.wholesaler_id=s.id AND t.broker_id=$1
         AND t.trade_date BETWEEN $2 AND $3::text::date + interval '0 day'
       WHERE bw.broker_id=$1
@@ -348,7 +353,36 @@ router.get('/report', async (req, res) => {
   }
 });
 
-module.exports = router;
+// ── PUT /api/broker/trades/:id ───────────────────
+// Edit an existing trade — brokerage columns are GENERATED, don't update them
+router.put('/trades/:id', async (req, res) => {
+  const brokerId = req.session.brokerId;
+  const { trade_date, factory_id, wholesaler_id, commodity_id, bags, price_per_bag, remarks } = req.body;
+  if (!bags || !price_per_bag) return res.status(400).json({ error: 'bags and price_per_bag required' });
+  try {
+    const result = await pool.query(
+      `UPDATE trades SET
+         trade_date    = COALESCE($1, trade_date),
+         factory_id    = COALESCE($2, factory_id),
+         wholesaler_id = COALESCE($3, wholesaler_id),
+         commodity_id  = COALESCE($4, commodity_id),
+         bags          = $5,
+         price_per_bag = $6,
+         remarks       = $7
+       WHERE id=$8 AND broker_id=$9
+       RETURNING id, bags, total_brokerage`,
+      [trade_date, factory_id, wholesaler_id, commodity_id,
+       parseInt(bags), parseFloat(price_per_bag),
+       remarks||null, req.params.id, brokerId]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Trade not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('[PUT trade]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 // ── DELETE /api/broker/trades/:id ───────────────
 router.delete('/trades/:id', async (req, res) => {
@@ -418,3 +452,5 @@ router.post('/trades/batch', async (req, res) => {
     client.release();
   }
 });
+
+module.exports = router;

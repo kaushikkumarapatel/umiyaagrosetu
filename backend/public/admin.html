@@ -273,6 +273,7 @@
     <button class="sub-tab active" onclick="switchSub('brokers')">👥 Brokers</button>
     <button class="sub-tab"        onclick="switchSub('factories')">🏭 Factories</button>
     <button class="sub-tab"        onclick="switchSub('wholesalers')">🛒 Wholesalers</button>
+    <button class="sub-tab"        onclick="switchSub('commodities')">🌾 Commodities</button>
   </div>
 
   <!-- BROKERS -->
@@ -300,14 +301,16 @@
     <div class="md-cols">
       <div class="form-card">
         <h3>➕ Add Factory / Mill</h3>
-        <label class="fl">Factory Name</label><input type="text" id="f_name" class="fi" placeholder="e.g. Bhavesh Oil Mill"/>
+        <label class="fl">Factory Name *</label><input type="text" id="f_name" class="fi" placeholder="e.g. Bhavesh Oil Mill"/>
+        <label class="fl">City / Town</label><input type="text" id="f_city" class="fi" placeholder="e.g. Mehsana"/>
+        <label class="fl">Contact Number</label><input type="text" id="f_contact" class="fi" placeholder="10-digit mobile"/>
         <button class="btn-create" onclick="createFactory()">✅ Add Factory</button>
         <div class="msg" id="f_msg"></div>
       </div>
       <div class="list-card">
         <div class="lh"><h3>All Factories</h3><span class="badge" id="f_count">0</span></div>
-        <table class="lt"><thead><tr><th>Factory Name</th><th>Brokers</th><th>Trades</th><th>Action</th></tr></thead>
-        <tbody id="f_list"><tr class="empty"><td colspan="4">Loading…</td></tr></tbody></table>
+        <table class="lt"><thead><tr><th>Factory Name</th><th>City</th><th>Contact</th><th>Brokers</th><th>Trades</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="f_list"><tr class="empty"><td colspan="7">Loading…</td></tr></tbody></table>
       </div>
     </div>
   </div>
@@ -331,6 +334,37 @@
       </div>
     </div>
   </div>
+
+  <!-- COMMODITIES -->
+  <div id="sub-commodities" style="display:none;">
+    <div class="md-cols">
+      <div class="form-card">
+        <h3>➕ Add Commodity</h3>
+        <label class="fl">Commodity Name *</label>
+        <input type="text" id="cm_name" class="fi" placeholder="e.g. કપાસિયા ખોળ"/>
+        <label class="fl">Category</label>
+        <select id="cm_category" class="fi" style="padding:8px 12px;">
+          <option value="cattle_feed">Cattle Feed</option>
+          <option value="grain">Grain</option>
+          <option value="oilcake">Oil Cake</option>
+          <option value="supplement">Supplement</option>
+          <option value="other">Other</option>
+        </select>
+        <label class="fl">Unit / Bag Size</label>
+        <input type="text" id="cm_unit" class="fi" placeholder="e.g. 50kg Bag"/>
+        <button class="btn-create" onclick="createCommodity()">✅ Add Commodity</button>
+        <div class="msg" id="cm_msg"></div>
+      </div>
+      <div class="list-card">
+        <div class="lh"><h3>All Commodities</h3><span class="badge" id="cm_count">0</span></div>
+        <table class="lt">
+          <thead><tr><th>Name</th><th>Category</th><th>Unit</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="cm_list"><tr class="empty"><td colspan="5">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ════════════════════════════════════════════════════ -->
@@ -376,8 +410,15 @@
   <div class="mod">
     <h3>✏️ Edit Factory</h3>
     <input type="hidden" id="ef_id"/>
-    <label class="fl">Name</label><input type="text" id="ef_name" class="fi"/>
-    <div class="ma"><button class="cn" onclick="closeMov('mEF')">Cancel</button><button class="ok" onclick="doEF()">Save</button></div>
+    <label class="fl">Name *</label><input type="text" id="ef_name" class="fi"/>
+    <label class="fl">City / Town</label><input type="text" id="ef_city" class="fi" placeholder="e.g. Mehsana"/>
+    <label class="fl">Contact Number</label><input type="text" id="ef_contact" class="fi" placeholder="10-digit mobile"/>
+    <label class="fl">Status</label>
+    <select id="ef_active" class="fi" style="padding:8px 12px;">
+      <option value="true">✅ Active</option>
+      <option value="false">❌ Inactive</option>
+    </select>
+    <div class="ma"><button class="cn" onclick="closeMov('mEF')">Cancel</button><button class="ok" onclick="doEF()">Save Changes</button></div>
   </div>
 </div>
 
@@ -391,6 +432,30 @@
     <label class="fl">WhatsApp</label><input type="tel" id="ew_wa2" class="fi"/>
     <label class="fl">City</label><input type="text" id="ew_city" class="fi"/>
     <div class="ma"><button class="cn" onclick="closeMov('mEW')">Cancel</button><button class="ok" onclick="doEW()">Save</button></div>
+  </div>
+</div>
+
+<!-- ── EDIT COMMODITY MODAL ── -->
+<div class="mov" id="mECM">
+  <div class="mod">
+    <h3>✏️ Edit Commodity</h3>
+    <input type="hidden" id="ecm_id"/>
+    <label class="fl">Name *</label><input type="text" id="ecm_name" class="fi"/>
+    <label class="fl">Category</label>
+    <select id="ecm_category" class="fi" style="padding:8px 12px;">
+      <option value="cattle_feed">Cattle Feed</option>
+      <option value="grain">Grain</option>
+      <option value="oilcake">Oil Cake</option>
+      <option value="supplement">Supplement</option>
+      <option value="other">Other</option>
+    </select>
+    <label class="fl">Unit / Bag Size</label><input type="text" id="ecm_unit" class="fi"/>
+    <label class="fl">Status</label>
+    <select id="ecm_active" class="fi" style="padding:8px 12px;">
+      <option value="true">✅ Active</option>
+      <option value="false">❌ Inactive</option>
+    </select>
+    <div class="ma"><button class="cn" onclick="closeMov('mECM')">Cancel</button><button class="ok" onclick="doECM()">Save Changes</button></div>
   </div>
 </div>
 
@@ -445,10 +510,10 @@ function switchTab(t){
     document.getElementById('tbtn-'+x).classList.toggle('active',x===t);
   });
   if(t==='records') loadRecords();
-  if(t==='master')  { loadBrokers();loadFactories();loadWholesalers(); }
+  if(t==='master')  { loadBrokers();loadFactories();loadWholesalers();loadCommodities(); }
 }
 
-const SUBS=['brokers','factories','wholesalers'];
+const SUBS=['brokers','factories','wholesalers','commodities'];
 function switchSub(s){
   SUBS.forEach((x,i)=>{
     document.getElementById('sub-'+x).style.display=x===s?'':'none';
@@ -651,22 +716,42 @@ async function loadFactories(){
   const r=await fetch('/api/admin/factories'); const d=await r.json();
   document.getElementById('f_count').textContent=d.length;
   const tb=document.getElementById('f_list');
-  if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="4">No factories yet.</td></tr>';return;}
+  if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="7">No factories yet.</td></tr>';return;}
   tb.innerHTML=d.map(f=>`<tr>
     <td><div class="n">${f.name}</div></td>
+    <td>${f.city||'<span style="color:#ddd">—</span>'}</td>
+    <td>${f.contact_number?`<span style="font-family:monospace;font-size:.8rem">${f.contact_number}</span>`:'<span style="color:#ddd">—</span>'}</td>
     <td><span class="pill">${f.broker_count} broker${f.broker_count!=1?'s':''}</span></td>
     <td><span class="pill">${f.trade_count} trades</span></td>
-    <td><button class="ab a4" onclick="openEF(${f.id},'${esc(f.name)}')">✏️ Edit</button></td></tr>`).join('');
+    <td><span class="pill ${f.is_active?'active':'inactive'}" style="background:${f.is_active?'#dcfce7':'#fee2e2'};color:${f.is_active?'#166534':'#991b1b'}">${f.is_active?'Active':'Inactive'}</span></td>
+    <td><button class="ab a4" onclick="openEF(${f.id},'${esc(f.name)}','${f.city||''}','${f.contact_number||''}',${f.is_active})">✏️ Edit</button></td></tr>`).join('');
 }
 async function createFactory(){
-  const name=g('f_name'); const msg=document.getElementById('f_msg'); msg.className='msg';
+  const name=g('f_name'), city=g('f_city'), contact_number=g('f_contact');
+  const msg=document.getElementById('f_msg'); msg.className='msg';
   if(!name){msg.className='msg err';msg.textContent='Factory name required.';return;}
-  const r=await fetch('/api/admin/factories',{method:'POST',headers:H,body:JSON.stringify({name})});
-  if(r.ok){msg.className='msg ok';msg.textContent='✅ Factory added!';document.getElementById('f_name').value='';loadFactories();init();}
-  else{const d=await r.json();msg.className='msg err';msg.textContent='❌ '+d.error;}
+  const r=await fetch('/api/admin/factories',{method:'POST',headers:H,body:JSON.stringify({name,city,contact_number})});
+  if(r.ok){
+    msg.className='msg ok';msg.textContent='✅ Factory added!';
+    ['f_name','f_city','f_contact'].forEach(id=>document.getElementById(id).value='');
+    loadFactories();init();
+  } else{const d=await r.json();msg.className='msg err';msg.textContent='❌ '+d.error;}
 }
-function openEF(id,name){document.getElementById('ef_id').value=id;document.getElementById('ef_name').value=name;document.getElementById('mEF').classList.add('show');}
-async function doEF(){const id=g('ef_id'),name=g('ef_name');if(!name)return;await fetch(`/api/admin/factories/${id}`,{method:'PUT',headers:H,body:JSON.stringify({name})});closeMov('mEF');loadFactories();init();}
+function openEF(id,name,city,contact,is_active){
+  document.getElementById('ef_id').value=id;
+  document.getElementById('ef_name').value=name;
+  document.getElementById('ef_city').value=city;
+  document.getElementById('ef_contact').value=contact;
+  document.getElementById('ef_active').value=String(is_active);
+  document.getElementById('mEF').classList.add('show');
+}
+async function doEF(){
+  const id=g('ef_id'),name=g('ef_name'),city=g('ef_city'),contact_number=g('ef_contact');
+  const is_active=document.getElementById('ef_active').value==='true';
+  if(!name)return;
+  await fetch(`/api/admin/factories/${id}`,{method:'PUT',headers:H,body:JSON.stringify({name,city,contact_number,is_active})});
+  closeMov('mEF');loadFactories();init();
+}
 
 // ── WHOLESALERS ──
 async function loadWholesalers(){
@@ -689,13 +774,66 @@ async function createWholesaler(){
   const body={name:g('w_name'),mobile:g('w_mobile'),whatsapp_number:g('w_wa')||g('w_mobile'),city:g('w_city')};
   const msg=document.getElementById('w_msg'); msg.className='msg';
   if(!body.name||!body.mobile){msg.className='msg err';msg.textContent='Name and mobile required.';return;}
+  if(!/^[6-9]\d{9}$/.test(body.mobile)){msg.className='msg err';msg.textContent='❌ Enter valid 10-digit Indian mobile (starts with 6-9)';return;}
   const r=await fetch('/api/admin/wholesalers',{method:'POST',headers:H,body:JSON.stringify(body)});
   if(r.ok){msg.className='msg ok';msg.textContent='✅ Added!';['w_name','w_mobile','w_wa','w_city'].forEach(id=>document.getElementById(id).value='');loadWholesalers();}
   else{const d=await r.json();msg.className='msg err';msg.textContent='❌ '+d.error;}
 }
 function openEW(w){document.getElementById('ew_id').value=w.id;document.getElementById('ew_name').value=w.name;document.getElementById('ew_mobile').value=w.mobile;document.getElementById('ew_wa2').value=w.whatsapp_number||'';document.getElementById('ew_city').value=w.city||'';document.getElementById('mEW').classList.add('show');}
-async function doEW(){const id=g('ew_id');const body={name:g('ew_name'),mobile:g('ew_mobile'),whatsapp_number:g('ew_wa2'),city:g('ew_city')};await fetch(`/api/admin/wholesalers/${id}`,{method:'PUT',headers:H,body:JSON.stringify(body)});closeMov('mEW');loadWholesalers();}
+async function doEW(){
+  const id=g('ew_id');
+  const body={name:g('ew_name'),mobile:g('ew_mobile'),whatsapp_number:g('ew_wa2'),city:g('ew_city')};
+  if(body.mobile && !/^[6-9]\d{9}$/.test(body.mobile)){alert('❌ Invalid mobile number. Must be 10 digits starting with 6-9.');return;}
+  await fetch(`/api/admin/wholesalers/${id}`,{method:'PUT',headers:H,body:JSON.stringify(body)});
+  closeMov('mEW');loadWholesalers();
+}
 async function toggleW(id,s){await fetch(`/api/admin/wholesalers/${id}`,{method:'PUT',headers:H,body:JSON.stringify({is_active:s})});loadWholesalers();}
+
+// ── COMMODITIES ──
+const CATEGORY_LABELS = {cattle_feed:'Cattle Feed',grain:'Grain',oilcake:'Oil Cake',supplement:'Supplement',other:'Other'};
+async function loadCommodities(){
+  const r=await fetch('/api/admin/commodities'); const d=await r.json();
+  document.getElementById('cm_count').textContent=d.length;
+  const tb=document.getElementById('cm_list');
+  if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="5">No commodities yet.</td></tr>';return;}
+  tb.innerHTML=d.map(c=>`<tr>
+    <td><div class="n">${c.name}</div></td>
+    <td><span class="pill">${CATEGORY_LABELS[c.category]||c.category||'—'}</span></td>
+    <td style="font-size:.8rem;color:#666">${c.unit||'<span style="color:#ddd">—</span>'}</td>
+    <td><span class="${c.is_active?'ba':'bi'}">${c.is_active?'Active':'Inactive'}</span></td>
+    <td>
+      <button class="ab a4" onclick='openECM(${JSON.stringify(c)})'>✏️</button>
+      <button class="ab a2" onclick="toggleCM(${c.id},${!c.is_active})">${c.is_active?'Off':'On'}</button>
+    </td></tr>`).join('');
+}
+async function createCommodity(){
+  const body={name:g('cm_name'),category:document.getElementById('cm_category').value,unit:g('cm_unit')};
+  const msg=document.getElementById('cm_msg'); msg.className='msg';
+  if(!body.name){msg.className='msg err';msg.textContent='Commodity name required.';return;}
+  const r=await fetch('/api/admin/commodities',{method:'POST',headers:H,body:JSON.stringify(body)});
+  if(r.ok){
+    msg.className='msg ok';msg.textContent='✅ Added!';
+    ['cm_name','cm_unit'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('cm_category').value='cattle_feed';
+    loadCommodities();
+  } else{const d=await r.json();msg.className='msg err';msg.textContent='❌ '+d.error;}
+}
+function openECM(c){
+  document.getElementById('ecm_id').value=c.id;
+  document.getElementById('ecm_name').value=c.name;
+  document.getElementById('ecm_category').value=c.category||'cattle_feed';
+  document.getElementById('ecm_unit').value=c.unit||'';
+  document.getElementById('ecm_active').value=String(c.is_active);
+  document.getElementById('mECM').classList.add('show');
+}
+async function doECM(){
+  const id=g('ecm_id');
+  const body={name:g('ecm_name'),category:document.getElementById('ecm_category').value,unit:g('ecm_unit'),is_active:document.getElementById('ecm_active').value==='true'};
+  if(!body.name)return;
+  await fetch(`/api/admin/commodities/${id}`,{method:'PUT',headers:H,body:JSON.stringify(body)});
+  closeMov('mECM');loadCommodities();
+}
+async function toggleCM(id,s){await fetch(`/api/admin/commodities/${id}`,{method:'PUT',headers:H,body:JSON.stringify({is_active:s})});loadCommodities();}
 
 // ═══════════════════════════════════════════════════
 // ── ASSIGN DRAWER ───────────────────────────────

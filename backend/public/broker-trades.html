@@ -1,15 +1,15 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Trade History — AgroSetu</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Noto+Sans+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
       --bg:#f2f5f2;--surf:#fff;--green:#1b5e35;--green2:#2d9e5f;--green3:#e8f5ee;--green4:#c8e6d4;
       --amber:#f59e0b;--red:#dc2626;--red2:#fff0f0;--text:#192b19;--text2:#4a6741;--text3:#8aab85;
-      --border:#d4e6d4;--border2:#b8d4b8;--mono:'DM Mono',monospace;--sans:'Outfit',sans-serif;
+      --border:#d4e6d4;--border2:#b8d4b8;--mono:'DM Mono',monospace;
+      --sans:'Outfit','Noto Sans Gujarati',sans-serif;
       --sh:0 2px 12px rgba(27,94,53,.07);--sh2:0 8px 32px rgba(27,94,53,.13);
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -27,7 +27,6 @@
     .btn-sm-ghost{background:transparent;color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.25);padding:5px 12px;border-radius:6px;font-size:.76rem;cursor:pointer;font-family:var(--sans);}
     .btn-sm-ghost:hover{color:#fff;border-color:rgba(255,255,255,.6);}
 
-    /* PAGE */
     .page{max-width:1300px;margin:0 auto;padding:24px 18px 60px;}
 
     /* FILTER BAR */
@@ -41,6 +40,7 @@
     .btn-primary{background:var(--green);color:#fff;}.btn-primary:hover{background:#144527;}
     .btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--border2);}.btn-ghost:hover{border-color:var(--green);color:var(--green);}
     .btn-amber{background:var(--amber);color:#fff;}.btn-amber:hover{background:#d97706;}
+    .btn-pdf{background:#1e40af;color:#fff;}.btn-pdf:hover{background:#1e3a8a;}
 
     /* STAT ROW */
     .stat-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
@@ -62,18 +62,18 @@
     thead th.r{text-align:right;}
     tbody td{padding:12px 14px;font-size:.85rem;border-bottom:1px solid #f0f4f0;vertical-align:middle;}
     tbody tr:last-child td{border-bottom:none;}
-    tbody tr:hover{background:#fafcfa;}
+    tbody tr.data-row:hover{background:#f4fcf7;cursor:pointer;}
     .td-r{text-align:right;}
     .mono{font-family:var(--mono);}
     .green{color:var(--green);font-weight:600;}
     .name-cell{font-weight:600;color:var(--text);}
-    .sub{font-size:.72rem;color:var(--text3);margin-top:2px;}
     .date-cell{font-family:var(--mono);font-size:.8rem;color:var(--text2);}
     .commodity-tag{background:var(--green3);color:var(--green2);padding:2px 8px;border-radius:5px;font-size:.75rem;font-weight:600;}
     .empty-row td{text-align:center;color:#bbb;padding:52px;font-size:.88rem;}
-
-    /* GROUP ROW */
     .group-header td{background:#f0f9f4;font-weight:700;color:var(--green);font-size:.8rem;padding:8px 14px;border-bottom:1px solid var(--green4);}
+
+    /* EDIT HINT */
+    .edit-hint{background:#e8f5ee;color:var(--green);font-size:.72rem;font-weight:600;padding:3px 8px;border-radius:4px;white-space:nowrap;}
 
     /* PAGINATION */
     .pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1.5px solid var(--border);flex-wrap:wrap;gap:10px;}
@@ -84,20 +84,45 @@
     .page-btn:disabled{opacity:.4;cursor:not-allowed;}
     .page-btn.active{background:var(--green);color:#fff;border-color:var(--green);}
 
-    /* DELETE MODAL */
+    /* MODALS */
     .mov{position:fixed;inset:0;background:rgba(0,0,0,.48);display:none;align-items:center;justify-content:center;z-index:300;}
     .mov.show{display:flex;}
-    .mod{background:#fff;border-radius:14px;padding:28px 26px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);}
-    .mod h3{font-size:.98rem;font-weight:700;color:var(--red);margin-bottom:10px;}
+    .mod{background:#fff;border-radius:14px;padding:28px 26px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+    .mod.sm{max-width:420px;}
+    .mod.lg{max-width:560px;}
+    .mod h3{font-size:.98rem;font-weight:700;margin-bottom:16px;}
+    .mod h3.red{color:var(--red);}
+    .mod h3.green{color:var(--green);}
     .mod p{font-size:.84rem;color:var(--text2);line-height:1.5;}
-    .ma{display:flex;gap:10px;margin-top:18px;}
+    .fl{display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:5px;margin-top:13px;}
+    .fi-mod{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.87rem;font-family:var(--sans);color:var(--text);background:#fff;width:100%;transition:border .15s;}
+    .fi-mod:focus{outline:none;border-color:var(--green2);}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .ma{display:flex;gap:10px;margin-top:20px;}
     .ma .danger{flex:1;padding:10px;background:var(--red);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:var(--sans);}
     .ma .cancel{flex:1;padding:10px;background:#f4f7f4;color:#666;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-family:var(--sans);}
+    .ma .save{flex:2;padding:10px;background:var(--green);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+    .brk-preview{background:var(--green3);border:1.5px solid var(--green4);border-radius:8px;padding:10px 14px;margin-top:14px;font-size:.8rem;display:flex;justify-content:space-between;}
 
     /* TOAST */
     .toast{position:fixed;bottom:26px;right:26px;z-index:500;background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:.86rem;font-weight:600;box-shadow:0 8px 32px rgba(27,94,53,.3);transform:translateY(70px);opacity:0;transition:all .25s cubic-bezier(.34,1.56,.64,1);}
     .toast.show{transform:translateY(0);opacity:1;}
     .toast.err{background:var(--red);}
+
+    /* PRINT / PDF — Gujarati font enforced */
+    @media print {
+      .nav,.filter-bar,.stat-row,.table-head .btn,
+      .pagination,.mov,.toast,.act-cell{ display:none !important; }
+      body,*{ font-family:'Noto Sans Gujarati','Outfit',sans-serif !important; background:#fff !important; }
+      .page{ padding:0; max-width:100%; }
+      .table-card{ box-shadow:none; border:1px solid #ccc; }
+      thead th{ background:#e8f5ee !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      .group-header td{ background:#f0f9f4 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      .commodity-tag{ background:#e8f5ee !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      #printHeader{ display:block !important; }
+    }
+    #printHeader{ display:none; padding:16px 20px 10px; border-bottom:2px solid var(--green); margin-bottom:4px;
+      font-family:'Noto Sans Gujarati','Outfit',sans-serif; }
   </style>
 </head>
 <body>
@@ -146,7 +171,6 @@
       <button class="btn btn-primary" onclick="applyFilter()">🔍 Filter</button>
       <button class="btn btn-ghost"   onclick="clearFilter()">✕ Clear</button>
     </div>
-    <!-- FY Quick Buttons -->
     <div style="display:flex;gap:6px;align-self:flex-end;flex-wrap:wrap;">
       <button class="btn btn-ghost" style="font-size:.74rem;padding:7px 12px;" onclick="setFY(2025)">FY 2025-26</button>
       <button class="btn btn-ghost" style="font-size:.74rem;padding:7px 12px;" onclick="setFY(2024)">FY 2024-25</button>
@@ -166,9 +190,11 @@
   <div class="table-card">
     <div class="table-head">
       <h2>Trade History</h2>
-      <div style="display:flex;gap:8px;align-items:center;">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <span class="badge" id="resultCount">—</span>
-        <button class="btn btn-amber" style="font-size:.76rem;padding:6px 14px;" onclick="goReport()">📄 Settlement Report →</button>
+        <span class="edit-hint">✏️ Click row to edit</span>
+        <button class="btn btn-pdf" style="font-size:.76rem;padding:6px 14px;" onclick="exportPDF()">📄 PDF Report</button>
+        <button class="btn btn-amber" style="font-size:.76rem;padding:6px 14px;" onclick="goReport()">📊 Settlement →</button>
       </div>
     </div>
 
@@ -186,7 +212,7 @@
             <th class="r">Whsl. Brk.</th>
             <th class="r">Total Brk.</th>
             <th>Remarks</th>
-            <th style="width:50px;">✕</th>
+            <th style="width:40px;"></th>
           </tr>
         </thead>
         <tbody id="tradeBody">
@@ -203,11 +229,61 @@
 
 </main>
 
-<!-- DELETE MODAL -->
+<!-- ══════════════ EDIT TRADE MODAL ══════════════ -->
+<div class="mov" id="mEdit">
+  <div class="mod lg">
+    <h3 class="green">✏️ Edit Trade</h3>
+    <input type="hidden" id="et_id"/>
+
+    <div class="two-col">
+      <div>
+        <label class="fl">Date *</label>
+        <input type="date" id="et_date" class="fi-mod"/>
+      </div>
+      <div>
+        <label class="fl">Bags *</label>
+        <input type="number" id="et_bags" class="fi-mod" min="1" oninput="updateBrkPreview()"/>
+      </div>
+    </div>
+
+    <label class="fl">Factory *</label>
+    <select id="et_factory" class="fi-mod"></select>
+
+    <label class="fl">Wholesaler *</label>
+    <select id="et_wholesaler" class="fi-mod"></select>
+
+    <label class="fl">Commodity *</label>
+    <select id="et_commodity" class="fi-mod"></select>
+
+    <div class="two-col">
+      <div>
+        <label class="fl">Price / Bag (₹) *</label>
+        <input type="number" id="et_price" class="fi-mod" min="1" step="0.01" oninput="updateBrkPreview()"/>
+      </div>
+      <div>
+        <label class="fl">Remarks</label>
+        <input type="text" id="et_remarks" class="fi-mod" placeholder="Optional"/>
+      </div>
+    </div>
+
+    <div class="brk-preview" id="brkPreview">
+      <span>🏭 Factory Brokerage: <strong id="prev_f">₹0</strong></span>
+      <span>🛒 Whsl. Brokerage: <strong id="prev_w">₹0</strong></span>
+      <span>💰 Total: <strong id="prev_t">₹0</strong></span>
+    </div>
+
+    <div class="ma">
+      <button class="cancel" onclick="closeMov('mEdit')">Cancel</button>
+      <button class="save"   onclick="saveEdit()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ DELETE MODAL ══════════════ -->
 <div class="mov" id="mDel">
-  <div class="mod">
-    <h3>🗑️ Delete Trade?</h3>
-    <p id="delInfo">This will permanently delete this trade record and affect brokerage calculations.</p>
+  <div class="mod sm">
+    <h3 class="red">🗑️ Delete Trade?</h3>
+    <p id="delInfo">This will permanently delete this trade record.</p>
     <input type="hidden" id="del_id"/>
     <div class="ma">
       <button class="cancel" onclick="closeMov('mDel')">Cancel</button>
@@ -219,103 +295,113 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════
+// ═══════════════════════════════════════════════
 // STATE
-// ═══════════════════════════════
-let currentPage=1, totalTrades=0, pageSize=50;
+// ═══════════════════════════════════════════════
+const BROK = 2; // ₹2 per bag per side
+let currentPage = 1;
+const pageSize  = 50;
+let totalTrades = 0;
+let allTrades   = []; // current page trades (for PDF)
 let factories=[], wholesalers=[], commodities=[];
 
-// ═══════════════════════════════
+// ═══════════════════════════════════════════════
 // INIT
-// ═══════════════════════════════
+// ═══════════════════════════════════════════════
 async function init(){
-  const [meRes, ddRes] = await Promise.all([
-    fetch('/api/broker/me'),
-    fetch('/api/broker/dropdowns')
-  ]);
-  if(!meRes.ok){ window.location='/broker/login'; return; }
-  const me=await meRes.json();
-  document.getElementById('brokerName').textContent=me.name;
+  try {
+    const r = await fetch('/api/broker/dropdowns');
+    if(!r.ok) throw new Error('auth');
+    const d = await r.json();
+    factories    = d.factories    || [];
+    wholesalers  = d.wholesalers  || [];
+    commodities  = d.commodities  || [];
 
-  const dd=await ddRes.json();
-  factories=dd.factories||[]; wholesalers=dd.wholesalers||[]; commodities=dd.commodities||[];
+    // Filter dropdowns
+    const ff=document.getElementById('f_factory');
+    const fw=document.getElementById('f_wholesaler');
+    const fc=document.getElementById('f_commodity');
+    factories.forEach(f=>{ ff.innerHTML+=`<option value="${f.id}">${f.name}</option>`; });
+    wholesalers.forEach(w=>{ fw.innerHTML+=`<option value="${w.id}">${w.name}</option>`; });
+    commodities.forEach(c=>{ fc.innerHTML+=`<option value="${c.id}">${c.name}</option>`; });
 
-  // Populate filter dropdowns
-  const fSel=document.getElementById('f_factory');
-  factories.forEach(f=>{ const o=document.createElement('option'); o.value=f.id; o.textContent=f.name; fSel.appendChild(o); });
-  const wSel=document.getElementById('f_wholesaler');
-  wholesalers.forEach(w=>{ const o=document.createElement('option'); o.value=w.id; o.textContent=w.name; wSel.appendChild(o); });
-  const cSel=document.getElementById('f_commodity');
-  commodities.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; cSel.appendChild(o); });
+    // Edit modal dropdowns
+    populateEditDropdowns();
 
-  // Default: current FY
-  setFY(currentFYYear());
-  loadTrades();
+    // Broker name
+    const br = await fetch('/api/broker/me').then(r=>r.json()).catch(()=>({}));
+    if(br.name) document.getElementById('brokerName').textContent = br.name;
+
+    setFY(2025);
+  } catch(e) {
+    window.location = '/broker/login';
+  }
 }
 
-function currentFYYear(){
-  const m=new Date().getMonth();
-  return m>=3?new Date().getFullYear():new Date().getFullYear()-1;
-}
-function setFY(year){
-  document.getElementById('f_from').value=`${year}-04-01`;
-  document.getElementById('f_to').value=`${year+1}-03-31`;
-}
-function setThisMonth(){
-  const d=new Date();
-  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0');
-  const last=new Date(y,d.getMonth()+1,0).getDate();
-  document.getElementById('f_from').value=`${y}-${m}-01`;
-  document.getElementById('f_to').value=`${y}-${m}-${last}`;
+function populateEditDropdowns(){
+  const ef=document.getElementById('et_factory');
+  const ew=document.getElementById('et_wholesaler');
+  const ec=document.getElementById('et_commodity');
+  ef.innerHTML='<option value="">Select Factory</option>'+factories.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('');
+  ew.innerHTML='<option value="">Select Wholesaler</option>'+wholesalers.map(w=>`<option value="${w.id}">${esc(w.name)}</option>`).join('');
+  ec.innerHTML='<option value="">Select Commodity</option>'+commodities.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
 }
 
-// ═══════════════════════════════
+// ═══════════════════════════════════════════════
 // LOAD TRADES
-// ═══════════════════════════════
+// ═══════════════════════════════════════════════
 async function loadTrades(page=1){
-  currentPage=page;
-  const params=new URLSearchParams({page, limit:pageSize});
-  const from=document.getElementById('f_from').value;
-  const to=document.getElementById('f_to').value;
-  const fac=document.getElementById('f_factory').value;
-  const whl=document.getElementById('f_wholesaler').value;
-  if(from) params.set('from',from);
-  if(to)   params.set('to',to);
-  if(fac)  params.set('factory_id',fac);
-  if(whl)  params.set('wholesaler_id',whl);
+  currentPage = page;
+  const params = new URLSearchParams({
+    page, limit: pageSize,
+    from:        document.getElementById('f_from').value,
+    to:          document.getElementById('f_to').value,
+    factory_id:  document.getElementById('f_factory').value,
+    wholesaler_id:document.getElementById('f_wholesaler').value,
+    commodity_id:document.getElementById('f_commodity').value,
+  });
 
-  const tbody=document.getElementById('tradeBody');
-  tbody.innerHTML='<tr class="empty-row"><td colspan="11">Loading…</td></tr>';
+  const tbody = document.getElementById('tradeBody');
+  tbody.innerHTML = '<tr class="empty-row"><td colspan="11">Loading…</td></tr>';
 
-  try{
-    const res=await fetch('/api/broker/trades?'+params);
-    const data=await res.json();
-    totalTrades=data.total||0;
-    renderTrades(data.trades||[]);
-    renderStats(data.trades||[]);
-    renderPagination(data.total, page);
-    document.getElementById('resultCount').textContent=data.total+' trades';
-  } catch(e){
+  try {
+    const r    = await fetch('/api/broker/trades?'+params);
+    const data = await r.json();
+    totalTrades = data.total || 0;
+    allTrades   = data.trades || [];
+    renderTrades(allTrades);
+    renderStats(allTrades);
+    renderPagination(totalTrades, page);
+    document.getElementById('resultCount').textContent = totalTrades + ' trades';
+  } catch(e) {
     tbody.innerHTML='<tr class="empty-row"><td colspan="11">Error loading trades.</td></tr>';
   }
 }
 
+// ═══════════════════════════════════════════════
+// RENDER TRADES
+// ═══════════════════════════════════════════════
+function fmtDate(val, opts){
+  if(!val) return '—';
+  const s = String(val).slice(0,10);
+  return new Date(s+'T00:00:00').toLocaleDateString('en-IN', opts||{day:'2-digit',month:'short'});
+}
+
 function renderTrades(trades){
-  const tbody=document.getElementById('tradeBody');
-  if(!trades.length){ tbody.innerHTML='<tr class="empty-row"><td colspan="11">No trades found for this filter.</td></tr>'; return; }
+  const tbody = document.getElementById('tradeBody');
+  if(!trades.length){ tbody.innerHTML='<tr class="empty-row"><td colspan="11">No trades found.</td></tr>'; return; }
 
   let html='', prevKey='';
   trades.forEach(t=>{
-    const d=t.trade_date?t.trade_date.split('T')[0]:'';
-    const groupKey=d+'|'+t.factory_name;
-    // Group header when factory+date changes
-    if(groupKey!==prevKey){
-      const dFmt=d?new Date(d+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}):'—';
-      html+=`<tr class="group-header"><td colspan="11">📅 ${dFmt} &nbsp;·&nbsp; 🏭 ${esc(t.factory_name)}</td></tr>`;
-      prevKey=groupKey;
+    const d       = String(t.trade_date||'').slice(0,10);
+    const groupKey= d+'|'+t.factory_name;
+    if(groupKey !== prevKey){
+      const dFmt = d ? new Date(d+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) : '—';
+      html += `<tr class="group-header"><td colspan="11">📅 ${dFmt} &nbsp;·&nbsp; 🏭 ${esc(t.factory_name)}</td></tr>`;
+      prevKey = groupKey;
     }
-    html+=`<tr>
-      <td class="date-cell">${d?new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short'}):'—'}</td>
+    html += `<tr class="data-row" onclick="openEdit(${t.id})" title="Click to edit this trade">
+      <td class="date-cell">${fmtDate(t.trade_date)}</td>
       <td><div class="name-cell">${esc(t.factory_name)}</div></td>
       <td><div class="name-cell">${esc(t.wholesaler_name)}</div></td>
       <td><span class="commodity-tag">${esc(t.commodity_name)}</span></td>
@@ -325,7 +411,7 @@ function renderTrades(trades){
       <td class="td-r mono">₹${parseFloat(t.wholesaler_brokerage).toLocaleString('en-IN')}</td>
       <td class="td-r mono green">₹${parseFloat(t.total_brokerage).toLocaleString('en-IN')}</td>
       <td style="font-size:.78rem;color:var(--text3)">${t.remarks||'—'}</td>
-      <td style="text-align:center">
+      <td style="text-align:center" onclick="event.stopPropagation()">
         <button onclick="openDel(${t.id},'${esc(t.factory_name)}','${esc(t.wholesaler_name)}',${t.bags})"
           style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.9rem;padding:4px 7px;border-radius:5px;transition:all .15s;"
           onmouseover="this.style.color='#dc2626';this.style.background='#fff0f0'"
@@ -333,22 +419,22 @@ function renderTrades(trades){
       </td>
     </tr>`;
   });
-  tbody.innerHTML=html;
+  tbody.innerHTML = html;
 }
 
 function renderStats(trades){
-  const bags=trades.reduce((s,t)=>s+parseInt(t.bags||0),0);
-  const val =trades.reduce((s,t)=>s+parseFloat(t.bags||0)*parseFloat(t.price_per_bag||0),0);
-  const brk =trades.reduce((s,t)=>s+parseFloat(t.total_brokerage||0),0);
-  document.getElementById('st_trades').textContent=totalTrades.toLocaleString('en-IN');
-  document.getElementById('st_bags').textContent=bags.toLocaleString('en-IN');
-  document.getElementById('st_value').textContent='₹'+val.toLocaleString('en-IN',{maximumFractionDigits:0});
-  document.getElementById('st_brk').textContent='₹'+brk.toLocaleString('en-IN',{maximumFractionDigits:0});
+  const bags = trades.reduce((s,t)=>s+parseInt(t.bags||0),0);
+  const val  = trades.reduce((s,t)=>s+parseFloat(t.bags||0)*parseFloat(t.price_per_bag||0),0);
+  const brk  = trades.reduce((s,t)=>s+parseFloat(t.total_brokerage||0),0);
+  document.getElementById('st_trades').textContent = totalTrades.toLocaleString('en-IN');
+  document.getElementById('st_bags').textContent   = bags.toLocaleString('en-IN');
+  document.getElementById('st_value').textContent  = '₹'+val.toLocaleString('en-IN',{maximumFractionDigits:0});
+  document.getElementById('st_brk').textContent    = '₹'+brk.toLocaleString('en-IN',{maximumFractionDigits:0});
 }
 
 function renderPagination(total, page){
-  const pages=Math.ceil(total/pageSize);
-  const pag=document.getElementById('pagination');
+  const pages = Math.ceil(total/pageSize);
+  const pag   = document.getElementById('pagination');
   if(pages<=1){ pag.style.display='none'; return; }
   pag.style.display='flex';
   document.getElementById('pageInfo').textContent=`Page ${page} of ${pages} · ${total} trades`;
@@ -360,35 +446,215 @@ function renderPagination(total, page){
   btns.innerHTML=html;
 }
 
-// ═══════════════════════════════
-// FILTER
-// ═══════════════════════════════
+// ═══════════════════════════════════════════════
+// EDIT TRADE
+// ═══════════════════════════════════════════════
+function openEdit(id){
+  const t = allTrades.find(x=>x.id===id);
+  if(!t) return;
+  document.getElementById('et_id').value         = t.id;
+  document.getElementById('et_date').value        = String(t.trade_date||'').slice(0,10);
+  document.getElementById('et_bags').value        = t.bags;
+  document.getElementById('et_price').value       = parseFloat(t.price_per_bag);
+  document.getElementById('et_remarks').value     = t.remarks||'';
+  document.getElementById('et_factory').value     = t.factory_id;
+  document.getElementById('et_wholesaler').value  = t.wholesaler_id;
+  document.getElementById('et_commodity').value   = t.commodity_id;
+  updateBrkPreview();
+  document.getElementById('mEdit').classList.add('show');
+}
+
+function updateBrkPreview(){
+  const bags  = parseInt(document.getElementById('et_bags').value)||0;
+  const fBrk  = bags * BROK;
+  const wBrk  = bags * BROK;
+  const total  = fBrk + wBrk;
+  document.getElementById('prev_f').textContent = '₹'+fBrk.toLocaleString('en-IN');
+  document.getElementById('prev_w').textContent = '₹'+wBrk.toLocaleString('en-IN');
+  document.getElementById('prev_t').textContent = '₹'+total.toLocaleString('en-IN');
+}
+
+async function saveEdit(){
+  const id           = document.getElementById('et_id').value;
+  const factory_id   = document.getElementById('et_factory').value;
+  const wholesaler_id= document.getElementById('et_wholesaler').value;
+  const commodity_id = document.getElementById('et_commodity').value;
+  const bags         = parseInt(document.getElementById('et_bags').value);
+  const price_per_bag= parseFloat(document.getElementById('et_price').value);
+  const trade_date   = document.getElementById('et_date').value;
+  const remarks      = document.getElementById('et_remarks').value;
+
+  if(!factory_id||!wholesaler_id||!commodity_id||!bags||!price_per_bag||!trade_date){
+    showToast('Fill all required fields', true); return;
+  }
+
+  const body = { factory_id, wholesaler_id, commodity_id, bags, price_per_bag, trade_date, remarks: remarks||null };
+  const r = await fetch(`/api/broker/trades/${id}`, {
+    method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+  });
+
+  if(r.ok){
+    closeMov('mEdit');
+    showToast('✅ Trade updated');
+    loadTrades(currentPage);
+  } else {
+    const d = await r.json();
+    showToast('❌ '+d.error, true);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// DELETE
+// ═══════════════════════════════════════════════
+function openDel(id, factory, wholesaler, bags){
+  document.getElementById('del_id').value = id;
+  document.getElementById('delInfo').textContent = `Delete trade #${id}: ${factory} → ${wholesaler}, ${bags} bags? This cannot be undone.`;
+  document.getElementById('mDel').classList.add('show');
+}
+async function confirmDelete(){
+  const id = document.getElementById('del_id').value;
+  await fetch(`/api/broker/trades/${id}`, {method:'DELETE'});
+  closeMov('mDel');
+  showToast('Trade deleted');
+  loadTrades(currentPage);
+}
+
+// ═══════════════════════════════════════════════
+// PDF EXPORT — uses browser print (full Unicode/Gujarati support)
+// ═══════════════════════════════════════════════
+function exportPDF(){
+  if(!allTrades.length){ showToast('No trades to export',true); return; }
+
+  const fromVal = document.getElementById('f_from').value;
+  const toVal   = document.getElementById('f_to').value;
+  const period  = (fromVal||'Start') + ' to ' + (toVal||'Today');
+  const bags    = allTrades.reduce((s,t)=>s+parseInt(t.bags||0),0);
+  const brk     = allTrades.reduce((s,t)=>s+parseFloat(t.total_brokerage||0),0);
+  const val     = allTrades.reduce((s,t)=>s+parseFloat(t.bags||0)*parseFloat(t.price_per_bag||0),0);
+  const broker  = document.getElementById('brokerName').textContent||'';
+  const today   = new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+
+  // Build a self-contained print window with Gujarati font + full table
+  let rows='', prevKey='';
+  allTrades.forEach((t,i)=>{
+    const d = String(t.trade_date||'').slice(0,10);
+    const groupKey = d+'|'+t.factory_name;
+    if(groupKey!==prevKey){
+      const dFmt = d ? new Date(d+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) : '—';
+      rows+=`<tr class="gh"><td colspan="11">📅 ${dFmt} &nbsp;·&nbsp; 🏭 ${esc(t.factory_name)}</td></tr>`;
+      prevKey=groupKey;
+    }
+    rows+=`<tr>
+      <td>${i+1}</td>
+      <td>${fmtDate(d)}</td>
+      <td>${esc(t.factory_name)}</td>
+      <td>${esc(t.wholesaler_name)}</td>
+      <td>${esc(t.commodity_name)}</td>
+      <td class="r">${parseInt(t.bags).toLocaleString('en-IN')}</td>
+      <td class="r">₹${parseFloat(t.price_per_bag).toLocaleString('en-IN')}</td>
+      <td class="r">₹${parseFloat(t.factory_brokerage).toLocaleString('en-IN')}</td>
+      <td class="r">₹${parseFloat(t.wholesaler_brokerage).toLocaleString('en-IN')}</td>
+      <td class="r g">₹${parseFloat(t.total_brokerage).toLocaleString('en-IN')}</td>
+      <td>${esc(t.remarks||'')}</td>
+    </tr>`;
+  });
+
+  const html=`<!DOCTYPE html><html><head>
+  <meta charset="UTF-8"/>
+  <title>AgroSetu Trade Report</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Noto Sans Gujarati','Outfit',sans-serif;font-size:9pt;color:#111;padding:14mm 12mm;}
+    h1{font-size:14pt;color:#1b5e35;margin-bottom:4px;}
+    .meta{font-size:8pt;color:#555;margin-bottom:3px;}
+    .stats{font-size:9pt;color:#222;border:1px solid #c8e6d4;background:#e8f5ee;padding:7px 12px;
+           border-radius:6px;margin:10px 0 12px;display:flex;gap:24px;flex-wrap:wrap;}
+    .stats span b{color:#1b5e35;}
+    table{width:100%;border-collapse:collapse;font-size:8pt;}
+    thead th{background:#1b5e35;color:#fff;padding:6px 8px;text-align:left;font-weight:700;}
+    thead th.r{text-align:right;}
+    tbody td{padding:5px 8px;border-bottom:1px solid #e8f5ee;vertical-align:middle;}
+    tbody tr:nth-child(even) td{background:#f8fcf8;}
+    .gh td{background:#e8f5ee !important;color:#1b5e35;font-weight:700;font-size:8pt;padding:5px 8px;}
+    .r{text-align:right;}
+    .g{color:#1b5e35;font-weight:700;}
+    tfoot td{background:#e8f5ee;font-weight:700;color:#1b5e35;padding:7px 8px;border-top:2px solid #1b5e35;}
+    .footer{margin-top:12px;font-size:7.5pt;color:#888;border-top:1px solid #ddd;padding-top:8px;
+            display:flex;justify-content:space-between;}
+    @media print{body{padding:8mm 8mm;} .no-print{display:none;}}
+  </style>
+  </head><body>
+  <h1>🌾 AgroSetu — Trade History Report</h1>
+  <div class="meta">Period: ${period}</div>
+  <div class="meta">Generated: ${today} &nbsp;·&nbsp; Broker: ${broker}</div>
+  <div class="stats">
+    <span>Trades: <b>${allTrades.length}</b></span>
+    <span>Bags: <b>${bags.toLocaleString('en-IN')}</b></span>
+    <span>Gross Value: <b>₹${val.toLocaleString('en-IN',{maximumFractionDigits:0})}</b></span>
+    <span>Brokerage: <b>₹${brk.toLocaleString('en-IN',{maximumFractionDigits:0})}</b></span>
+  </div>
+  <table>
+    <thead><tr>
+      <th>#</th><th>Date</th><th>Factory</th><th>Wholesaler</th><th>Commodity</th>
+      <th class="r">Bags</th><th class="r">Price/Bag</th>
+      <th class="r">Fac.Brk.</th><th class="r">Whsl.Brk.</th><th class="r">Total Brk.</th>
+      <th>Remarks</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr>
+      <td colspan="5">TOTAL</td>
+      <td class="r">${bags.toLocaleString('en-IN')}</td>
+      <td></td>
+      <td class="r">₹${allTrades.reduce((s,t)=>s+parseFloat(t.factory_brokerage||0),0).toLocaleString('en-IN',{maximumFractionDigits:0})}</td>
+      <td class="r">₹${allTrades.reduce((s,t)=>s+parseFloat(t.wholesaler_brokerage||0),0).toLocaleString('en-IN',{maximumFractionDigits:0})}</td>
+      <td class="r">₹${brk.toLocaleString('en-IN',{maximumFractionDigits:0})}</td>
+      <td></td>
+    </tr></tfoot>
+  </table>
+  <div class="footer">
+    <span>AgroSetu · umiyaagrosetu.in · Arvindbhai M Patel, APMC Mehsana</span>
+    <span>Printed: ${today}</span>
+  </div>
+  <script>
+    // Wait for Gujarati font to load before printing
+    document.fonts.ready.then(()=>{ window.print(); });
+  </' + 'script>
+  </body></html>`;
+
+  const win = window.open('','_blank','width=1100,height=800');
+  win.document.write(html);
+  win.document.close();
+  showToast('📄 Opening print preview…');
+}
+
+// ═══════════════════════════════════════════════
+// FILTER & DATE HELPERS
+// ═══════════════════════════════════════════════
 function applyFilter(){ loadTrades(1); }
 function clearFilter(){
   ['f_from','f_to'].forEach(id=>document.getElementById(id).value='');
   ['f_factory','f_wholesaler','f_commodity'].forEach(id=>document.getElementById(id).value='');
   loadTrades(1);
 }
-
-// ═══════════════════════════════
-// DELETE
-// ═══════════════════════════════
-function openDel(id,factory,wholesaler,bags){
-  document.getElementById('del_id').value=id;
-  document.getElementById('delInfo').textContent=`Delete trade #${id}: ${factory} → ${wholesaler}, ${bags} bags? This cannot be undone.`;
-  document.getElementById('mDel').classList.add('show');
+function setFY(startYear){
+  document.getElementById('f_from').value = `${startYear}-04-01`;
+  document.getElementById('f_to').value   = `${startYear+1}-03-31`;
+  loadTrades(1);
 }
-async function confirmDelete(){
-  const id=document.getElementById('del_id').value;
-  await fetch(`/api/broker/trades/${id}`,{method:'DELETE'});
-  closeMov('mDel'); loadTrades(currentPage);
-  showToast('Trade deleted');
+function setThisMonth(){
+  const n=new Date();
+  const y=n.getFullYear(), m=String(n.getMonth()+1).padStart(2,'0');
+  document.getElementById('f_from').value=`${y}-${m}-01`;
+  document.getElementById('f_to').value  =`${y}-${m}-${new Date(y,n.getMonth()+1,0).getDate()}`;
+  loadTrades(1);
 }
-function closeMov(id){ document.getElementById(id).classList.remove('show'); }
 
-// ═══════════════════════════════
+// ═══════════════════════════════════════════════
 // UTILS
-// ═══════════════════════════════
+// ═══════════════════════════════════════════════
+function closeMov(id){ document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.mov').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('show'); }));
 function goReport(){ window.location='/broker/report'; }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function showToast(msg,err=false){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'+(err?' err':''); setTimeout(()=>t.className='toast',3000); }

@@ -405,14 +405,24 @@ async function init() {
     const me = await meRes.json();
     document.getElementById('brokerName').textContent = me.name;
 
+    if (!ddRes.ok) {
+      const err = await ddRes.json().catch(()=>({error:'Server error'}));
+      showToast('❌ Dropdown load failed: ' + err.error, true);
+      console.error('[dropdowns API error]', err);
+      return;
+    }
     const dd = await ddRes.json();
     factories   = dd.factories   || [];
     wholesalers = dd.wholesalers || [];
     commodities = dd.commodities || [];
 
+    if (!factories.length)   showToast('⚠️ No factories assigned to your account yet', true);
+    else if (!wholesalers.length) showToast('⚠️ No wholesalers assigned to your account yet', true);
+
     addRow(); // start with one empty row
   } catch(e) {
-    showToast('Could not load data', true);
+    showToast('Could not load data: ' + e.message, true);
+    console.error('[init error]', e);
   }
 }
 
@@ -600,8 +610,6 @@ function renderOpts(rowId, type, options, currentVal, filter) {
       onclick="selectOpt(${rowId},'${type}',${o.id},'${escHtml(o.name)}')"
       onmouseenter="setHighlight(this)">
       <span class="opt-name">${o.name}</span>
-      ${o.city?`<span class="opt-sub">${o.city}</span>`:''}
-      ${o.mobile?`<span class="opt-sub">${o.mobile}</span>`:''}
     </div>`
   ).join('');
 }
@@ -811,9 +819,15 @@ async function saveAll() {
 
     if(!res.ok) { showToast('Error: ' + data.error, true); isSaving=false; btn.innerHTML='💾 Save All (<span id="unsavedCount">0</span>)'; updateSaveBtn(); return; }
 
-    // Mark rows as saved + push COPIES (not references) to sessionSaved
-    toSave.forEach(r => { r.saved = true; });
+    // Push COPIES to sessionSaved list
     sessionSaved.push(...toSave.map(r => ({...r})));
+
+    // Remove saved rows from the grid — keep only unsaved/incomplete rows
+    const savedIds = new Set(toSave.map(r => r.id));
+    rowData = rowData.filter(r => !savedIds.has(r.id));
+
+    // Always keep at least one blank row in the grid
+    if(!rowData.length) addRow();
 
     renderGrid();
     renderSavedList();
@@ -838,7 +852,7 @@ function renderSavedList() {
     const w   = (wholesalers.find(x=>x.id==r.wholesaler_id)||{name:'?'}).name;
     const c   = (commodities.find(x=>x.id==r.commodity_id)||{name:'?'}).name;
     const brk = r.bags * BROK_RATE * 2;
-    const d   = r.date ? new Date(r.date+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : '—';
+    const d   = fmtDate(r.date);
     return `<div class="st-row">
       <span>${d}</span>
       <span>${f}</span><span>${w}</span><span>${c}</span>
@@ -879,6 +893,8 @@ function clearUnsaved() {
 // ══════════════════════════════════════════════════
 function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;'); }
 
+// Safe date formatter
+function fmtDate(val,opts){ if(!val) return '—'; const s=String(val).slice(0,10); return new Date(s+'T00:00:00').toLocaleDateString('en-IN',opts||{day:'2-digit',month:'short'}); }
 function showToast(msg, err=false) {
   const t = document.getElementById('toast');
   t.textContent = msg;

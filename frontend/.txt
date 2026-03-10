@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://umiyaagrosetu.com/sitemap.xml
