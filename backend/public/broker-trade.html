@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Log Trade — AgroSetu Broker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#f4f7f4;font-family:'Source Sans 3',sans-serif;min-height:100vh;}
+
+    .nav{background:#1e3d1a;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100;}
+    .nav-brand{display:flex;align-items:center;gap:10px;color:#fff;}
+    .nav-brand span{font-size:1.1rem;font-weight:700;}
+    .nav-back{padding:7px 16px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;text-decoration:none;font-family:inherit;}
+    .nav-back:hover{background:rgba(255,255,255,.2);}
+
+    .main{max-width:720px;margin:0 auto;padding:36px 20px;}
+
+    .page-header{margin-bottom:28px;}
+    .page-header h1{font-size:1.5rem;font-weight:700;color:#1e3d1a;}
+    .page-header p{font-size:.85rem;color:#888;margin-top:4px;font-family:'Noto Sans Gujarati',sans-serif;}
+
+    .form-card{background:#fff;border-radius:16px;padding:32px 36px;box-shadow:0 2px 12px rgba(0,0,0,.07);}
+
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+    .form-grid .full{grid-column:1/-1;}
+
+    .field{display:flex;flex-direction:column;gap:6px;}
+    label{font-size:.8rem;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:.6px;}
+    label .gu{font-family:'Noto Sans Gujarati',sans-serif;font-size:.78rem;color:#aaa;text-transform:none;letter-spacing:0;margin-left:6px;font-weight:400;}
+
+    select, input[type="text"], input[type="number"], input[type="date"], textarea{
+      padding:11px 14px;border:1.5px solid #d0d8d0;border-radius:9px;
+      font-size:.93rem;font-family:inherit;transition:border .2s;background:#fff;
+    }
+    select:focus, input:focus, textarea:focus{outline:none;border-color:#2d5a27;box-shadow:0 0 0 3px rgba(45,90,39,.09);}
+
+    /* ── BROKERAGE PREVIEW ── */
+    .brokerage-preview{
+      background:linear-gradient(135deg,#1e3d1a,#2d5a27);
+      border-radius:12px;padding:22px 24px;color:#fff;margin:24px 0;
+    }
+    .brokerage-preview h3{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#8dc98d;margin-bottom:14px;}
+    .brok-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+    .brok-item label{font-size:.7rem;color:#8dc98d;text-transform:uppercase;letter-spacing:.8px;font-weight:600;}
+    .brok-item .amount{font-size:1.4rem;font-weight:700;color:#fff;margin-top:4px;}
+    .brok-item .amount.total{color:#f5a623;font-size:1.6rem;}
+
+    .btn-submit{
+      width:100%;padding:14px;background:#2d5a27;color:#fff;
+      border:none;border-radius:10px;font-size:1rem;font-weight:700;
+      cursor:pointer;font-family:inherit;transition:background .2s;margin-top:8px;
+    }
+    .btn-submit:hover{background:#1e3d1a;}
+    .btn-submit:disabled{background:#aaa;cursor:not-allowed;}
+
+    .divider{border:none;border-top:1px solid #f0f4f0;margin:24px 0;}
+
+    .success-banner{
+      background:#e8f5e8;color:#2d5a27;border:1px solid #a8d8a8;
+      border-radius:10px;padding:16px 20px;text-align:center;
+      font-weight:600;display:none;margin-bottom:20px;
+    }
+    .success-banner.show{display:block;}
+    .error-banner{
+      background:#fdecea;color:#c0392b;border:1px solid #f5c6c6;
+      border-radius:10px;padding:14px 20px;font-size:.85rem;
+      display:none;margin-bottom:20px;
+    }
+    .error-banner.show{display:block;}
+
+    .recent-trades{margin-top:36px;}
+    .recent-trades h2{font-size:1rem;font-weight:700;color:#1e3d1a;margin-bottom:14px;}
+    .trade-row{
+      background:#fff;border-radius:10px;padding:14px 18px;
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.06);
+      font-size:.84rem;
+    }
+    .trade-row-left .t-parties{font-weight:700;color:#1e3d1a;}
+    .trade-row-left .t-details{font-size:.74rem;color:#aaa;margin-top:2px;}
+    .trade-row-right{text-align:right;}
+    .t-brokerage{font-weight:700;color:#2d5a27;font-size:.95rem;}
+    .t-date{font-size:.72rem;color:#aaa;margin-top:2px;}
+
+    @media(max-width:600px){
+      .form-grid{grid-template-columns:1fr;}
+      .brok-grid{grid-template-columns:1fr 1fr;}
+      .form-card{padding:24px 18px;}
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand"><span>🌾 AgroSetu</span></div>
+  <a href="/broker/dashboard" class="nav-back">← Dashboard</a>
+</nav>
+
+<main class="main">
+  <div class="page-header">
+    <h1>+ Log New Trade</h1>
+    <p>નવો ટ્રેડ નોંધો — બ્રોકરેજ આપોઆપ ગણાઈ જશે</p>
+  </div>
+
+  <div class="success-banner" id="successBanner"></div>
+  <div class="error-banner"   id="errorBanner"></div>
+
+  <div class="form-card">
+    <div class="form-grid">
+
+      <div class="field">
+        <label>Factory <span class="gu">ફેક્ટરી</span></label>
+        <select id="factory_id" onchange="recalc()">
+          <option value="">Select Factory...</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Wholesaler <span class="gu">વ્યાપારી</span></label>
+        <select id="wholesaler_id" onchange="recalc()">
+          <option value="">Select Wholesaler...</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Commodity <span class="gu">માલ</span></label>
+        <select id="commodity_id">
+          <option value="">Select Commodity...</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Trade Date <span class="gu">તારીખ</span></label>
+        <input type="date" id="trade_date"/>
+      </div>
+
+      <div class="field">
+        <label>Bags <span class="gu">કોથળા</span></label>
+        <input type="number" id="bags" placeholder="e.g. 100" min="1" oninput="recalc()"/>
+      </div>
+
+      <div class="field">
+        <label>Price per Bag ₹ <span class="gu">ભાવ પ્રતિ કોથળો</span></label>
+        <input type="number" id="price_per_bag" placeholder="e.g. 1000" min="1" oninput="recalc()"/>
+      </div>
+
+      <div class="field full">
+        <label>Remarks <span class="gu">નોંધ (વૈકલ્પિક)</span></label>
+        <input type="text" id="remarks" placeholder="Optional notes about this trade"/>
+      </div>
+
+    </div>
+
+    <!-- Brokerage preview -->
+    <div class="brokerage-preview">
+      <h3>⚡ Brokerage Preview — બ્રોકરેજ</h3>
+      <div class="brok-grid">
+        <div class="brok-item">
+          <label>Factory Side</label>
+          <div class="amount" id="prev_factory">₹0</div>
+        </div>
+        <div class="brok-item">
+          <label>Wholesaler Side</label>
+          <div class="amount" id="prev_wholesaler">₹0</div>
+        </div>
+        <div class="brok-item">
+          <label>Total Brokerage</label>
+          <div class="amount total" id="prev_total">₹0</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-submit" id="submitBtn" onclick="submitTrade()">
+      ✅ Log Trade — ટ્રેડ સેવ કરો
+    </button>
+  </div>
+
+  <!-- Recent trades -->
+  <div class="recent-trades">
+    <h2>Recent Trades — છેલ્લા ટ્રેડ</h2>
+    <div id="recentList"><p style="color:#aaa;font-size:.84rem;">Loading...</p></div>
+  </div>
+
+</main>
+
+<script>
+const fmt = n => '₹' + parseInt(n||0).toLocaleString('en-IN');
+
+// Load dropdowns
+async function loadDropdowns(){
+  try{
+    const res  = await fetch('/api/broker/dropdowns');
+    if(res.status===401){ window.location.href='/broker/login'; return; }
+    const data = await res.json();
+
+    const fSel = document.getElementById('factory_id');
+    const wSel = document.getElementById('wholesaler_id');
+    const cSel = document.getElementById('commodity_id');
+
+    data.factories.forEach(f   => fSel.innerHTML += `<option value="${f.id}">${f.name}</option>`);
+    data.wholesalers.forEach(w => wSel.innerHTML += `<option value="${w.id}">${w.name}${w.city?' · '+w.city:''}</option>`);
+    data.commodities.forEach(c => cSel.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+  } catch(e){ console.error(e); }
+}
+
+// Set today's date
+document.getElementById('trade_date').value = new Date().toISOString().split('T')[0];
+
+function recalc(){
+  const bags  = parseInt(document.getElementById('bags').value)||0;
+  const fBrok = bags * 2;
+  const wBrok = bags * 2;
+  document.getElementById('prev_factory').textContent    = fmt(fBrok);
+  document.getElementById('prev_wholesaler').textContent = fmt(wBrok);
+  document.getElementById('prev_total').textContent      = fmt(fBrok + wBrok);
+}
+
+async function submitTrade(){
+  const payload = {
+    factory_id:    document.getElementById('factory_id').value,
+    wholesaler_id: document.getElementById('wholesaler_id').value,
+    commodity_id:  document.getElementById('commodity_id').value,
+    bags:          document.getElementById('bags').value,
+    price_per_bag: document.getElementById('price_per_bag').value,
+    trade_date:    document.getElementById('trade_date').value,
+    remarks:       document.getElementById('remarks').value,
+  };
+
+  // Validate
+  const missing = [];
+  if(!payload.factory_id)    missing.push('Factory');
+  if(!payload.wholesaler_id) missing.push('Wholesaler');
+  if(!payload.commodity_id)  missing.push('Commodity');
+  if(!payload.bags)          missing.push('Bags');
+  if(!payload.price_per_bag) missing.push('Price');
+
+  if(missing.length){
+    showError('Please fill: ' + missing.join(', '));
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  try{
+    const res = await fetch('/api/broker/trades',{
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+    });
+    if(res.ok){
+      const data = await res.json();
+      showSuccess(`✅ Trade logged! Brokerage: ${fmt(data.total_brokerage)} (Factory ${fmt(data.factory_brokerage)} + Wholesaler ${fmt(data.wholesaler_brokerage)})`);
+      resetForm();
+      loadRecentTrades();
+    } else {
+      const d = await res.json();
+      showError('Error: ' + d.error);
+    }
+  } catch(e){ showError('Server error. Please try again.'); }
+
+  btn.disabled = false; btn.textContent = '✅ Log Trade — ટ્રેડ સેવ કરો';
+}
+
+function resetForm(){
+  ['factory_id','wholesaler_id','commodity_id','bags','price_per_bag','remarks'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el.tagName==='SELECT') el.value=''; else el.value='';
+  });
+  document.getElementById('trade_date').value = new Date().toISOString().split('T')[0];
+  recalc();
+}
+
+function showSuccess(msg){
+  const el = document.getElementById('successBanner');
+  el.textContent = msg; el.classList.add('show');
+  document.getElementById('errorBanner').classList.remove('show');
+  setTimeout(()=>el.classList.remove('show'), 5000);
+}
+function showError(msg){
+  const el = document.getElementById('errorBanner');
+  el.textContent = msg; el.classList.add('show');
+  document.getElementById('successBanner').classList.remove('show');
+}
+
+async function loadRecentTrades(){
+  try{
+    const res  = await fetch('/api/broker/trades?limit=5');
+    const data = await res.json();
+    const list = document.getElementById('recentList');
+    if(!data.trades.length){
+      list.innerHTML='<p style="color:#aaa;font-size:.84rem;">No trades logged yet.</p>'; return;
+    }
+    list.innerHTML = data.trades.map(t=>`
+      <div class="trade-row">
+        <div class="trade-row-left">
+          <div class="t-parties">${t.factory_name} → ${t.wholesaler_name}</div>
+          <div class="t-details">${t.commodity_name} · ${t.bags} bags @ ${fmt(t.price_per_bag)}/bag</div>
+        </div>
+        <div class="trade-row-right">
+          <div class="t-brokerage">${fmt(t.total_brokerage)}</div>
+          <div class="t-date">${new Date(t.trade_date).toLocaleDateString('en-IN')}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e){}
+}
+
+loadDropdowns();
+loadRecentTrades();
+</script>
+</body>
+</html>

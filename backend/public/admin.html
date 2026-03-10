@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — AgroSetu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #f2f5f2;
+      --surf:    #ffffff;
+      --green:   #1b5e35;
+      --green2:  #2d9e5f;
+      --green3:  #e8f5ee;
+      --green4:  #c8e6d4;
+      --amber:   #f59e0b;
+      --amber2:  #fef3c7;
+      --red:     #dc2626;
+      --red2:    #fff0f0;
+      --blue:    #1d6fa4;
+      --blue2:   #e8f4fd;
+      --text:    #192b19;
+      --text2:   #4a6741;
+      --text3:   #8aab85;
+      --border:  #d4e6d4;
+      --border2: #b8d4b8;
+      --mono:    'DM Mono', monospace;
+      --sans:    'Outfit', sans-serif;
+      --sh:      0 2px 12px rgba(27,94,53,.07);
+      --sh2:     0 8px 32px rgba(27,94,53,.13);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);font-family:var(--sans);color:var(--text);min-height:100vh;}
+
+    /* ── NAV ── */
+    .nav{
+      background:var(--green);height:56px;padding:0 22px;
+      display:flex;align-items:center;justify-content:space-between;
+      position:sticky;top:0;z-index:100;
+      box-shadow:0 2px 16px rgba(0,0,0,.22);
+    }
+    .nav-left{display:flex;align-items:center;gap:10px;}
+    .nav-brand{color:#fff;font-size:1rem;font-weight:700;letter-spacing:-.2px;}
+    .nav-divider{width:1px;height:20px;background:rgba(255,255,255,.2);}
+    .nav-tagline{color:rgba(255,255,255,.5);font-size:.72rem;font-family:var(--mono);}
+    .nav-right{display:flex;align-items:center;gap:10px;}
+    .nav-user{color:rgba(255,255,255,.75);font-size:.8rem;}
+    .btn-logout{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.2);padding:5px 13px;border-radius:6px;font-size:.77rem;cursor:pointer;font-family:var(--sans);transition:all .15s;}
+    .btn-logout:hover{background:rgba(255,255,255,.22);color:#fff;}
+
+    /* ── TABS ── */
+    .tab-shell{background:var(--green);padding:0 22px;border-top:1px solid rgba(255,255,255,.1);}
+    .tab-list{display:flex;gap:0;}
+    .tab-btn{
+      padding:11px 22px;font-size:.84rem;font-weight:600;cursor:pointer;
+      border:none;background:transparent;font-family:var(--sans);
+      color:rgba(255,255,255,.55);border-bottom:3px solid transparent;
+      transition:all .15s;display:flex;align-items:center;gap:7px;
+    }
+    .tab-btn:hover{color:rgba(255,255,255,.85);}
+    .tab-btn.active{color:#fff;border-bottom-color:#4ade80;}
+    .tab-badge{background:rgba(255,255,255,.18);color:#fff;font-size:.62rem;padding:1px 6px;border-radius:10px;font-family:var(--mono);}
+
+    /* ── PAGE ── */
+    .page{max-width:1280px;margin:0 auto;padding:24px 18px 60px;}
+
+    /* ── CARDS ── */
+    .card{background:var(--surf);border-radius:13px;box-shadow:var(--sh);border:1.5px solid var(--border);}
+    .card-head{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1.5px solid var(--border);}
+    .card-title{font-size:.93rem;font-weight:700;color:var(--text);}
+    .card-body{padding:20px;}
+
+    /* ── BUTTONS ── */
+    .btn{padding:9px 17px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;border:none;font-family:var(--sans);display:inline-flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap;}
+    .btn-primary{background:var(--green);color:#fff;}.btn-primary:hover{background:#144527;}
+    .btn-primary:disabled{background:var(--text3);cursor:not-allowed;}
+    .btn-green2{background:var(--green2);color:#fff;}.btn-green2:hover{background:#22865a;}
+    .btn-amber{background:var(--amber);color:#fff;}.btn-amber:hover{background:#d97706;}
+    .btn-red{background:var(--red);color:#fff;}.btn-red:hover{background:#b91c1c;}
+    .btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--border2);}.btn-ghost:hover{border-color:var(--green);color:var(--green);}
+    .btn-whatsapp{background:#25d366;color:#fff;}.btn-whatsapp:hover{background:#1fba58;}
+    .btn-sm{padding:5px 12px;font-size:.75rem;}
+    .btn-xs{padding:3px 9px;font-size:.72rem;border-radius:5px;}
+
+    /* ── STAT CHIPS ── */
+    .stat-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+    .stat{background:var(--surf);border:1.5px solid var(--border);border-radius:11px;padding:12px 18px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:2px;min-width:120px;}
+    .stat.hi{border-color:var(--green2);background:var(--green3);}
+    .stat label{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);}
+    .stat .val{font-family:var(--mono);font-size:1.1rem;color:var(--text);}
+    .stat.hi .val{color:var(--green);}
+
+    /* ── PRICE ENTRY TABLE ── */
+    .pe-wrap{overflow-x:auto;}
+    .pe-table{width:100%;border-collapse:collapse;min-width:700px;}
+    .pe-table thead th{background:#f4f7f4;padding:10px 12px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);border-bottom:2px solid var(--border);text-align:left;}
+    .pe-table tbody td{padding:6px 8px;border-bottom:1px solid #f0f4f0;vertical-align:middle;}
+    .pe-table tbody tr:last-child td{border-bottom:none;}
+    .pe-table tbody tr:hover{background:#fafcfa;}
+    .pe-input{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:.84rem;font-family:var(--sans);transition:border .15s;background:#fff;}
+    .pe-input:focus{outline:none;border-color:var(--green2);box-shadow:0 0 0 3px rgba(45,158,95,.1);}
+    select.pe-input{cursor:pointer;}
+
+    /* ── RECORDS TABLE ── */
+    .rec-table{width:100%;border-collapse:collapse;}
+    .rec-table thead th{background:#f4f7f4;padding:10px 14px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);border-bottom:2px solid var(--border);text-align:left;}
+    .rec-table tbody td{padding:11px 14px;font-size:.84rem;border-bottom:1px solid #f0f4f0;vertical-align:middle;}
+    .rec-table tbody tr:last-child td{border-bottom:none;}
+    .rec-table tbody tr:hover{background:#fafcfa;}
+    .rec-date{font-family:var(--mono);font-size:.78rem;color:var(--text2);}
+    .rec-price{font-family:var(--mono);font-weight:500;}
+
+    /* ── STATUS BANNER ── */
+    .banner{padding:10px 15px;border-radius:8px;font-size:.83rem;font-weight:500;display:none;margin-top:12px;}
+    .banner.ok{background:#d4edda;color:#155724;border:1px solid #c3e6cb;display:block;}
+    .banner.err{background:#f8d7da;color:#721c24;border:1px solid #f5c6c6;display:block;}
+    .banner.info{background:#d1ecf1;color:#0c5460;border:1px solid #bee5eb;display:block;}
+
+    /* ── MASTER DATA (Brokers/Factories/Wholesalers) ── */
+    .sub-tabs{display:flex;gap:4px;margin-bottom:18px;padding-bottom:10px;border-bottom:1.5px solid var(--border);}
+    .sub-tab{padding:7px 18px;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;border:none;font-family:var(--sans);background:transparent;color:var(--text3);transition:all .15s;}
+    .sub-tab.active{background:var(--green3);color:var(--green);border:1.5px solid var(--green4);}
+    .sub-tab:hover:not(.active){background:#f0f4f0;color:var(--text2);}
+
+    .md-cols{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start;}
+    .form-card{background:var(--surf);border:1.5px solid var(--border);border-radius:12px;padding:22px 20px;box-shadow:var(--sh);}
+    .form-card h3{font-size:.88rem;font-weight:700;color:var(--green);margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--green3);}
+    label.fl{display:block;font-size:.72rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-top:13px;margin-bottom:5px;}
+    label.fl .opt{font-weight:400;color:#bbb;text-transform:none;font-size:.7rem;letter-spacing:0;}
+    .fi{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.88rem;font-family:var(--sans);transition:border .15s;}
+    .fi:focus{outline:none;border-color:var(--green2);box-shadow:0 0 0 3px rgba(45,158,95,.1);}
+    .fi[type="password"]{letter-spacing:2px;}
+    .btn-create{width:100%;margin-top:16px;padding:11px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:var(--sans);transition:background .15s;}
+    .btn-create:hover{background:#144527;}
+    .msg{padding:9px 12px;border-radius:7px;font-size:.8rem;margin-top:10px;display:none;}
+    .msg.ok{background:var(--green3);color:var(--green);border:1px solid var(--green4);display:block;}
+    .msg.err{background:var(--red2);color:var(--red);border:1px solid #fca5a5;display:block;}
+
+    .list-card{background:var(--surf);border-radius:12px;box-shadow:var(--sh);border:1.5px solid var(--border);overflow:hidden;}
+    .lh{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1.5px solid var(--border);}
+    .lh h3{font-size:.88rem;font-weight:700;color:var(--text);}
+    .badge{background:#f0f4f0;color:#666;font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:20px;font-family:var(--mono);}
+    table.lt{width:100%;border-collapse:collapse;}
+    table.lt thead th{background:#f8faf8;padding:9px 14px;font-size:.7rem;font-weight:700;text-align:left;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid var(--border);}
+    table.lt tbody td{padding:11px 14px;font-size:.84rem;border-bottom:1px solid #f5f5f5;vertical-align:middle;}
+    table.lt tbody tr:last-child td{border-bottom:none;}
+    table.lt tbody tr:hover{background:#fafcfa;}
+    .n{font-weight:700;color:var(--text);}.s{font-size:.72rem;color:var(--text3);margin-top:2px;}
+    .ba{background:var(--green3);color:var(--green);padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:700;border:1px solid var(--green4);}
+    .bi{background:var(--red2);color:var(--red);padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:700;border:1px solid #fca5a5;}
+    .pill{background:#f0f4f0;color:#666;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:600;}
+    .ab{padding:4px 10px;border-radius:6px;font-size:.72rem;font-weight:600;cursor:pointer;border:none;font-family:var(--sans);margin-right:3px;margin-bottom:2px;white-space:nowrap;}
+    .a1{background:var(--blue2);color:var(--blue);border:1px solid #93c5fd;}.a1:hover{background:var(--blue);color:#fff;}
+    .a2{background:#fff3e0;color:#c05000;border:1px solid #fbbf24;}.a2:hover{background:#c05000;color:#fff;}
+    .a3{background:#f5f0ff;color:#6d28d9;border:1px solid #c4b5fd;}.a3:hover{background:#6d28d9;color:#fff;}
+    .a4{background:#f0f4f0;color:#444;border:1px solid var(--border2);}.a4:hover{background:#444;color:#fff;}
+    .empty td{text-align:center;color:#ccc;padding:36px;font-size:.84rem;}
+
+    /* ── DRAWER ── */
+    .dov{position:fixed;inset:0;background:rgba(0,0,0,.42);display:none;z-index:200;justify-content:flex-end;}
+    .dov.show{display:flex;}
+    .drw{background:#fff;width:460px;height:100vh;overflow-y:auto;padding:26px 24px;box-shadow:-12px 0 40px rgba(0,0,0,.14);}
+    .dtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+    .dtop h2{font-size:1rem;font-weight:700;color:var(--green);}
+    .dcls{background:#f0f4f0;border:none;padding:6px 13px;border-radius:7px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:var(--sans);}
+    .dsub{font-size:.78rem;color:var(--text3);margin-bottom:14px;}
+    .dsh{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin:16px 0 9px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+    .ar{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;}
+    .an{font-size:.86rem;font-weight:600;color:var(--text);}
+    .as{font-size:.7rem;color:var(--text3);margin-top:1px;}
+    .tb{padding:4px 12px;border-radius:6px;font-size:.73rem;font-weight:700;cursor:pointer;border:none;font-family:var(--sans);}
+    .tb.on{background:var(--green3);color:var(--green);border:1px solid var(--green4);}.tb.on:hover{background:var(--red);color:#fff;border-color:var(--red);}
+    .tb.off{background:#f0f4f0;color:#666;border:1px solid var(--border2);}.tb.off:hover{background:var(--green);color:#fff;}
+
+    /* ── MODALS ── */
+    .mov{position:fixed;inset:0;background:rgba(0,0,0,.48);display:none;align-items:center;justify-content:center;z-index:300;}
+    .mov.show{display:flex;}
+    .mod{background:#fff;border-radius:14px;padding:28px 26px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+    .mod h3{font-size:.98rem;font-weight:700;color:var(--green);margin-bottom:16px;}
+    .ma{display:flex;gap:10px;margin-top:16px;}
+    .ma .ok{flex:1;padding:10px;background:var(--green);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+    .ma .cn{flex:1;padding:10px;background:#f4f7f4;color:#666;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-family:var(--sans);}
+
+    /* ── BROADCAST MODAL ── */
+    .bmod{max-width:620px;}
+    .bmod-head{background:var(--green);color:#fff;padding:16px 22px;border-radius:10px 10px 0 0;margin:-28px -26px 20px;font-size:.98rem;font-weight:700;}
+    #msgPreview{background:#f0fff4;border:1px solid var(--green4);border-radius:8px;padding:16px;font-family:var(--mono);font-size:.82rem;white-space:pre-wrap;word-break:break-word;max-height:320px;overflow-y:auto;line-height:1.65;color:var(--text);}
+    .sub-info{font-size:.78rem;color:var(--text3);margin-top:10px;}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:26px;right:26px;z-index:500;background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:.86rem;font-weight:600;box-shadow:0 8px 32px rgba(27,94,53,.3);transform:translateY(70px);opacity:0;transition:all .25s cubic-bezier(.34,1.56,.64,1);}
+    .toast.show{transform:translateY(0);opacity:1;}
+    .toast.err{background:var(--red);}
+
+    @media(max-width:800px){.md-cols{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-left">
+    <div class="nav-brand">🌾 AgroSetu</div>
+    <div class="nav-divider"></div>
+    <div class="nav-tagline">Admin Panel</div>
+  </div>
+  <div class="nav-right">
+    <span class="nav-user">👤 Admin</span>
+    <a href="/admin/logout" class="btn-logout">Logout</a>
+  </div>
+</nav>
+
+<!-- TAB BAR -->
+<div class="tab-shell">
+  <div class="tab-list">
+    <button class="tab-btn active" onclick="switchTab('prices')" id="tbtn-prices">
+      📊 Daily Price Entry
+    </button>
+    <button class="tab-btn" onclick="switchTab('master')" id="tbtn-master">
+      🗂️ Master Data
+    </button>
+    <button class="tab-btn" onclick="switchTab('records')" id="tbtn-records">
+      📋 Price Records
+    </button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- TAB 1 — DAILY PRICE ENTRY                          -->
+<!-- ════════════════════════════════════════════════════ -->
+<div id="tab-prices" class="page">
+
+  <!-- Stats -->
+  <div class="stat-row">
+    <div class="stat"><label>Today's Entries</label><div class="val" id="st_today">—</div></div>
+    <div class="stat"><label>Factories Active</label><div class="val" id="st_fac">—</div></div>
+    <div class="stat hi"><label>Last Saved</label><div class="val" id="st_saved">—</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">📝 Enter Today's Rates</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-ghost btn-sm" onclick="addPriceRow()">+ Add Row</button>
+        <button class="btn btn-primary btn-sm" onclick="savePrices()" id="saveBtn">💾 Save Prices</button>
+        <button class="btn btn-whatsapp btn-sm" onclick="previewBroadcast()" id="broadcastBtn">💬 WhatsApp Broadcast</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="pe-wrap">
+        <table class="pe-table" id="priceTable">
+          <thead>
+            <tr>
+              <th>Factory</th><th>Commodity</th><th>Price (₹)</th>
+              <th>Remarks</th><th>Date</th><th style="width:60px">✕</th>
+            </tr>
+          </thead>
+          <tbody id="priceBody"></tbody>
+        </table>
+      </div>
+      <div class="banner" id="priceBanner"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- TAB 2 — MASTER DATA                                -->
+<!-- ════════════════════════════════════════════════════ -->
+<div id="tab-master" class="page" style="display:none;">
+
+  <!-- Sub tabs -->
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="switchSub('brokers')">👥 Brokers</button>
+    <button class="sub-tab"        onclick="switchSub('factories')">🏭 Factories</button>
+    <button class="sub-tab"        onclick="switchSub('wholesalers')">🛒 Wholesalers</button>
+  </div>
+
+  <!-- BROKERS -->
+  <div id="sub-brokers">
+    <div class="md-cols">
+      <div class="form-card">
+        <h3>➕ Create New Broker</h3>
+        <label class="fl">Full Name</label><input type="text" id="b_name" class="fi" placeholder="e.g. Arvindbhai Patel"/>
+        <label class="fl">Mobile Number</label><input type="tel" id="b_mobile" class="fi" placeholder="10-digit mobile" maxlength="10"/>
+        <label class="fl">Email <span class="opt">(optional)</span></label><input type="email" id="b_email" class="fi" placeholder="broker@email.com"/>
+        <label class="fl">Password</label><input type="password" id="b_password" class="fi" placeholder="Set login password"/>
+        <button class="btn-create" onclick="createBroker()">✅ Create Broker</button>
+        <div class="msg" id="b_msg"></div>
+      </div>
+      <div class="list-card">
+        <div class="lh"><h3>All Brokers</h3><span class="badge" id="b_count">0</span></div>
+        <table class="lt"><thead><tr><th>Broker</th><th>Factories</th><th>Wholesalers</th><th>Trades</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="b_list"><tr class="empty"><td colspan="6">Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- FACTORIES -->
+  <div id="sub-factories" style="display:none;">
+    <div class="md-cols">
+      <div class="form-card">
+        <h3>➕ Add Factory / Mill</h3>
+        <label class="fl">Factory Name</label><input type="text" id="f_name" class="fi" placeholder="e.g. Bhavesh Oil Mill"/>
+        <button class="btn-create" onclick="createFactory()">✅ Add Factory</button>
+        <div class="msg" id="f_msg"></div>
+      </div>
+      <div class="list-card">
+        <div class="lh"><h3>All Factories</h3><span class="badge" id="f_count">0</span></div>
+        <table class="lt"><thead><tr><th>Factory Name</th><th>Brokers</th><th>Trades</th><th>Action</th></tr></thead>
+        <tbody id="f_list"><tr class="empty"><td colspan="4">Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHOLESALERS -->
+  <div id="sub-wholesalers" style="display:none;">
+    <div class="md-cols">
+      <div class="form-card">
+        <h3>➕ Add Wholesaler</h3>
+        <label class="fl">Full Name</label><input type="text" id="w_name" class="fi" placeholder="e.g. Ramesh Traders"/>
+        <label class="fl">Mobile</label><input type="tel" id="w_mobile" class="fi" placeholder="10-digit mobile" maxlength="10"/>
+        <label class="fl">WhatsApp <span class="opt">(if different)</span></label><input type="tel" id="w_wa" class="fi" placeholder="Leave blank → same as mobile"/>
+        <label class="fl">City / Town</label><input type="text" id="w_city" class="fi" placeholder="e.g. Mehsana"/>
+        <button class="btn-create" onclick="createWholesaler()">✅ Add Wholesaler</button>
+        <div class="msg" id="w_msg"></div>
+      </div>
+      <div class="list-card">
+        <div class="lh"><h3>All Wholesalers</h3><span class="badge" id="w_count">0</span></div>
+        <table class="lt"><thead><tr><th>Wholesaler</th><th>City</th><th>Brokers</th><th>Trades</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="w_list"><tr class="empty"><td colspan="6">Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- TAB 3 — PRICE RECORDS                              -->
+<!-- ════════════════════════════════════════════════════ -->
+<div id="tab-records" class="page" style="display:none;">
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">📋 All Price Records</div>
+      <span class="badge" id="rec_count">—</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <table class="rec-table" id="recTable">
+        <thead><tr><th>ID</th><th>Factory</th><th>Commodity</th><th>Price</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody id="recBody"><tr class="empty"><td colspan="6">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── ASSIGN DRAWER ── -->
+<div class="dov" id="dov" onclick="maybeCloseDrw(event)">
+  <div class="drw">
+    <div class="dtop"><h2 id="dtitle">Assign</h2><button class="dcls" onclick="closeDrw()">✕ Close</button></div>
+    <p class="dsub">Click to assign or unassign</p>
+    <div class="dsh">🏭 Factories</div><div id="d_f">Loading…</div>
+    <div class="dsh">🛒 Wholesalers</div><div id="d_w">Loading…</div>
+  </div>
+</div>
+
+<!-- ── RESET PW MODAL ── -->
+<div class="mov" id="mReset">
+  <div class="mod">
+    <h3>🔑 Reset Password</h3>
+    <input type="hidden" id="r_id"/>
+    <label class="fl">New Password</label><input type="password" id="r_pw" class="fi" placeholder="New password"/>
+    <div class="ma"><button class="cn" onclick="closeMov('mReset')">Cancel</button><button class="ok" onclick="doReset()">Reset</button></div>
+  </div>
+</div>
+
+<!-- ── EDIT FACTORY MODAL ── -->
+<div class="mov" id="mEF">
+  <div class="mod">
+    <h3>✏️ Edit Factory</h3>
+    <input type="hidden" id="ef_id"/>
+    <label class="fl">Name</label><input type="text" id="ef_name" class="fi"/>
+    <div class="ma"><button class="cn" onclick="closeMov('mEF')">Cancel</button><button class="ok" onclick="doEF()">Save</button></div>
+  </div>
+</div>
+
+<!-- ── EDIT WHOLESALER MODAL ── -->
+<div class="mov" id="mEW">
+  <div class="mod">
+    <h3>✏️ Edit Wholesaler</h3>
+    <input type="hidden" id="ew_id"/>
+    <label class="fl">Name</label><input type="text" id="ew_name" class="fi"/>
+    <label class="fl">Mobile</label><input type="tel" id="ew_mobile" class="fi" maxlength="10"/>
+    <label class="fl">WhatsApp</label><input type="tel" id="ew_wa2" class="fi"/>
+    <label class="fl">City</label><input type="text" id="ew_city" class="fi"/>
+    <div class="ma"><button class="cn" onclick="closeMov('mEW')">Cancel</button><button class="ok" onclick="doEW()">Save</button></div>
+  </div>
+</div>
+
+<!-- ── EDIT PRICE MODAL ── -->
+<div class="mov" id="mEP">
+  <div class="mod">
+    <h3>✏️ Edit Price Record</h3>
+    <input type="hidden" id="ep_id"/>
+    <label class="fl">Factory</label><select id="ep_factory" class="fi"></select>
+    <label class="fl">Commodity</label><select id="ep_commodity" class="fi"></select>
+    <label class="fl">Price</label><input type="number" id="ep_price" class="fi"/>
+    <label class="fl">Remarks</label><input type="text" id="ep_remarks" class="fi"/>
+    <label class="fl">Date</label><input type="date" id="ep_date" class="fi"/>
+    <div class="ma"><button class="cn" onclick="closeMov('mEP')">Cancel</button><button class="ok" onclick="doEP()">Save</button></div>
+  </div>
+</div>
+
+<!-- ── BROADCAST MODAL ── -->
+<div class="mov" id="mBcast">
+  <div class="mod bmod">
+    <div class="bmod-head">💬 WhatsApp Broadcast Preview</div>
+    <p style="font-size:.8rem;color:var(--text3);margin-bottom:12px;">Review before sending to all active subscribers:</p>
+    <div id="msgPreview">Loading…</div>
+    <p class="sub-info" id="subInfo">📱 Will be sent to all active subscribers</p>
+    <div class="banner" id="bcastBanner" style="margin-top:10px;"></div>
+    <div class="ma" style="margin-top:14px;">
+      <button class="cn" onclick="closeMov('mBcast')">Cancel</button>
+      <button class="ok" id="confirmSendBtn" onclick="confirmBroadcast()" style="background:#25d366;">✅ Confirm & Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// GLOBALS
+// ═══════════════════════════════════════════════════
+const H = {'Content-Type':'application/json'};
+const g = id => document.getElementById(id).value.trim();
+let factories=[], commodities=[], wholesalers=[];
+let currentBroker=null;
+
+// ═══════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════
+const TABS=['prices','master','records'];
+function switchTab(t){
+  TABS.forEach(x=>{
+    document.getElementById('tab-'+x).style.display=x===t?'':'none';
+    document.getElementById('tbtn-'+x).classList.toggle('active',x===t);
+  });
+  if(t==='records') loadRecords();
+  if(t==='master')  { loadBrokers();loadFactories();loadWholesalers(); }
+}
+
+const SUBS=['brokers','factories','wholesalers'];
+function switchSub(s){
+  SUBS.forEach((x,i)=>{
+    document.getElementById('sub-'+x).style.display=x===s?'':'none';
+    document.querySelectorAll('.sub-tab')[i].classList.toggle('active',x===s);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// INIT — load dropdown data
+// ═══════════════════════════════════════════════════
+async function init(){
+  try{
+    const [fRes,cRes]=await Promise.all([
+      fetch('/api/factories'),
+      fetch('/api/commodities')
+    ]);
+    factories   = (await fRes.json());
+    commodities = (await cRes.json());
+    addPriceRow();
+    loadPriceStats();
+  } catch(e){ showToast('Could not load data','err'); }
+}
+
+// ═══════════════════════════════════════════════════
+// ── TAB 1: PRICE ENTRY ──────────────────────────
+// ═══════════════════════════════════════════════════
+function todayStr(){ return new Date().toISOString().split('T')[0]; }
+
+function buildFactoryOptions(selId=''){
+  return '<option value="">Select Factory</option>'+factories.map(f=>`<option value="${f.id}"${f.id==selId?' selected':''}>${esc(f.name)}</option>`).join('');
+}
+function buildCommodityOptions(selId=''){
+  return '<option value="">Select Commodity</option>'+commodities.map(c=>`<option value="${c.id}"${c.id==selId?' selected':''}>${esc(c.name)}</option>`).join('');
+}
+
+function addPriceRow(){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td><select class="pe-input factory">${buildFactoryOptions()}</select></td>
+    <td><select class="pe-input commodity">${buildCommodityOptions()}</select></td>
+    <td><input type="number" class="pe-input price" placeholder="Enter price" min="0"/></td>
+    <td><input type="text"   class="pe-input remarks" placeholder="Remarks (Gujarati supported)"/></td>
+    <td><input type="date"   class="pe-input price_date" value="${todayStr()}"/></td>
+    <td style="text-align:center"><button class="btn btn-red btn-xs" onclick="this.closest('tr').remove()">✕</button></td>
+  `;
+  document.getElementById('priceBody').appendChild(tr);
+}
+
+async function savePrices(){
+  const rows=[...document.querySelectorAll('#priceBody tr')];
+  const prices=rows.map(r=>({
+    factory_id:   r.querySelector('.factory').value,
+    commodity_id: r.querySelector('.commodity').value,
+    price:        parseFloat(r.querySelector('.price').value),
+    remarks:      r.querySelector('.remarks').value,
+    price_date:   r.querySelector('.price_date').value
+  })).filter(p=>p.factory_id&&p.commodity_id&&p.price);
+
+  if(!prices.length){ showBanner('priceBanner','err','Please fill at least one complete row.'); return; }
+  const btn=document.getElementById('saveBtn');
+  btn.disabled=true; btn.textContent='⏳ Saving…';
+
+  try{
+    let saved=0;
+    for(const p of prices){
+      await fetch('/api/prices',{method:'POST',headers:H,body:JSON.stringify(p)});
+      saved++;
+    }
+    showBanner('priceBanner','ok',`✅ Saved ${saved} price records.`);
+    document.getElementById('st_saved').textContent=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    loadPriceStats();
+    showToast('✅ Prices saved!');
+  } catch(e){ showBanner('priceBanner','err','❌ Save failed: '+e.message); }
+  finally{ btn.disabled=false; btn.innerHTML='💾 Save Prices'; }
+}
+
+async function loadPriceStats(){
+  try{
+    const res=await fetch('/api/prices/latest');
+    const data=await res.json();
+    const arr=Array.isArray(data)?data:[];
+    document.getElementById('st_today').textContent=arr.length;
+    const facs=new Set(arr.map(r=>r.factory_id||r.factory_name));
+    document.getElementById('st_fac').textContent=facs.size;
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════════════════
+// ── TAB 3: RECORDS ──────────────────────────────
+// ═══════════════════════════════════════════════════
+async function loadRecords(){
+  const tbody=document.getElementById('recBody');
+  tbody.innerHTML='<tr class="empty"><td colspan="6">Loading…</td></tr>';
+  try{
+    const res=await fetch('/api/prices');
+    const data=await res.json();
+    const arr=Array.isArray(data)?data:(data.prices||[]);
+    document.getElementById('rec_count').textContent=arr.length+' records';
+    if(!arr.length){ tbody.innerHTML='<tr class="empty"><td colspan="6">No records yet.</td></tr>'; return; }
+    tbody.innerHTML=arr.map(r=>{
+      const d=r.price_date||r.date||'';
+      const dFmt=d?new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—';
+      return `<tr>
+        <td style="font-family:var(--mono);color:var(--text3)">#${r.id}</td>
+        <td><strong>${esc(r.factory_name||r.factory||'—')}</strong></td>
+        <td>${esc(r.commodity_name||r.commodity||'—')}</td>
+        <td class="rec-price">₹${parseFloat(r.price||0).toLocaleString('en-IN')}</td>
+        <td class="rec-date">${dFmt}</td>
+        <td>
+          <button class="ab a4" onclick='openEP(${JSON.stringify(r)})'>✏️ Edit</button>
+          <button class="ab a2" style="background:var(--red2);color:var(--red);border:1px solid #fca5a5;" onclick="deletePrice(${r.id})">Delete</button>
+        </td></tr>`;
+    }).join('');
+  } catch(e){ tbody.innerHTML='<tr class="empty"><td colspan="6">Error loading records.</td></tr>'; }
+}
+
+function openEP(r){
+  document.getElementById('ep_id').value=r.id;
+  document.getElementById('ep_factory').innerHTML=buildFactoryOptions(r.factory_id);
+  document.getElementById('ep_commodity').innerHTML=buildCommodityOptions(r.commodity_id);
+  document.getElementById('ep_price').value=r.price;
+  document.getElementById('ep_remarks').value=r.remarks||'';
+  const d=r.price_date||r.date||'';
+  document.getElementById('ep_date').value=d?d.split('T')[0]:'';
+  document.getElementById('mEP').classList.add('show');
+}
+async function doEP(){
+  const id=g('ep_id');
+  const body={factory_id:document.getElementById('ep_factory').value,commodity_id:document.getElementById('ep_commodity').value,price:parseFloat(document.getElementById('ep_price').value),remarks:g('ep_remarks'),price_date:document.getElementById('ep_date').value};
+  await fetch(`/api/prices/${id}`,{method:'PUT',headers:H,body:JSON.stringify(body)});
+  closeMov('mEP'); loadRecords(); showToast('✅ Price updated');
+}
+async function deletePrice(id){
+  if(!confirm('Delete this price record?')) return;
+  await fetch(`/api/prices/${id}`,{method:'DELETE'});
+  loadRecords(); showToast('Deleted');
+}
+
+// ═══════════════════════════════════════════════════
+// ── BROADCAST ───────────────────────────────────
+// ═══════════════════════════════════════════════════
+async function previewBroadcast(){
+  const btn=document.getElementById('broadcastBtn');
+  btn.disabled=true; btn.textContent='⏳ Loading…';
+  try{
+    const res=await fetch('/api/broadcast/today-message');
+    if(!res.ok) throw new Error('Could not load message');
+    const data=await res.json();
+    document.getElementById('msgPreview').textContent=data.message;
+    document.getElementById('bcastBanner').className='banner';
+    document.getElementById('confirmSendBtn').disabled=false;
+    document.getElementById('mBcast').classList.add('show');
+  } catch(e){ showBanner('priceBanner','err','❌ Could not load broadcast preview.'); }
+  finally{ btn.disabled=false; btn.innerHTML='💬 WhatsApp Broadcast'; }
+}
+async function confirmBroadcast(){
+  const btn=document.getElementById('confirmSendBtn');
+  btn.disabled=true; btn.textContent='⏳ Sending…';
+  showBanner('bcastBanner','info','📣 Sending to all subscribers…');
+  try{
+    const res=await fetch('/api/broadcast/send-broadcast');
+    if(!res.ok) throw new Error('Failed');
+    showBanner('bcastBanner','ok','✅ Broadcast sent!');
+    setTimeout(()=>{ closeMov('mBcast'); showToast('✅ WhatsApp broadcast sent!'); },1800);
+  } catch(e){ showBanner('bcastBanner','err','❌ Failed: '+e.message); btn.disabled=false; btn.innerHTML='✅ Confirm & Send'; }
+}
+
+// ═══════════════════════════════════════════════════
+// ── BROKERS ─────────────────────────────────────
+// ═══════════════════════════════════════════════════
+async function loadBrokers(){
+  const r=await fetch('/api/admin/brokers'); const d=await r.json();
+  document.getElementById('b_count').textContent=d.length;
+  const tb=document.getElementById('b_list');
+  if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="6">No brokers yet.</td></tr>';return;}
+  tb.innerHTML=d.map(b=>`<tr>
+    <td><div class="n">${b.name}</div><div class="s">${b.mobile}${b.email?' · '+b.email:''}</div></td>
+    <td><span class="pill">${b.factory_count}</span></td>
+    <td><span class="pill">${b.wholesaler_count}</span></td>
+    <td><span class="pill">${b.trade_count}</span></td>
+    <td><span class="${b.is_active?'ba':'bi'}">${b.is_active?'Active':'Inactive'}</span></td>
+    <td>
+      <button class="ab a1" onclick="openDrw(${b.id},'${esc(b.name)}')">🔗 Assign</button>
+      <button class="ab a3" onclick="openReset(${b.id})">🔑 PW</button>
+      <button class="ab a2" onclick="toggleBroker(${b.id},${!b.is_active})">${b.is_active?'Deactivate':'Activate'}</button>
+    </td></tr>`).join('');
+}
+async function createBroker(){
+  const body={name:g('b_name'),mobile:g('b_mobile'),email:g('b_email'),password:g('b_password')};
+  const msg=document.getElementById('b_msg'); msg.className='msg';
+  if(!body.name||!body.mobile||!body.password){msg.className='msg err';msg.textContent='Name, mobile and password required.';return;}
+  const r=await fetch('/api/admin/brokers',{method:'POST',headers:H,body:JSON.stringify(body)});
+  if(r.ok){msg.className='msg ok';msg.textContent='✅ Broker created!';['b_name','b_mobile','b_email','b_password'].forEach(id=>document.getElementById(id).value='');loadBrokers();}
+  else{const d=await r.json();msg.className='msg err';msg.textContent='❌ '+d.error;}
+}
+async function toggleBroker(id,s){await fetch(`/api/admin/brokers/${id}`,{method:'PUT',headers:H,body:JSON.stringify({is_active:s})});loadBrokers();}
+
+// ── FACTORIES ──
+async function loadFactories(){
+  const r=await fetch('/api/admin/factories'); const d=await r.json();
+  document.getElementById('f_count').textContent=d.length;
+  const tb=document.getElementById('f_list');
+  if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="4">No factories yet.</td></tr>';return;}
+  tb.innerHTML=d.map(f=>`<tr>
+    <td><div class="n">${f.name}</div></td>
+    <td><span class="pill">${f.broker_count} broker${f.broker_count!=1?'s':''}</span></td>
+    <td><span class="pill">${f.trade_count} trades</span></td>
+    <td><button class="ab a4" onclick="openEF(${f.id},'${esc(f.name)}')">✏️ Edit</button></td></tr>`).join('');
+}
+async function createFactory(){
+  const name=g('f_name'); const msg=document.getElementById('f_msg'); msg.className='msg';
+  if(!name){msg.className='msg err';msg.textContent='Factory name required.';return;}
+  const r=await fetch('/api/admin/factories',{method:'POST',headers:H,body:JSON.stringify({name})});
+  if(r.ok){msg.className='msg ok';msg.textContent='✅ Factory added!';document.getElementById('f_name').value='';loadFactories();init();}
+  else{const d=await r.json();msg.className='msg err';msg.textContent='❌ '+d.error;}
+}
+function openEF(id,name){document.getElementById('ef_id').value=id;document.getElementById('ef_name').value=name;document.getElementById('mEF').classList.add('show');}
+async function doEF(){const id=g('ef_id'),name=g('ef_name');if(!name)return;await fetch(`/api/admin/factories/${id}`,{method:'PUT',headers:H,body:JSON.stringify({name})});closeMov('mEF');loadFactories();init();}
+
+// ── WHOLESALERS ──
+async function loadWholesalers(){
+  const r=await fetch('/api/admin/wholesalers'); const d=await r.json();
+  document.getElementById('w_count').textContent=d.length;
+  const tb=document.getElementById('w_list');
+  if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="6">No wholesalers yet.</td></tr>';return;}
+  tb.innerHTML=d.map(w=>`<tr>
+    <td><div class="n">${w.name}</div><div class="s">${w.mobile}</div></td>
+    <td>${w.city||'<span style="color:#ddd">—</span>'}</td>
+    <td><span class="pill">${w.broker_count}</span></td>
+    <td><span class="pill">${w.trade_count}</span></td>
+    <td><span class="${w.is_active?'ba':'bi'}">${w.is_active?'Active':'Inactive'}</span></td>
+    <td>
+      <button class="ab a4" onclick='openEW(${JSON.stringify(w)})'>✏️</button>
+      <button class="ab a2" onclick="toggleW(${w.id},${!w.is_active})">${w.is_active?'Off':'On'}</button>
+    </td></tr>`).join('');
+}
+async function createWholesaler(){
+  const body={name:g('w_name'),mobile:g('w_mobile'),whatsapp_number:g('w_wa')||g('w_mobile'),city:g('w_city')};
+  const msg=document.getElementById('w_msg'); msg.className='msg';
+  if(!body.name||!body.mobile){msg.className='msg err';msg.textContent='Name and mobile required.';return;}
+  const r=await fetch('/api/admin/wholesalers',{method:'POST',headers:H,body:JSON.stringify(body)});
+  if(r.ok){msg.className='msg ok';msg.textContent='✅ Added!';['w_name','w_mobile','w_wa','w_city'].forEach(id=>document.getElementById(id).value='');loadWholesalers();}
+  else{const d=await r.json();msg.className='msg err';msg.textContent='❌ '+d.error;}
+}
+function openEW(w){document.getElementById('ew_id').value=w.id;document.getElementById('ew_name').value=w.name;document.getElementById('ew_mobile').value=w.mobile;document.getElementById('ew_wa2').value=w.whatsapp_number||'';document.getElementById('ew_city').value=w.city||'';document.getElementById('mEW').classList.add('show');}
+async function doEW(){const id=g('ew_id');const body={name:g('ew_name'),mobile:g('ew_mobile'),whatsapp_number:g('ew_wa2'),city:g('ew_city')};await fetch(`/api/admin/wholesalers/${id}`,{method:'PUT',headers:H,body:JSON.stringify(body)});closeMov('mEW');loadWholesalers();}
+async function toggleW(id,s){await fetch(`/api/admin/wholesalers/${id}`,{method:'PUT',headers:H,body:JSON.stringify({is_active:s})});loadWholesalers();}
+
+// ═══════════════════════════════════════════════════
+// ── ASSIGN DRAWER ───────────────────────────────
+// ═══════════════════════════════════════════════════
+async function openDrw(id,name){currentBroker=id;document.getElementById('dtitle').textContent='Assign — '+name;document.getElementById('dov').classList.add('show');await loadDrw(id);}
+function maybeCloseDrw(e){if(e.target===document.getElementById('dov'))closeDrw();}
+function closeDrw(){document.getElementById('dov').classList.remove('show');}
+async function loadDrw(id){
+  const [fr,wr]=await Promise.all([fetch(`/api/admin/brokers/${id}/factories`),fetch(`/api/admin/brokers/${id}/wholesalers`)]);
+  const fa=await fr.json(), wa=await wr.json();
+  document.getElementById('d_f').innerHTML=fa.length
+    ?fa.map(f=>`<div class="ar"><div><div class="an">${f.name}</div></div><button class="tb ${f.assigned?'on':'off'}" onclick="tAssign('factory',${id},${f.id},${f.assigned})">${f.assigned?'✅ Assigned':'+ Assign'}</button></div>`).join('')
+    :'<p style="color:#bbb;font-size:.8rem;">No factories — add from Factories tab first.</p>';
+  document.getElementById('d_w').innerHTML=wa.length
+    ?wa.map(w=>`<div class="ar"><div><div class="an">${w.name}</div><div class="as">${w.mobile||''}${w.city?' · '+w.city:''}</div></div><button class="tb ${w.assigned?'on':'off'}" onclick="tAssign('wholesaler',${id},${w.id},${w.assigned})">${w.assigned?'✅ Assigned':'+ Assign'}</button></div>`).join('')
+    :'<p style="color:#bbb;font-size:.8rem;">No wholesalers — add from Wholesalers tab first.</p>';
+}
+async function tAssign(type,bid,pid,assigned){
+  const base=`/api/admin/brokers/${bid}/${type==='factory'?'factories':'wholesalers'}`;
+  const method=assigned?'DELETE':'POST';
+  const url=assigned?`${base}/${pid}`:base;
+  const body=assigned?null:JSON.stringify({[type+'_id']:pid});
+  await fetch(url,{method,headers:H,body});loadDrw(bid);loadBrokers();
+}
+
+// ═══════════════════════════════════════════════════
+// ── MODALS ──────────────────────────────────────
+// ═══════════════════════════════════════════════════
+function openReset(id){document.getElementById('r_id').value=id;document.getElementById('r_pw').value='';document.getElementById('mReset').classList.add('show');}
+async function doReset(){const id=g('r_id'),pw=g('r_pw');if(!pw){alert('Enter a password');return;}await fetch(`/api/admin/brokers/${id}`,{method:'PUT',headers:H,body:JSON.stringify({password:pw})});closeMov('mReset');showToast('✅ Password reset');}
+function closeMov(id){document.getElementById(id).classList.remove('show');}
+document.querySelectorAll('.mov').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('show');}));
+
+// ═══════════════════════════════════════════════════
+// ── UTILS ───────────────────────────────────────
+// ═══════════════════════════════════════════════════
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;');}
+
+function showBanner(id,type,msg){
+  const el=document.getElementById(id);
+  el.className='banner '+type; el.textContent=msg;
+  setTimeout(()=>el.className='banner',5000);
+}
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show'+(type?' '+type:'');
+  setTimeout(()=>t.className='toast',3500);
+}
+
+// ─── START ───
+init();
+</script>
+</body>
+</html>

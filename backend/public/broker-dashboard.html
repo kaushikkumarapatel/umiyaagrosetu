@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — AgroSetu Broker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#f4f7f4;font-family:'Source Sans 3',sans-serif;min-height:100vh;}
+
+    /* ── NAV ── */
+    .nav{
+      background:#1e3d1a;padding:0 24px;
+      display:flex;align-items:center;justify-content:space-between;
+      height:58px;position:sticky;top:0;z-index:100;
+    }
+    .nav-brand{display:flex;align-items:center;gap:10px;color:#fff;}
+    .nav-brand span{font-size:1.1rem;font-weight:700;}
+    .nav-brand small{font-size:.75rem;color:#8dc98d;font-family:'Noto Sans Gujarati',sans-serif;}
+    .nav-actions{display:flex;gap:10px;align-items:center;}
+    .nav-broker{color:#a8d8a8;font-size:.82rem;}
+    .nav-btn{
+      padding:6px 16px;border-radius:7px;font-size:.8rem;
+      font-weight:600;cursor:pointer;border:none;font-family:inherit;
+      text-decoration:none;display:inline-block;
+    }
+    .btn-trade{background:#f5a623;color:#1e3d1a;}
+    .btn-logout{background:transparent;color:#aaa;border:1px solid #444;}
+    .btn-logout:hover{color:#fff;border-color:#888;}
+
+    /* ── MAIN ── */
+    .main{max-width:1100px;margin:0 auto;padding:28px 20px;}
+
+    /* ── SUMMARY CARDS ── */
+    .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;}
+    .summary-card{
+      background:#fff;border-radius:14px;padding:22px 24px;
+      border-left:4px solid #2d5a27;
+      box-shadow:0 2px 8px rgba(0,0,0,.06);
+    }
+    .summary-card.amber{border-left-color:#f5a623;}
+    .summary-card.total{border-left-color:#1565c0;background:linear-gradient(135deg,#1e3d1a,#2d5a27);color:#fff;}
+    .summary-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:6px;}
+    .summary-card.total .summary-label{color:#8dc98d;}
+    .summary-amount{font-size:1.9rem;font-weight:700;color:#1e3d1a;}
+    .summary-card.amber .summary-amount{color:#c8860a;}
+    .summary-card.total .summary-amount{color:#fff;}
+    .summary-sub{font-size:.74rem;color:#aaa;margin-top:4px;}
+    .summary-card.total .summary-sub{color:#8dc98d;}
+
+    /* ── SECTION HEADERS ── */
+    .section-header{
+      display:flex;align-items:center;justify-content:space-between;
+      margin:28px 0 14px;
+    }
+    .section-header h2{font-size:1rem;font-weight:700;color:#1e3d1a;}
+    .section-header .gu{font-family:'Noto Sans Gujarati',sans-serif;font-size:.82rem;color:#888;margin-left:8px;}
+
+    /* ── BALANCE TABLE ── */
+    .balance-table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+    .balance-table thead th{
+      background:#1e3d1a;color:#fff;
+      padding:12px 16px;font-size:.78rem;
+      font-weight:700;text-align:left;text-transform:uppercase;letter-spacing:.8px;
+    }
+    .balance-table tbody tr{border-bottom:1px solid #f0f4f0;transition:background .15s;}
+    .balance-table tbody tr:hover{background:#f8faf8;}
+    .balance-table tbody tr:last-child{border-bottom:none;}
+    .balance-table td{padding:14px 16px;font-size:.88rem;color:#333;vertical-align:middle;}
+    .party-name{font-weight:700;color:#1e3d1a;font-size:.92rem;}
+    .party-sub{font-size:.72rem;color:#aaa;margin-top:2px;}
+    .amount-earned{color:#2d5a27;font-weight:600;}
+    .amount-settled{color:#888;}
+    .amount-due{font-weight:700;font-size:.95rem;}
+    .amount-due.positive{color:#c0392b;}
+    .amount-due.zero{color:#2d9e5f;}
+    .trade-count{
+      background:#f0f4f0;color:#555;padding:3px 10px;
+      border-radius:20px;font-size:.72rem;font-weight:600;
+    }
+    .settle-btn{
+      padding:6px 14px;background:#f5f0e8;color:#c8860a;
+      border:1px solid #e0c070;border-radius:7px;
+      font-size:.75rem;font-weight:700;cursor:pointer;
+      font-family:inherit;transition:all .15s;
+    }
+    .settle-btn:hover{background:#f5a623;color:#1e3d1a;border-color:#f5a623;}
+
+    /* ── EMPTY STATE ── */
+    .empty{text-align:center;padding:48px 24px;color:#aaa;}
+    .empty-icon{font-size:2.5rem;margin-bottom:10px;}
+
+    /* ── TRADE COUNT badge ── */
+    .trades-today{
+      background:#e8f5e8;color:#2d5a27;
+      padding:4px 12px;border-radius:20px;
+      font-size:.75rem;font-weight:600;
+    }
+
+    /* ── SETTLEMENT MODAL ── */
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.5);
+      display:none;align-items:center;justify-content:center;z-index:200;
+    }
+    .modal-overlay.show{display:flex;}
+    .modal{
+      background:#fff;border-radius:16px;padding:36px 32px;
+      width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.2);
+    }
+    .modal h3{font-size:1.1rem;font-weight:700;color:#1e3d1a;margin-bottom:20px;}
+    .modal label{display:block;font-size:.8rem;font-weight:600;color:#555;margin-top:14px;margin-bottom:5px;}
+    .modal input,.modal textarea,.modal select{
+      width:100%;padding:10px 13px;border:1.5px solid #d0d8d0;
+      border-radius:8px;font-size:.9rem;font-family:inherit;
+    }
+    .modal input:focus,.modal textarea:focus{outline:none;border-color:#2d5a27;}
+    .modal-actions{display:flex;gap:10px;margin-top:22px;}
+    .modal-actions .btn-confirm{
+      flex:1;padding:11px;background:#2d5a27;color:#fff;
+      border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;
+    }
+    .modal-actions .btn-cancel{
+      flex:1;padding:11px;background:#f4f7f4;color:#666;
+      border:1px solid #d0d8d0;border-radius:8px;font-weight:600;cursor:pointer;font-family:inherit;
+    }
+    .fy-badge{
+      background:#f0f4f0;color:#2d5a27;padding:2px 10px;
+      border-radius:20px;font-size:.72rem;font-weight:600;margin-left:8px;
+    }
+
+    /* ── NAV TABS ── */
+    .tabs{display:flex;gap:4px;margin-bottom:24px;}
+    .tab{
+      padding:8px 18px;border-radius:8px;font-size:.83rem;font-weight:600;
+      cursor:pointer;border:none;font-family:inherit;transition:all .15s;
+      background:#e8f5e8;color:#2d5a27;
+    }
+    .tab.active{background:#2d5a27;color:#fff;}
+
+    @media(max-width:640px){
+      .summary-grid{grid-template-columns:1fr;}
+      .balance-table thead{display:none;}
+      .balance-table td{display:block;padding:8px 14px;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ─────────────────────────────────────── -->
+<nav class="nav">
+  <div class="nav-brand">
+    <span>🌾 AgroSetu</span>
+    <small id="brokerName">Broker Panel</small>
+  </div>
+  <div class="nav-actions">
+    <span class="nav-broker" id="navBroker"></span>
+    <a href="/broker/trade/new" class="nav-btn btn-trade">+ નવો ટ્રેડ</a>
+    <a href="/broker/trades"    class="nav-btn" style="background:#2d5a27;color:#fff;">📋 ટ્રેડ ઇતિહાસ</a>
+    <a href="/broker/report"    class="nav-btn" style="background:#1565c0;color:#fff;">📊 રિપોર્ટ</a>
+    <button class="nav-btn btn-logout" onclick="doLogout()">Logout</button>
+  </div>
+</nav>
+
+<!-- ── MAIN ─────────────────────────────────────── -->
+<main class="main">
+
+  <!-- Summary cards -->
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-label">🏭 Factory Balance Due</div>
+      <div class="summary-amount" id="factoryDue">Loading...</div>
+      <div class="summary-sub">Total owed by factories</div>
+    </div>
+    <div class="summary-card amber">
+      <div class="summary-label">🛒 Wholesaler Balance Due</div>
+      <div class="summary-amount" id="wholesalerDue">Loading...</div>
+      <div class="summary-sub">Total owed by wholesalers</div>
+    </div>
+    <div class="summary-card total">
+      <div class="summary-label">💰 Total Outstanding</div>
+      <div class="summary-amount" id="totalDue">Loading...</div>
+      <div class="summary-sub" id="fyLabel">Financial Year 2025-26</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('factories')">🏭 Factories (<span id="factoryCount">0</span>)</button>
+    <button class="tab" onclick="showTab('wholesalers')">🛒 Wholesalers (<span id="wholesalerCount">0</span>)</button>
+  </div>
+
+  <!-- Factory balances -->
+  <div id="tab-factories">
+    <div class="section-header">
+      <h2>Factory Brokerage Balance <span class="gu">ફેક્ટરી ઉધારી</span></h2>
+    </div>
+    <table class="balance-table">
+      <thead>
+        <tr>
+          <th>Factory Name</th>
+          <th>Trades</th>
+          <th>Earned</th>
+          <th>Settled</th>
+          <th>Balance Due</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="factoryBody">
+        <tr><td colspan="6" class="empty"><div class="empty-icon">⏳</div>Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Wholesaler balances -->
+  <div id="tab-wholesalers" style="display:none;">
+    <div class="section-header">
+      <h2>Wholesaler Brokerage Balance <span class="gu">વ્યાપારી ઉધારી</span></h2>
+    </div>
+    <table class="balance-table">
+      <thead>
+        <tr>
+          <th>Wholesaler Name</th>
+          <th>Trades</th>
+          <th>Earned</th>
+          <th>Settled</th>
+          <th>Balance Due</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="wholesalerBody">
+        <tr><td colspan="6" class="empty"><div class="empty-icon">⏳</div>Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<!-- ── SETTLEMENT MODAL ─────────────────────────── -->
+<div class="modal-overlay" id="settleModal">
+  <div class="modal">
+    <h3>💰 Mark Settlement — ચૂકવણી નોંધો</h3>
+    <input type="hidden" id="s_party_type"/>
+    <input type="hidden" id="s_party_id"/>
+
+    <label>Party</label>
+    <input type="text" id="s_party_name" readonly style="background:#f8f8f8;"/>
+
+    <label>Amount Settled (₹) — ચૂકવેલ રકમ</label>
+    <input type="number" id="s_amount" placeholder="e.g. 5000" min="1"/>
+
+    <label>Settlement Date</label>
+    <input type="date" id="s_date"/>
+
+    <label>Remarks (optional)</label>
+    <input type="text" id="s_remarks" placeholder="Cash / NEFT / Cheque no."/>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" onclick="confirmSettle()">✅ Confirm Settlement</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const fmt = n => '₹' + parseFloat(n||0).toLocaleString('en-IN', {minimumFractionDigits:0, maximumFractionDigits:0});
+
+let dashData = null;
+
+async function loadDashboard(){
+  try{
+    const res  = await fetch('/api/broker/dashboard');
+    if(res.status===401){ window.location.href='/broker/login'; return; }
+    const data = await res.json();
+    dashData   = data;
+
+    document.getElementById('factoryDue').textContent    = fmt(data.summary.total_factory_due);
+    document.getElementById('wholesalerDue').textContent = fmt(data.summary.total_wholesaler_due);
+    document.getElementById('totalDue').textContent      = fmt(data.summary.total_outstanding);
+    document.getElementById('factoryCount').textContent  = data.factories.length;
+    document.getElementById('wholesalerCount').textContent = data.wholesalers.length;
+
+    renderFactories(data.factories);
+    renderWholesalers(data.wholesalers);
+
+  } catch(e){ console.error(e); }
+}
+
+async function loadBrokerInfo(){
+  try{
+    const res  = await fetch('/api/broker/me');
+    const data = await res.json();
+    document.getElementById('brokerName').textContent = data.name;
+    document.getElementById('navBroker').textContent  = '👤 ' + data.name;
+  } catch(e){}
+}
+
+function renderFactories(rows){
+  const tbody = document.getElementById('factoryBody');
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="6" class="empty"><div class="empty-icon">🏭</div>No factories assigned yet.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td><div class="party-name">${r.name}</div>
+          <div class="party-sub">Last trade: ${r.last_trade_date ? new Date(r.last_trade_date).toLocaleDateString('en-IN') : 'No trades yet'}</div></td>
+      <td><span class="trade-count">${r.trade_count} trades</span></td>
+      <td class="amount-earned">${fmt(r.total_earned)}</td>
+      <td class="amount-settled">${fmt(r.total_settled)}</td>
+      <td class="${parseFloat(r.balance_due)>0?'amount-due positive':'amount-due zero'}">${fmt(r.balance_due)}</td>
+      <td>${parseFloat(r.balance_due)>0
+        ? `<button class="settle-btn" onclick="openSettle('factory',${r.id},'${r.name}',${r.balance_due})">💰 Settle</button>`
+        : '<span style="color:#2d9e5f;font-size:.78rem;">✅ Clear</span>'}</td>
+    </tr>
+  `).join('');
+}
+
+function renderWholesalers(rows){
+  const tbody = document.getElementById('wholesalerBody');
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="6" class="empty"><div class="empty-icon">🛒</div>No wholesalers assigned yet.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td><div class="party-name">${r.name}</div>
+          <div class="party-sub">${r.mobile||''} · Last: ${r.last_trade_date ? new Date(r.last_trade_date).toLocaleDateString('en-IN') : 'No trades'}</div></td>
+      <td><span class="trade-count">${r.trade_count} trades</span></td>
+      <td class="amount-earned">${fmt(r.total_earned)}</td>
+      <td class="amount-settled">${fmt(r.total_settled)}</td>
+      <td class="${parseFloat(r.balance_due)>0?'amount-due positive':'amount-due zero'}">${fmt(r.balance_due)}</td>
+      <td>${parseFloat(r.balance_due)>0
+        ? `<button class="settle-btn" onclick="openSettle('wholesaler',${r.id},'${r.name}',${r.balance_due})">💰 Settle</button>`
+        : '<span style="color:#2d9e5f;font-size:.78rem;">✅ Clear</span>'}</td>
+    </tr>
+  `).join('');
+}
+
+function showTab(tab){
+  document.getElementById('tab-factories').style.display   = tab==='factories'   ? '' : 'none';
+  document.getElementById('tab-wholesalers').style.display = tab==='wholesalers' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active', (i===0&&tab==='factories')||(i===1&&tab==='wholesalers'));
+  });
+}
+
+function openSettle(type, id, name, balanceDue){
+  document.getElementById('s_party_type').value = type;
+  document.getElementById('s_party_id').value   = id;
+  document.getElementById('s_party_name').value = name;
+  document.getElementById('s_amount').value     = Math.round(balanceDue);
+  document.getElementById('s_date').value       = new Date().toISOString().split('T')[0];
+  document.getElementById('s_remarks').value    = '';
+  document.getElementById('settleModal').classList.add('show');
+}
+function closeModal(){ document.getElementById('settleModal').classList.remove('show'); }
+
+async function confirmSettle(){
+  const payload = {
+    party_type:      document.getElementById('s_party_type').value,
+    party_id:        document.getElementById('s_party_id').value,
+    amount_settled:  document.getElementById('s_amount').value,
+    settlement_date: document.getElementById('s_date').value,
+    remarks:         document.getElementById('s_remarks').value,
+  };
+  try{
+    const res = await fetch('/api/broker/settlements', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+    });
+    if(res.ok){ closeModal(); loadDashboard(); }
+    else{ const d=await res.json(); alert('Error: '+d.error); }
+  } catch(e){ alert('Server error'); }
+}
+
+async function doLogout(){
+  await fetch('/api/broker/logout',{method:'POST'});
+  window.location.href='/broker/login';
+}
+
+// Init
+loadBrokerInfo();
+loadDashboard();
+</script>
+</body>
+</html>

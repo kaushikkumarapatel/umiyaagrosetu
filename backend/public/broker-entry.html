@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trade Entry — AgroSetu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #f4f7f4;
+      --surface:  #ffffff;
+      --green:    #1e6b3c;
+      --green2:   #2d9e5f;
+      --green3:   #e8f5ee;
+      --green4:   #d0eddd;
+      --amber:    #f59e0b;
+      --amber2:   #fef3c7;
+      --red:      #dc2626;
+      --red2:     #fef2f2;
+      --text:     #1a2e1a;
+      --text2:    #4a6741;
+      --text3:    #8aab85;
+      --border:   #d4e6d4;
+      --border2:  #b8d4b8;
+      --mono:     'DM Mono', monospace;
+      --sans:     'Outfit', sans-serif;
+      --sh:       0 2px 12px rgba(30,107,60,.08);
+      --sh2:      0 8px 32px rgba(30,107,60,.14);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); font-family: var(--sans); color: var(--text); min-height: 100vh; }
+
+    /* ── NAV ── */
+    .nav {
+      background: var(--green);
+      height: 54px; padding: 0 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: 0 2px 12px rgba(0,0,0,.2);
+    }
+    .nav-left { display: flex; align-items: center; gap: 20px; }
+    .nav-brand { color: #fff; font-size: .95rem; font-weight: 700; }
+    .nav-links { display: flex; gap: 6px; }
+    .nav-link {
+      color: rgba(255,255,255,.7); text-decoration: none;
+      padding: 5px 12px; border-radius: 6px;
+      font-size: .78rem; font-weight: 500; transition: all .15s;
+    }
+    .nav-link:hover, .nav-link.active { background: rgba(255,255,255,.15); color: #fff; }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .broker-name { color: rgba(255,255,255,.8); font-size: .8rem; }
+
+    /* ── PAGE ── */
+    .page { max-width: 1400px; margin: 0 auto; padding: 24px 16px 60px; }
+    .page-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+    .page-title { font-size: 1.3rem; font-weight: 700; color: var(--green); }
+    .page-sub { font-size: .8rem; color: var(--text3); margin-top: 3px; font-family: var(--mono); }
+    .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding: 9px 18px; border-radius: 8px; font-size: .82rem; font-weight: 600;
+      cursor: pointer; border: none; font-family: var(--sans); display: flex; align-items: center; gap: 6px;
+      transition: all .15s; white-space: nowrap;
+    }
+    .btn-primary   { background: var(--green); color: #fff; }
+    .btn-primary:hover { background: #155230; }
+    .btn-primary:disabled { background: var(--text3); cursor: not-allowed; }
+    .btn-secondary { background: var(--surface); color: var(--text2); border: 1.5px solid var(--border2); }
+    .btn-secondary:hover { border-color: var(--green); color: var(--green); }
+    .btn-amber     { background: var(--amber); color: #fff; }
+    .btn-amber:hover { background: #d97706; }
+    .btn-ghost     { background: transparent; color: var(--text3); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { color: var(--red); border-color: var(--red); }
+    .btn-sm        { padding: 5px 12px; font-size: .75rem; }
+
+    /* ── TOTALS BAR ── */
+    .totals-bar {
+      display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .total-chip {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 10px 18px;
+      display: flex; flex-direction: column; gap: 2px;
+      box-shadow: var(--sh);
+    }
+    .total-chip.earned { border-color: var(--green2); background: var(--green3); }
+    .total-chip label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--text3); }
+    .total-chip .val { font-family: var(--mono); font-size: 1.05rem; font-weight: 500; color: var(--text); }
+    .total-chip.earned .val { color: var(--green); }
+
+    /* ── SHORTCUTS HINT ── */
+    .shortcuts {
+      display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .shortcut { font-size: .7rem; color: var(--text3); display: flex; align-items: center; gap: 5px; }
+    .kbd {
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 4px; padding: 1px 6px; font-family: var(--mono); font-size: .68rem;
+      color: var(--text2); box-shadow: 0 1px 2px rgba(0,0,0,.08);
+    }
+
+    /* ── TABLE WRAPPER ── */
+    .table-wrap {
+      background: var(--surface); border-radius: 14px; overflow: hidden;
+      box-shadow: var(--sh2); border: 1.5px solid var(--border);
+    }
+    .grid-header {
+      background: var(--green); display: grid;
+      grid-template-columns: 130px 1fr 1fr 1fr 90px 110px 120px 1fr 36px;
+      gap: 0; padding: 0;
+    }
+    .gh {
+      padding: 11px 10px; font-size: .68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .9px; color: rgba(255,255,255,.85);
+      border-right: 1px solid rgba(255,255,255,.1);
+    }
+    .gh:last-child { border-right: none; text-align: center; }
+
+    /* ── ROWS ── */
+    #grid-body { display: flex; flex-direction: column; }
+    .grid-row {
+      display: grid;
+      grid-template-columns: 130px 1fr 1fr 1fr 90px 110px 120px 1fr 36px;
+      border-bottom: 1px solid var(--border);
+      transition: background .1s;
+      position: relative;
+    }
+    .grid-row:last-child { border-bottom: none; }
+    .grid-row:hover { background: #fafcfa; }
+    .grid-row.saved-row { background: var(--green3); }
+    .grid-row.saved-row:hover { background: var(--green4); }
+    .grid-row.error-row { background: var(--red2); }
+
+    /* Factory group accent */
+    .grid-row.group-start { border-top: 2px solid var(--green2); }
+    .grid-row .group-bar {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      background: var(--green2); border-radius: 3px 0 0 3px;
+    }
+
+    /* ── CELLS ── */
+    .cell {
+      border-right: 1px solid var(--border);
+      padding: 0; position: relative; display: flex; align-items: stretch;
+    }
+    .cell:last-child { border-right: none; justify-content: center; align-items: center; }
+    .cell input[type="text"],
+    .cell input[type="number"],
+    .cell input[type="date"] {
+      width: 100%; height: 100%; min-height: 44px;
+      padding: 8px 10px; border: none; outline: none;
+      font-family: var(--sans); font-size: .84rem; color: var(--text);
+      background: transparent; cursor: pointer;
+    }
+    .cell input[type="number"] { font-family: var(--mono); text-align: right; }
+    .cell input:focus { background: #f0fbf4; }
+
+    /* Date cell */
+    .cell-date input[type="date"] {
+      font-family: var(--mono); font-size: .82rem; cursor: pointer;
+      color-scheme: light;
+    }
+    .cell-date input[type="date"]::-webkit-calendar-picker-indicator {
+      opacity: .5; cursor: pointer; width: 14px;
+    }
+
+    /* Brokerage cell (read-only) */
+    .cell-brk {
+      background: var(--green3);
+      display: flex; align-items: center; justify-content: flex-end;
+      padding: 0 12px;
+    }
+    .cell-brk span { font-family: var(--mono); font-size: .88rem; font-weight: 500; color: var(--green); }
+
+    /* Remarks */
+    .cell-remarks input { font-size: .8rem; color: var(--text2); }
+
+    /* Delete btn */
+    .del-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text3); font-size: 1rem; padding: 6px;
+      border-radius: 5px; transition: all .15s; line-height: 1;
+    }
+    .del-btn:hover { color: var(--red); background: var(--red2); }
+
+    /* ── CUSTOM DROPDOWN ── */
+    .dd-wrap { position: relative; width: 100%; height: 100%; }
+    .dd-input {
+      width: 100%; height: 100%; min-height: 44px;
+      padding: 8px 28px 8px 10px; border: none; outline: none;
+      font-family: var(--sans); font-size: .84rem; color: var(--text);
+      background: transparent; cursor: pointer;
+    }
+    .dd-input:focus { background: #f0fbf4; }
+    .dd-arrow {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      pointer-events: none; color: var(--text3); font-size: .7rem;
+    }
+    .dd-list {
+      position: fixed; z-index: 200;
+      background: var(--surface); border: 1.5px solid var(--border2);
+      border-radius: 10px; box-shadow: var(--sh2);
+      min-width: 200px; max-width: 340px;
+      overflow: hidden; display: none;
+    }
+    .dd-list.open { display: block; }
+    .dd-search {
+      width: 100%; padding: 9px 12px;
+      border: none; border-bottom: 1px solid var(--border);
+      outline: none; font-family: var(--sans); font-size: .82rem;
+      color: var(--text);
+    }
+    .dd-options { max-height: 200px; overflow-y: auto; }
+    .dd-opt {
+      padding: 9px 14px; font-size: .84rem; cursor: pointer;
+      transition: background .1s;
+      display: flex; flex-direction: column;
+    }
+    .dd-opt:hover, .dd-opt.highlighted { background: var(--green3); }
+    .dd-opt .opt-name { color: var(--text); font-weight: 500; }
+    .dd-opt .opt-sub  { color: var(--text3); font-size: .7rem; margin-top: 1px; }
+    .dd-opt.selected  { background: var(--green3); }
+    .dd-opt.selected .opt-name { color: var(--green); }
+    .dd-empty { padding: 14px; text-align: center; color: var(--text3); font-size: .8rem; }
+
+    /* ── ADD ROW ── */
+    .add-row-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px; cursor: pointer; border: none;
+      background: transparent; font-family: var(--sans);
+      font-size: .8rem; color: var(--text3); width: 100%;
+      border-top: 1px dashed var(--border2); transition: all .15s;
+    }
+    .add-row-btn:hover { background: var(--green3); color: var(--green); }
+
+    /* ── SAVE TOAST ── */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 500;
+      background: var(--green); color: #fff;
+      padding: 13px 22px; border-radius: 10px;
+      font-size: .88rem; font-weight: 600;
+      box-shadow: 0 8px 32px rgba(30,107,60,.35);
+      transform: translateY(80px); opacity: 0;
+      transition: all .25s cubic-bezier(.34,1.56,.64,1);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.err  { background: var(--red); }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      padding: 48px 20px; text-align: center; color: var(--text3);
+    }
+    .empty-state .icon { font-size: 2.4rem; margin-bottom: 10px; }
+    .empty-state p { font-size: .9rem; }
+
+    /* ── STATUS DOT ── */
+    .row-status {
+      position: absolute; left: 6px; top: 50%; transform: translateY(-50%);
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--border2);
+    }
+    .row-status.filled { background: var(--amber); }
+    .row-status.saved  { background: var(--green2); }
+
+    /* ── SAVED TRADES LIST ── */
+    .saved-section { margin-top: 28px; }
+    .saved-section h2 { font-size: 1rem; font-weight: 700; color: var(--text2); margin-bottom: 14px; }
+    .saved-table { background: var(--surface); border-radius: 12px; overflow: hidden; box-shadow: var(--sh); border: 1.5px solid var(--border); }
+    .st-head { background: #f4f7f4; display: grid; grid-template-columns: 100px 1fr 1fr 1fr 80px 100px 100px; border-bottom: 1px solid var(--border); }
+    .st-head span, .st-row span { padding: 9px 12px; font-size: .72rem; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .7px; }
+    .st-row { display: grid; grid-template-columns: 100px 1fr 1fr 1fr 80px 100px 100px 1fr 40px; border-bottom: 1px solid #f0f4f0; }
+    .st-head { background: #f4f7f4; display: grid; grid-template-columns: 100px 1fr 1fr 1fr 80px 100px 100px 1fr 40px; border-bottom: 1px solid var(--border); }
+    .st-row:last-child { border-bottom: none; }
+    .st-row span { font-size: .83rem; color: var(--text); align-self: center; }
+    .st-row .num { font-family: var(--mono); text-align: right; }
+    .st-row .green { color: var(--green); font-weight: 600; }
+    .st-row:hover { background: #fafcfa; }
+
+    @media (max-width: 900px) {
+      .grid-header, .grid-row { grid-template-columns: 120px 140px 140px 120px 80px 100px 110px 120px 36px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-left">
+    <div class="nav-brand">🌾 AgroSetu</div>
+    <div class="nav-links">
+      <a href="/broker/dashboard" class="nav-link">Dashboard</a>
+      <a href="/broker/entry"     class="nav-link active">Trade Entry</a>
+      <a href="/broker/trades"    class="nav-link">History</a>
+    </div>
+  </div>
+  <div class="nav-right">
+    <span class="broker-name" id="brokerName">Loading…</span>
+    <button class="btn btn-sm btn-ghost" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <div class="page-title">📋 Trade Entry Sheet</div>
+      <div class="page-sub">Tab through cells · Enter to add row · Ctrl+S to save</div>
+    </div>
+    <div class="head-actions">
+      <button class="btn btn-secondary" onclick="addRow()">+ Add Row</button>
+      <button class="btn btn-ghost"     onclick="clearUnsaved()">Clear All</button>
+      <button class="btn btn-primary"   onclick="saveAll()" id="saveBtn" disabled>
+        <span>💾</span> Save All (<span id="unsavedCount">0</span>)
+      </button>
+    </div>
+  </div>
+
+  <!-- TOTALS BAR -->
+  <div class="totals-bar">
+    <div class="total-chip">
+      <label>Rows in Sheet</label>
+      <div class="val" id="tot_rows">0</div>
+    </div>
+    <div class="total-chip">
+      <label>Total Bags</label>
+      <div class="val" id="tot_bags">0</div>
+    </div>
+    <div class="total-chip">
+      <label>Gross Value</label>
+      <div class="val" id="tot_value">₹0</div>
+    </div>
+    <div class="total-chip earned">
+      <label>🏦 Brokerage Earned</label>
+      <div class="val" id="tot_brk">₹0</div>
+    </div>
+  </div>
+
+  <!-- KEYBOARD HINTS -->
+  <div class="shortcuts">
+    <span class="shortcut"><span class="kbd">Tab</span> Next cell</span>
+    <span class="shortcut"><span class="kbd">Enter</span> Add new row</span>
+    <span class="shortcut"><span class="kbd">Ctrl+S</span> Save all</span>
+    <span class="shortcut"><span class="kbd">Ctrl+Del</span> Delete row</span>
+    <span class="shortcut"><span class="kbd">↑↓</span> Navigate dropdown</span>
+  </div>
+
+  <!-- GRID -->
+  <div class="table-wrap">
+    <div class="grid-header">
+      <div class="gh">📅 Date</div>
+      <div class="gh">🏭 Factory</div>
+      <div class="gh">🛒 Wholesaler</div>
+      <div class="gh">🌾 Commodity</div>
+      <div class="gh" style="text-align:right">Bags</div>
+      <div class="gh" style="text-align:right">Price/Bag</div>
+      <div class="gh" style="text-align:right">Brokerage</div>
+      <div class="gh">Remarks</div>
+      <div class="gh" style="text-align:center">✕</div>
+    </div>
+    <div id="grid-body"></div>
+    <button class="add-row-btn" onclick="addRow()">＋ Add Row</button>
+  </div>
+
+  <!-- SAVED TODAY -->
+  <div class="saved-section">
+    <h2>✅ Saved Trades — This Session</h2>
+    <div class="saved-table">
+      <div class="st-head">
+        <span>Date</span><span>Factory</span><span>Wholesaler</span>
+        <span>Commodity</span><span style="text-align:right">Bags</span>
+        <span style="text-align:right">Price</span><span style="text-align:right">Brokerage</span>
+        <span>Remarks</span><span></span>
+      </div>
+      <div id="saved-list"><div style="padding:24px;text-align:center;color:#bbb;font-size:.82rem;">No trades saved yet in this session.</div></div>
+    </div>
+  </div>
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════
+let factories   = [];
+let wholesalers = [];
+let commodities = [];
+let rowData     = [];   // [{id, date, factory_id, wholesaler_id, commodity_id, bags, price, remarks, saved}]
+let sessionSaved= [];
+let rowIdSeq    = 0;
+const BROK_RATE = 2; // ₹2 per bag per party = ₹4 total
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+async function init() {
+  try {
+    const [meRes, ddRes] = await Promise.all([
+      fetch('/api/broker/me'),
+      fetch('/api/broker/dropdowns')
+    ]);
+    if (!meRes.ok) { window.location='/broker/login'; return; }
+    const me = await meRes.json();
+    document.getElementById('brokerName').textContent = me.name;
+
+    const dd = await ddRes.json();
+    factories   = dd.factories   || [];
+    wholesalers = dd.wholesalers || [];
+    commodities = dd.commodities || [];
+
+    addRow(); // start with one empty row
+  } catch(e) {
+    showToast('Could not load data', true);
+  }
+}
+
+// ══════════════════════════════════════════════════
+// ROW MANAGEMENT
+// ══════════════════════════════════════════════════
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function lastDate() {
+  const filled = rowData.filter(r => r.date);
+  return filled.length ? filled[filled.length-1].date : today();
+}
+
+function addRow(afterId = null) {
+  const id    = ++rowIdSeq;
+  const date  = lastDate();
+  const data  = { id, date, factory_id:null, wholesaler_id:null, commodity_id:null, bags:'', price:'', remarks:'', saved:false };
+  if (afterId) {
+    const idx = rowData.findIndex(r => r.id === afterId);
+    // Copy factory+commodity+date from previous row for speed
+    if(idx >= 0){
+      data.date         = rowData[idx].date;
+      data.factory_id   = rowData[idx].factory_id;
+      data.commodity_id = rowData[idx].commodity_id;
+      // deliberately NOT copying price or wholesaler — each row needs explicit entry
+    }
+    rowData.splice(idx+1, 0, data);
+  } else {
+    rowData.push(data);
+  }
+  renderGrid();
+  // Focus the date cell of new row
+  setTimeout(() => {
+    const row = document.querySelector(`[data-rowid="${id}"]`);
+    if (row) {
+      const firstInput = row.querySelector('.cell-date input') || row.querySelector('.dd-input');
+      if (firstInput) firstInput.focus();
+    }
+  }, 30);
+  return id;
+}
+
+function deleteRow(id) {
+  if(rowData.length === 1){
+    rowData[0] = {id:rowData[0].id,date:today(),factory_id:null,wholesaler_id:null,commodity_id:null,bags:'',price:'',remarks:'',saved:false};
+    renderGrid(); return;
+  }
+  rowData = rowData.filter(r => r.id !== id);
+  // Also remove from sessionSaved if it was saved
+  const prev = sessionSaved.length;
+  sessionSaved = sessionSaved.filter(r => r.id !== id);
+  renderGrid();
+  if(sessionSaved.length !== prev) renderSavedList();
+}
+
+function getRow(id) { return rowData.find(r => r.id === id); }
+
+// ══════════════════════════════════════════════════
+// RENDER GRID
+// ══════════════════════════════════════════════════
+function renderGrid() {
+  const body = document.getElementById('grid-body');
+  body.innerHTML = '';
+  if(rowData.length === 0){ body.innerHTML='<div class="empty-state"><div class="icon">📋</div><p>No rows yet. Click "+ Add Row" to start.</p></div>'; updateTotals(); return; }
+  rowData.forEach((row, idx) => {
+    const prevRow = idx > 0 ? rowData[idx-1] : null;
+    const groupStart = !prevRow || prevRow.factory_id !== row.factory_id || prevRow.date !== row.date;
+    const el = document.createElement('div');
+    el.className = 'grid-row' + (row.saved?' saved-row':'') + (groupStart&&row.factory_id?' group-start':'');
+    el.dataset.rowid = row.id;
+
+    const fName = row.factory_id   ? (factories.find(f=>f.id==row.factory_id)||{name:''}).name   : '';
+    const wName = row.wholesaler_id ? (wholesalers.find(w=>w.id==row.wholesaler_id)||{name:''}).name : '';
+    const cName = row.commodity_id  ? (commodities.find(c=>c.id==row.commodity_id)||{name:''}).name  : '';
+    const brk   = row.bags && !isNaN(row.bags) ? row.bags * BROK_RATE * 2 : 0;
+
+    el.innerHTML = `
+      ${row.factory_id ? '<div class="group-bar"></div>' : ''}
+      <div class="cell cell-date">
+        <input type="date" value="${row.date||today()}" data-field="date" data-rid="${row.id}"
+          onchange="updateField(${row.id},'date',this.value)"
+          onfocus="lastFocusedRowId=${row.id}"
+          onkeydown="cellKey(event,${row.id},'date')"/>
+      </div>
+      <div class="cell">${buildDD(row.id,'factory', factories, fName,  row.factory_id, 'Search factory…', 'factory_id')}</div>
+      <div class="cell">${buildDD(row.id,'wholesaler', wholesalers, wName, row.wholesaler_id, 'Search wholesaler…', 'wholesaler_id')}</div>
+      <div class="cell">${buildDD(row.id,'commodity', commodities, cName, row.commodity_id, 'Search commodity…', 'commodity_id')}</div>
+      <div class="cell">
+        <input type="number" value="${row.bags||''}" placeholder="0" min="1"
+          data-field="bags" data-rid="${row.id}"
+          oninput="updateField(${row.id},'bags',this.value)"
+          onkeydown="cellKey(event,${row.id},'bags')" style="font-family:var(--mono);text-align:right"/>
+      </div>
+      <div class="cell">
+        <input type="number" value="${row.price||''}" placeholder="₹0" min="0"
+          data-field="price" data-rid="${row.id}"
+          oninput="updateField(${row.id},'price',this.value)"
+          onkeydown="cellKey(event,${row.id},'price')" style="font-family:var(--mono);text-align:right"/>
+      </div>
+      <div class="cell cell-brk">
+        <span id="brk_${row.id}">${brk > 0 ? '₹'+brk.toLocaleString('en-IN') : '—'}</span>
+      </div>
+      <div class="cell cell-remarks">
+        <input type="text" value="${row.remarks||''}" placeholder="Optional remarks…"
+          data-field="remarks" data-rid="${row.id}"
+          onchange="updateField(${row.id},'remarks',this.value)"
+          onkeydown="cellKey(event,${row.id},'remarks')"/>
+      </div>
+      <div class="cell">
+        <button class="del-btn" onclick="deleteRow(${row.id})" title="Delete row">✕</button>
+      </div>
+    `;
+    body.appendChild(el);
+  });
+  updateTotals();
+  updateSaveBtn();
+}
+
+// ══════════════════════════════════════════════════
+// CUSTOM DROPDOWN
+// ══════════════════════════════════════════════════
+let openDd = null;
+
+function buildDD(rowId, type, options, currentLabel, currentVal, placeholder, fieldKey) {
+  return `
+    <div class="dd-wrap" id="ddwrap_${rowId}_${type}">
+      <input type="text" class="dd-input" readonly
+        value="${escHtml(currentLabel)}"
+        placeholder="${placeholder}"
+        data-rowid="${rowId}" data-type="${type}" data-field="${fieldKey}"
+        data-val="${currentVal||''}"
+        onclick="openDropdown(event,${rowId},'${type}')"
+        onkeydown="ddKeydown(event,${rowId},'${type}')"
+        autocomplete="off"/>
+      <span class="dd-arrow">▾</span>
+    </div>
+  `;
+}
+
+function openDropdown(e, rowId, type) {
+  e.stopPropagation();
+  closeAllDropdowns();
+
+  const wrap  = document.getElementById(`ddwrap_${rowId}_${type}`);
+  const input = wrap.querySelector('.dd-input');
+  const rect  = input.getBoundingClientRect();
+
+  const list  = document.createElement('div');
+  list.className = 'dd-list open';
+  list.id = `ddlist_${rowId}_${type}`;
+  list.style.cssText = `top:${rect.bottom+window.scrollY+4}px;left:${rect.left+window.scrollX}px;width:${Math.max(rect.width,220)}px`;
+  list.dataset.rowid  = rowId;
+  list.dataset.type   = type;
+
+  const options = type==='factory' ? factories : type==='wholesaler' ? wholesalers : commodities;
+  const currentVal = input.dataset.val;
+
+  list.innerHTML = `
+    <input type="text" class="dd-search" placeholder="Type to filter…" id="ddsearch_${rowId}_${type}"
+      oninput="filterDd('${rowId}','${type}',this.value)"
+      onkeydown="ddListKey(event,'${rowId}','${type}')"/>
+    <div class="dd-options" id="ddopts_${rowId}_${type}">
+      ${renderOpts(rowId, type, options, currentVal, '')}
+    </div>
+  `;
+  document.body.appendChild(list);
+  openDd = { rowId, type, list };
+
+  // Focus search
+  setTimeout(()=>{
+    const s = document.getElementById(`ddsearch_${rowId}_${type}`);
+    if(s) s.focus();
+  },10);
+}
+
+function renderOpts(rowId, type, options, currentVal, filter) {
+  const filtered = filter
+    ? options.filter(o => o.name.toLowerCase().includes(filter.toLowerCase()))
+    : options;
+  if(!filtered.length) return '<div class="dd-empty">No results found</div>';
+  return filtered.map((o,i) =>
+    `<div class="dd-opt${o.id==currentVal?' selected':''}" data-id="${o.id}" data-name="${escHtml(o.name)}"
+      onclick="selectOpt(${rowId},'${type}',${o.id},'${escHtml(o.name)}')"
+      onmouseenter="setHighlight(this)">
+      <span class="opt-name">${o.name}</span>
+      ${o.city?`<span class="opt-sub">${o.city}</span>`:''}
+      ${o.mobile?`<span class="opt-sub">${o.mobile}</span>`:''}
+    </div>`
+  ).join('');
+}
+
+function filterDd(rowId, type, val) {
+  const options = type==='factory' ? factories : type==='wholesaler' ? wholesalers : commodities;
+  const wrap    = document.getElementById(`ddwrap_${rowId}_${type}`);
+  const cur     = wrap ? wrap.querySelector('.dd-input').dataset.val : '';
+  const opts    = document.getElementById(`ddopts_${rowId}_${type}`);
+  if(opts) opts.innerHTML = renderOpts(rowId, type, options, cur, val);
+}
+
+function setHighlight(el) {
+  const parent = el.parentElement;
+  parent.querySelectorAll('.highlighted').forEach(e=>e.classList.remove('highlighted'));
+  el.classList.add('highlighted');
+}
+
+function ddListKey(e, rowId, type) {
+  const opts = document.getElementById(`ddopts_${rowId}_${type}`);
+  if(!opts) return;
+  const items = Array.from(opts.querySelectorAll('.dd-opt'));
+  const cur   = opts.querySelector('.highlighted');
+  let idx     = cur ? items.indexOf(cur) : -1;
+  if(e.key==='ArrowDown'){ e.preventDefault(); idx=Math.min(idx+1,items.length-1); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); idx=Math.max(idx-1,0); }
+  else if(e.key==='Enter' && cur){ e.preventDefault(); cur.click(); return; }
+  else if(e.key==='Escape'){ closeAllDropdowns(); return; }
+  items.forEach(i=>i.classList.remove('highlighted'));
+  if(items[idx]){ items[idx].classList.add('highlighted'); items[idx].scrollIntoView({block:'nearest'}); }
+}
+
+function ddKeydown(e, rowId, type) {
+  if(e.key==='Tab'||e.key==='ArrowDown') { e.preventDefault(); openDropdown(e, rowId, type); }
+}
+
+function selectOpt(rowId, type, id, name) {
+  const fieldKey = type==='factory'?'factory_id':type==='wholesaler'?'wholesaler_id':'commodity_id';
+  updateField(rowId, fieldKey, id);
+  // Update display input
+  const wrap = document.getElementById(`ddwrap_${rowId}_${type}`);
+  if(wrap){
+    const inp = wrap.querySelector('.dd-input');
+    inp.value      = name;
+    inp.dataset.val = id;
+  }
+  closeAllDropdowns();
+  // Move focus to next cell
+  focusNextCell(rowId, fieldKey);
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.dd-list').forEach(el=>el.remove());
+  openDd = null;
+}
+document.addEventListener('click', e => {
+  if(!e.target.closest('.dd-wrap') && !e.target.closest('.dd-list')) closeAllDropdowns();
+});
+
+// ══════════════════════════════════════════════════
+// FIELD UPDATE
+// ══════════════════════════════════════════════════
+function updateField(rowId, field, val) {
+  const row = getRow(rowId);
+  if(!row) return;
+  row[field] = field==='bags' ? (val===''?'':parseInt(val)) : field==='price' ? (val===''?'':parseFloat(val)) : val;
+  // Update brokerage display
+  const brk = row.bags && !isNaN(row.bags) ? row.bags * BROK_RATE * 2 : 0;
+  const brkEl = document.getElementById(`brk_${rowId}`);
+  if(brkEl) brkEl.textContent = brk > 0 ? '₹'+brk.toLocaleString('en-IN') : '—';
+  // If factory changed, re-render to update group visuals
+  if(field==='factory_id') renderGrid();
+  updateTotals();
+  updateSaveBtn();
+}
+
+// ══════════════════════════════════════════════════
+// KEYBOARD NAVIGATION
+// ══════════════════════════════════════════════════
+const CELL_ORDER = ['date','factory_id','wholesaler_id','commodity_id','bags','price','remarks'];
+
+function cellKey(e, rowId, field) {
+  if(e.key==='Enter') { e.preventDefault(); addRow(rowId); return; }
+  if(e.key==='Delete' && e.ctrlKey) { e.preventDefault(); deleteRow(rowId); return; }
+  if(e.key==='Tab' && !e.shiftKey) {
+    e.preventDefault();
+    focusNextCell(rowId, field);
+  }
+  // NOTE: Ctrl+S handled by document listener only — do NOT call saveAll() here
+}
+
+function focusNextCell(rowId, field) {
+  const idx  = CELL_ORDER.indexOf(field);
+  const row  = document.querySelector(`[data-rowid="${rowId}"]`);
+  if(!row) return;
+  if(idx < CELL_ORDER.length - 1) {
+    // Next cell in same row
+    const nextField = CELL_ORDER[idx+1];
+    const isDD = ['factory_id','wholesaler_id','commodity_id'].includes(nextField);
+    const ddType = nextField==='factory_id'?'factory':nextField==='wholesaler_id'?'wholesaler':'commodity';
+    if(isDD) {
+      const wrap = row.querySelector(`#ddwrap_${rowId}_${ddType}`);
+      if(wrap){ const inp = wrap.querySelector('.dd-input'); if(inp){ inp.focus(); setTimeout(()=>inp.click(),50); } }
+    } else {
+      const inp = row.querySelector(`input[data-field="${nextField}"]`);
+      if(inp) inp.focus();
+    }
+  } else {
+    // Last cell — add new row
+    addRow(rowId);
+  }
+}
+
+// ══════════════════════════════════════════════════
+// TOTALS
+// ══════════════════════════════════════════════════
+function updateTotals() {
+  const valid = rowData.filter(r => r.bags && !isNaN(r.bags));
+  const bags  = valid.reduce((s,r) => s + parseFloat(r.bags||0), 0);
+  const val   = valid.reduce((s,r) => s + parseFloat(r.bags||0)*parseFloat(r.price||0), 0);
+  const brk   = valid.reduce((s,r) => s + parseFloat(r.bags||0)*BROK_RATE*2, 0);
+  document.getElementById('tot_rows').textContent = rowData.length;
+  document.getElementById('tot_bags').textContent = bags.toLocaleString('en-IN');
+  document.getElementById('tot_value').textContent= '₹'+val.toLocaleString('en-IN');
+  document.getElementById('tot_brk').textContent  = '₹'+brk.toLocaleString('en-IN');
+}
+
+function updateSaveBtn() {
+  const unsaved = rowData.filter(r => !r.saved && isComplete(r));
+  const el = document.getElementById('unsavedCount');
+  if(el) el.textContent = unsaved.length;
+  document.getElementById('saveBtn').disabled = unsaved.length === 0;
+}
+
+function isComplete(r) {
+  return r.factory_id && r.wholesaler_id && r.commodity_id &&
+         r.bags && parseFloat(r.bags) > 0 &&
+         r.price && parseFloat(r.price) > 0;
+}
+
+// ══════════════════════════════════════════════════
+// SAVE
+// ══════════════════════════════════════════════════
+let isSaving = false;
+let lastFocusedRowId = null;
+
+async function saveAll() {
+  if(isSaving) return;   // prevent double-fire
+  // Flush any uncommitted DOM values before checking completeness
+  document.querySelectorAll('#grid-body input[data-field]').forEach(inp => {
+    const rid   = parseInt(inp.dataset.rid);
+    const field = inp.dataset.field;
+    if(rid && field && inp.value !== '') updateField(rid, field, inp.value);
+  });
+
+  const toSave    = rowData.filter(r => !r.saved && isComplete(r));
+  const incomplete = rowData.filter(r => !r.saved && !isComplete(r) &&
+    (r.factory_id || r.wholesaler_id || r.commodity_id || r.bags || r.price));
+
+  if(!toSave.length && !incomplete.length) {
+    showToast('Fill at least one row completely', 'err'); return;
+  }
+
+  // Highlight incomplete rows in red
+  if(incomplete.length) {
+    incomplete.forEach(r => {
+      const row = document.querySelector(`[data-rowid="${r.id}"]`);
+      if(row){
+        row.classList.add('error-row');
+        setTimeout(()=>row.classList.remove('error-row'), 3000);
+      }
+    });
+    // List what's missing
+    const missing = incomplete.map(r => {
+      const parts = [];
+      if(!r.factory_id)    parts.push('Factory');
+      if(!r.wholesaler_id) parts.push('Wholesaler');
+      if(!r.commodity_id)  parts.push('Commodity');
+      if(!r.bags || parseFloat(r.bags)<=0) parts.push('Bags');
+      if(!r.price || parseFloat(r.price)<=0) parts.push('Price');
+      return `Row ${rowData.indexOf(r)+1}: ${parts.join(', ')} missing`;
+    }).join(' · ');
+    showToast(`⚠️ ${incomplete.length} incomplete row${incomplete.length>1?'s':''} skipped — ${missing}`, 'err');
+    if(!toSave.length) return;
+  }
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.innerHTML = '<span>⏳</span> Saving…';
+  isSaving = true;
+
+  try {
+    const payload = toSave.map(r => ({
+      factory_id:   r.factory_id,
+      wholesaler_id:r.wholesaler_id,
+      commodity_id: r.commodity_id,
+      bags:         parseInt(r.bags),
+      price_per_bag:parseFloat(r.price),
+      trade_date:   r.date,
+      remarks:      r.remarks||null
+    }));
+
+    const res  = await fetch('/api/broker/trades/batch', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ trades: payload })
+    });
+    const data = await res.json();
+
+    if(!res.ok) { showToast('Error: ' + data.error, true); isSaving=false; btn.innerHTML='💾 Save All (<span id="unsavedCount">0</span>)'; updateSaveBtn(); return; }
+
+    // Mark rows as saved + push COPIES (not references) to sessionSaved
+    toSave.forEach(r => { r.saved = true; });
+    sessionSaved.push(...toSave.map(r => ({...r})));
+
+    renderGrid();
+    renderSavedList();
+    showToast(`✅ Saved ${data.saved} trades · ₹${data.total_brokerage?.toLocaleString('en-IN')||0} brokerage`);
+    btn.innerHTML = '💾 Save All (<span id="unsavedCount">0</span>)';
+    btn.disabled  = true;
+    updateSaveBtn();
+  } catch(err) {
+    showToast('Save failed: ' + err.message, true);
+    btn.innerHTML = '💾 Save All (<span id="unsavedCount">0</span>)';
+    updateSaveBtn();
+  } finally {
+    isSaving = false;
+  }
+}
+
+function renderSavedList() {
+  const el = document.getElementById('saved-list');
+  if(!sessionSaved.length){ el.innerHTML='<div style="padding:24px;text-align:center;color:#bbb;font-size:.82rem;">No trades saved yet.</div>'; return; }
+  el.innerHTML = sessionSaved.map(r => {
+    const f   = (factories.find(x=>x.id==r.factory_id)||{name:'?'}).name;
+    const w   = (wholesalers.find(x=>x.id==r.wholesaler_id)||{name:'?'}).name;
+    const c   = (commodities.find(x=>x.id==r.commodity_id)||{name:'?'}).name;
+    const brk = r.bags * BROK_RATE * 2;
+    const d   = r.date ? new Date(r.date+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : '—';
+    return `<div class="st-row">
+      <span>${d}</span>
+      <span>${f}</span><span>${w}</span><span>${c}</span>
+      <span class="num">${parseInt(r.bags).toLocaleString()}</span>
+      <span class="num">₹${parseFloat(r.price).toLocaleString('en-IN')}</span>
+      <span class="num green">₹${brk.toLocaleString('en-IN')}</span>
+      <span style="font-size:.76rem;color:#aaa;">${r.remarks||'—'}</span>
+      <span style="text-align:center;padding:4px;">
+        <button onclick="deleteFromSaved(${r.id})"
+          style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.85rem;padding:3px 6px;border-radius:4px;"
+          onmouseover="this.style.color='#dc2626';this.style.background='#fff0f0'"
+          onmouseout="this.style.color='#ccc';this.style.background='none'"
+          title="Remove from saved list">✕</button>
+      </span>
+    </div>`;
+  }).join('');
+}
+
+function deleteFromSaved(id) {
+  sessionSaved = sessionSaved.filter(r => r.id !== id);
+  // Also mark row as unsaved in rowData if it still exists in grid
+  const row = rowData.find(r => r.id === id);
+  if(row) row.saved = false;
+  renderSavedList();
+  renderGrid();
+  updateSaveBtn();
+}
+
+function clearUnsaved() {
+  if(!confirm('Clear all unsaved rows?')) return;
+  rowData = rowData.filter(r => r.saved);
+  if(rowData.length === 0) addRow();
+  else renderGrid();
+}
+
+// ══════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;'); }
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = 'toast show' + (err?' err':'');
+  setTimeout(()=>t.className='toast', 3500);
+}
+
+async function logout() {
+  await fetch('/api/broker/logout',{method:'POST'});
+  window.location='/broker/login';
+}
+
+// Global Ctrl+S and Ctrl+Delete
+document.addEventListener('keydown', e => {
+  if(e.ctrlKey && e.key==='s'){ e.preventDefault(); saveAll(); }
+  if(e.ctrlKey && e.key==='Delete'){
+    e.preventDefault();
+    // Delete the last focused row
+    if(lastFocusedRowId) deleteRow(lastFocusedRowId);
+  }
+});
+
+// ── START ──
+init();
+</script>
+</body>
+</html>

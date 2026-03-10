@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trade History — AgroSetu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f2f5f2;--surf:#fff;--green:#1b5e35;--green2:#2d9e5f;--green3:#e8f5ee;--green4:#c8e6d4;
+      --amber:#f59e0b;--red:#dc2626;--red2:#fff0f0;--text:#192b19;--text2:#4a6741;--text3:#8aab85;
+      --border:#d4e6d4;--border2:#b8d4b8;--mono:'DM Mono',monospace;--sans:'Outfit',sans-serif;
+      --sh:0 2px 12px rgba(27,94,53,.07);--sh2:0 8px 32px rgba(27,94,53,.13);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);font-family:var(--sans);color:var(--text);min-height:100vh;}
+
+    /* NAV */
+    .nav{background:var(--green);height:54px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 16px rgba(0,0,0,.2);}
+    .nav-left{display:flex;align-items:center;gap:20px;}
+    .nav-brand{color:#fff;font-size:.95rem;font-weight:700;}
+    .nav-links{display:flex;gap:4px;}
+    .nl{color:rgba(255,255,255,.65);text-decoration:none;padding:5px 12px;border-radius:6px;font-size:.78rem;font-weight:500;transition:all .15s;}
+    .nl:hover,.nl.active{background:rgba(255,255,255,.15);color:#fff;}
+    .nav-right{display:flex;align-items:center;gap:10px;}
+    .broker-pill{background:rgba(255,255,255,.15);color:#fff;padding:4px 12px;border-radius:20px;font-size:.76rem;font-weight:600;}
+    .btn-sm-ghost{background:transparent;color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.25);padding:5px 12px;border-radius:6px;font-size:.76rem;cursor:pointer;font-family:var(--sans);}
+    .btn-sm-ghost:hover{color:#fff;border-color:rgba(255,255,255,.6);}
+
+    /* PAGE */
+    .page{max-width:1300px;margin:0 auto;padding:24px 18px 60px;}
+
+    /* FILTER BAR */
+    .filter-bar{background:var(--surf);border-radius:12px;padding:16px 20px;box-shadow:var(--sh);border:1.5px solid var(--border);margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+    .filter-group{display:flex;flex-direction:column;gap:5px;min-width:140px;}
+    .filter-group label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);}
+    .fi{padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:.84rem;font-family:var(--sans);color:var(--text);background:#fff;transition:border .15s;}
+    .fi:focus{outline:none;border-color:var(--green2);box-shadow:0 0 0 3px rgba(45,158,95,.1);}
+    select.fi{cursor:pointer;}
+    .btn{padding:9px 17px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;border:none;font-family:var(--sans);display:inline-flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap;}
+    .btn-primary{background:var(--green);color:#fff;}.btn-primary:hover{background:#144527;}
+    .btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--border2);}.btn-ghost:hover{border-color:var(--green);color:var(--green);}
+    .btn-amber{background:var(--amber);color:#fff;}.btn-amber:hover{background:#d97706;}
+
+    /* STAT ROW */
+    .stat-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+    .stat{background:var(--surf);border:1.5px solid var(--border);border-radius:11px;padding:12px 18px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:2px;min-width:130px;}
+    .stat.hi{border-color:var(--green2);background:var(--green3);}
+    .stat label{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);}
+    .stat .val{font-family:var(--mono);font-size:1.05rem;color:var(--text);}
+    .stat.hi .val{color:var(--green);}
+
+    /* TABLE */
+    .table-card{background:var(--surf);border-radius:13px;box-shadow:var(--sh2);border:1.5px solid var(--border);overflow:hidden;}
+    .table-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1.5px solid var(--border);}
+    .table-head h2{font-size:.93rem;font-weight:700;color:var(--text);}
+    .badge{background:#f0f4f0;color:#666;font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:20px;font-family:var(--mono);}
+    .badge.green{background:var(--green3);color:var(--green);}
+
+    table{width:100%;border-collapse:collapse;}
+    thead th{background:#f6f9f6;padding:10px 14px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);border-bottom:1.5px solid var(--border);text-align:left;white-space:nowrap;}
+    thead th.r{text-align:right;}
+    tbody td{padding:12px 14px;font-size:.85rem;border-bottom:1px solid #f0f4f0;vertical-align:middle;}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr:hover{background:#fafcfa;}
+    .td-r{text-align:right;}
+    .mono{font-family:var(--mono);}
+    .green{color:var(--green);font-weight:600;}
+    .name-cell{font-weight:600;color:var(--text);}
+    .sub{font-size:.72rem;color:var(--text3);margin-top:2px;}
+    .date-cell{font-family:var(--mono);font-size:.8rem;color:var(--text2);}
+    .commodity-tag{background:var(--green3);color:var(--green2);padding:2px 8px;border-radius:5px;font-size:.75rem;font-weight:600;}
+    .empty-row td{text-align:center;color:#bbb;padding:52px;font-size:.88rem;}
+
+    /* GROUP ROW */
+    .group-header td{background:#f0f9f4;font-weight:700;color:var(--green);font-size:.8rem;padding:8px 14px;border-bottom:1px solid var(--green4);}
+
+    /* PAGINATION */
+    .pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1.5px solid var(--border);flex-wrap:wrap;gap:10px;}
+    .page-info{font-size:.8rem;color:var(--text3);font-family:var(--mono);}
+    .page-btns{display:flex;gap:6px;}
+    .page-btn{padding:5px 12px;border-radius:7px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border2);background:#fff;color:var(--text2);font-family:var(--sans);transition:all .15s;}
+    .page-btn:hover:not(:disabled){border-color:var(--green);color:var(--green);}
+    .page-btn:disabled{opacity:.4;cursor:not-allowed;}
+    .page-btn.active{background:var(--green);color:#fff;border-color:var(--green);}
+
+    /* DELETE MODAL */
+    .mov{position:fixed;inset:0;background:rgba(0,0,0,.48);display:none;align-items:center;justify-content:center;z-index:300;}
+    .mov.show{display:flex;}
+    .mod{background:#fff;border-radius:14px;padding:28px 26px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+    .mod h3{font-size:.98rem;font-weight:700;color:var(--red);margin-bottom:10px;}
+    .mod p{font-size:.84rem;color:var(--text2);line-height:1.5;}
+    .ma{display:flex;gap:10px;margin-top:18px;}
+    .ma .danger{flex:1;padding:10px;background:var(--red);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+    .ma .cancel{flex:1;padding:10px;background:#f4f7f4;color:#666;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-family:var(--sans);}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:26px;right:26px;z-index:500;background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:.86rem;font-weight:600;box-shadow:0 8px 32px rgba(27,94,53,.3);transform:translateY(70px);opacity:0;transition:all .25s cubic-bezier(.34,1.56,.64,1);}
+    .toast.show{transform:translateY(0);opacity:1;}
+    .toast.err{background:var(--red);}
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-left">
+    <div class="nav-brand">🌾 AgroSetu</div>
+    <div class="nav-links">
+      <a href="/broker/dashboard" class="nl">Dashboard</a>
+      <a href="/broker/entry"     class="nl">Trade Entry</a>
+      <a href="/broker/trades"    class="nl active">History</a>
+      <a href="/broker/report"    class="nl">Settlement</a>
+    </div>
+  </div>
+  <div class="nav-right">
+    <span class="broker-pill" id="brokerName">…</span>
+    <button class="btn-sm-ghost" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<main class="page">
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>From Date</label>
+      <input type="date" class="fi" id="f_from"/>
+    </div>
+    <div class="filter-group">
+      <label>To Date</label>
+      <input type="date" class="fi" id="f_to"/>
+    </div>
+    <div class="filter-group" style="min-width:180px;">
+      <label>Factory</label>
+      <select class="fi" id="f_factory"><option value="">All Factories</option></select>
+    </div>
+    <div class="filter-group" style="min-width:180px;">
+      <label>Wholesaler</label>
+      <select class="fi" id="f_wholesaler"><option value="">All Wholesalers</option></select>
+    </div>
+    <div class="filter-group" style="min-width:160px;">
+      <label>Commodity</label>
+      <select class="fi" id="f_commodity"><option value="">All Commodities</option></select>
+    </div>
+    <div style="display:flex;gap:8px;align-self:flex-end;">
+      <button class="btn btn-primary" onclick="applyFilter()">🔍 Filter</button>
+      <button class="btn btn-ghost"   onclick="clearFilter()">✕ Clear</button>
+    </div>
+    <!-- FY Quick Buttons -->
+    <div style="display:flex;gap:6px;align-self:flex-end;flex-wrap:wrap;">
+      <button class="btn btn-ghost" style="font-size:.74rem;padding:7px 12px;" onclick="setFY(2025)">FY 2025-26</button>
+      <button class="btn btn-ghost" style="font-size:.74rem;padding:7px 12px;" onclick="setFY(2024)">FY 2024-25</button>
+      <button class="btn btn-ghost" style="font-size:.74rem;padding:7px 12px;" onclick="setThisMonth()">This Month</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stat-row">
+    <div class="stat"><label>Total Trades</label><div class="val" id="st_trades">—</div></div>
+    <div class="stat"><label>Total Bags</label><div class="val" id="st_bags">—</div></div>
+    <div class="stat"><label>Gross Value</label><div class="val" id="st_value">—</div></div>
+    <div class="stat hi"><label>🏦 Brokerage</label><div class="val" id="st_brk">—</div></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-head">
+      <h2>Trade History</h2>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="badge" id="resultCount">—</span>
+        <button class="btn btn-amber" style="font-size:.76rem;padding:6px 14px;" onclick="goReport()">📄 Settlement Report →</button>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Factory</th>
+            <th>Wholesaler</th>
+            <th>Commodity</th>
+            <th class="r">Bags</th>
+            <th class="r">Price/Bag</th>
+            <th class="r">Factory Brk.</th>
+            <th class="r">Whsl. Brk.</th>
+            <th class="r">Total Brk.</th>
+            <th>Remarks</th>
+            <th style="width:50px;">✕</th>
+          </tr>
+        </thead>
+        <tbody id="tradeBody">
+          <tr class="empty-row"><td colspan="11">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" id="pagination" style="display:none;">
+      <span class="page-info" id="pageInfo">—</span>
+      <div class="page-btns" id="pageButtons"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- DELETE MODAL -->
+<div class="mov" id="mDel">
+  <div class="mod">
+    <h3>🗑️ Delete Trade?</h3>
+    <p id="delInfo">This will permanently delete this trade record and affect brokerage calculations.</p>
+    <input type="hidden" id="del_id"/>
+    <div class="ma">
+      <button class="cancel" onclick="closeMov('mDel')">Cancel</button>
+      <button class="danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════
+// STATE
+// ═══════════════════════════════
+let currentPage=1, totalTrades=0, pageSize=50;
+let factories=[], wholesalers=[], commodities=[];
+
+// ═══════════════════════════════
+// INIT
+// ═══════════════════════════════
+async function init(){
+  const [meRes, ddRes] = await Promise.all([
+    fetch('/api/broker/me'),
+    fetch('/api/broker/dropdowns')
+  ]);
+  if(!meRes.ok){ window.location='/broker/login'; return; }
+  const me=await meRes.json();
+  document.getElementById('brokerName').textContent=me.name;
+
+  const dd=await ddRes.json();
+  factories=dd.factories||[]; wholesalers=dd.wholesalers||[]; commodities=dd.commodities||[];
+
+  // Populate filter dropdowns
+  const fSel=document.getElementById('f_factory');
+  factories.forEach(f=>{ const o=document.createElement('option'); o.value=f.id; o.textContent=f.name; fSel.appendChild(o); });
+  const wSel=document.getElementById('f_wholesaler');
+  wholesalers.forEach(w=>{ const o=document.createElement('option'); o.value=w.id; o.textContent=w.name; wSel.appendChild(o); });
+  const cSel=document.getElementById('f_commodity');
+  commodities.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; cSel.appendChild(o); });
+
+  // Default: current FY
+  setFY(currentFYYear());
+  loadTrades();
+}
+
+function currentFYYear(){
+  const m=new Date().getMonth();
+  return m>=3?new Date().getFullYear():new Date().getFullYear()-1;
+}
+function setFY(year){
+  document.getElementById('f_from').value=`${year}-04-01`;
+  document.getElementById('f_to').value=`${year+1}-03-31`;
+}
+function setThisMonth(){
+  const d=new Date();
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0');
+  const last=new Date(y,d.getMonth()+1,0).getDate();
+  document.getElementById('f_from').value=`${y}-${m}-01`;
+  document.getElementById('f_to').value=`${y}-${m}-${last}`;
+}
+
+// ═══════════════════════════════
+// LOAD TRADES
+// ═══════════════════════════════
+async function loadTrades(page=1){
+  currentPage=page;
+  const params=new URLSearchParams({page, limit:pageSize});
+  const from=document.getElementById('f_from').value;
+  const to=document.getElementById('f_to').value;
+  const fac=document.getElementById('f_factory').value;
+  const whl=document.getElementById('f_wholesaler').value;
+  if(from) params.set('from',from);
+  if(to)   params.set('to',to);
+  if(fac)  params.set('factory_id',fac);
+  if(whl)  params.set('wholesaler_id',whl);
+
+  const tbody=document.getElementById('tradeBody');
+  tbody.innerHTML='<tr class="empty-row"><td colspan="11">Loading…</td></tr>';
+
+  try{
+    const res=await fetch('/api/broker/trades?'+params);
+    const data=await res.json();
+    totalTrades=data.total||0;
+    renderTrades(data.trades||[]);
+    renderStats(data.trades||[]);
+    renderPagination(data.total, page);
+    document.getElementById('resultCount').textContent=data.total+' trades';
+  } catch(e){
+    tbody.innerHTML='<tr class="empty-row"><td colspan="11">Error loading trades.</td></tr>';
+  }
+}
+
+function renderTrades(trades){
+  const tbody=document.getElementById('tradeBody');
+  if(!trades.length){ tbody.innerHTML='<tr class="empty-row"><td colspan="11">No trades found for this filter.</td></tr>'; return; }
+
+  let html='', prevKey='';
+  trades.forEach(t=>{
+    const d=t.trade_date?t.trade_date.split('T')[0]:'';
+    const groupKey=d+'|'+t.factory_name;
+    // Group header when factory+date changes
+    if(groupKey!==prevKey){
+      const dFmt=d?new Date(d+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}):'—';
+      html+=`<tr class="group-header"><td colspan="11">📅 ${dFmt} &nbsp;·&nbsp; 🏭 ${esc(t.factory_name)}</td></tr>`;
+      prevKey=groupKey;
+    }
+    html+=`<tr>
+      <td class="date-cell">${d?new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short'}):'—'}</td>
+      <td><div class="name-cell">${esc(t.factory_name)}</div></td>
+      <td><div class="name-cell">${esc(t.wholesaler_name)}</div></td>
+      <td><span class="commodity-tag">${esc(t.commodity_name)}</span></td>
+      <td class="td-r mono">${parseInt(t.bags).toLocaleString('en-IN')}</td>
+      <td class="td-r mono">₹${parseFloat(t.price_per_bag).toLocaleString('en-IN')}</td>
+      <td class="td-r mono">₹${parseFloat(t.factory_brokerage).toLocaleString('en-IN')}</td>
+      <td class="td-r mono">₹${parseFloat(t.wholesaler_brokerage).toLocaleString('en-IN')}</td>
+      <td class="td-r mono green">₹${parseFloat(t.total_brokerage).toLocaleString('en-IN')}</td>
+      <td style="font-size:.78rem;color:var(--text3)">${t.remarks||'—'}</td>
+      <td style="text-align:center">
+        <button onclick="openDel(${t.id},'${esc(t.factory_name)}','${esc(t.wholesaler_name)}',${t.bags})"
+          style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.9rem;padding:4px 7px;border-radius:5px;transition:all .15s;"
+          onmouseover="this.style.color='#dc2626';this.style.background='#fff0f0'"
+          onmouseout="this.style.color='#ccc';this.style.background='none'">✕</button>
+      </td>
+    </tr>`;
+  });
+  tbody.innerHTML=html;
+}
+
+function renderStats(trades){
+  const bags=trades.reduce((s,t)=>s+parseInt(t.bags||0),0);
+  const val =trades.reduce((s,t)=>s+parseFloat(t.bags||0)*parseFloat(t.price_per_bag||0),0);
+  const brk =trades.reduce((s,t)=>s+parseFloat(t.total_brokerage||0),0);
+  document.getElementById('st_trades').textContent=totalTrades.toLocaleString('en-IN');
+  document.getElementById('st_bags').textContent=bags.toLocaleString('en-IN');
+  document.getElementById('st_value').textContent='₹'+val.toLocaleString('en-IN',{maximumFractionDigits:0});
+  document.getElementById('st_brk').textContent='₹'+brk.toLocaleString('en-IN',{maximumFractionDigits:0});
+}
+
+function renderPagination(total, page){
+  const pages=Math.ceil(total/pageSize);
+  const pag=document.getElementById('pagination');
+  if(pages<=1){ pag.style.display='none'; return; }
+  pag.style.display='flex';
+  document.getElementById('pageInfo').textContent=`Page ${page} of ${pages} · ${total} trades`;
+  const btns=document.getElementById('pageButtons');
+  let html=`<button class="page-btn" onclick="loadTrades(${page-1})" ${page===1?'disabled':''}>‹ Prev</button>`;
+  const start=Math.max(1,page-2), end=Math.min(pages,page+2);
+  for(let i=start;i<=end;i++) html+=`<button class="page-btn${i===page?' active':''}" onclick="loadTrades(${i})">${i}</button>`;
+  html+=`<button class="page-btn" onclick="loadTrades(${page+1})" ${page===pages?'disabled':''}>Next ›</button>`;
+  btns.innerHTML=html;
+}
+
+// ═══════════════════════════════
+// FILTER
+// ═══════════════════════════════
+function applyFilter(){ loadTrades(1); }
+function clearFilter(){
+  ['f_from','f_to'].forEach(id=>document.getElementById(id).value='');
+  ['f_factory','f_wholesaler','f_commodity'].forEach(id=>document.getElementById(id).value='');
+  loadTrades(1);
+}
+
+// ═══════════════════════════════
+// DELETE
+// ═══════════════════════════════
+function openDel(id,factory,wholesaler,bags){
+  document.getElementById('del_id').value=id;
+  document.getElementById('delInfo').textContent=`Delete trade #${id}: ${factory} → ${wholesaler}, ${bags} bags? This cannot be undone.`;
+  document.getElementById('mDel').classList.add('show');
+}
+async function confirmDelete(){
+  const id=document.getElementById('del_id').value;
+  await fetch(`/api/broker/trades/${id}`,{method:'DELETE'});
+  closeMov('mDel'); loadTrades(currentPage);
+  showToast('Trade deleted');
+}
+function closeMov(id){ document.getElementById(id).classList.remove('show'); }
+
+// ═══════════════════════════════
+// UTILS
+// ═══════════════════════════════
+function goReport(){ window.location='/broker/report'; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function showToast(msg,err=false){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'+(err?' err':''); setTimeout(()=>t.className='toast',3000); }
+async function logout(){ await fetch('/api/broker/logout',{method:'POST'}); window.location='/broker/login'; }
+
+init();
+</script>
+</body>
+</html>

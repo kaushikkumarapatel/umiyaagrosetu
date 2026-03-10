@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settlement Report — AgroSetu</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f2f5f2;--surf:#fff;--green:#1b5e35;--green2:#2d9e5f;--green3:#e8f5ee;--green4:#c8e6d4;
+      --amber:#f59e0b;--amber2:#fef3c7;--red:#dc2626;--red2:#fff0f0;
+      --text:#192b19;--text2:#4a6741;--text3:#8aab85;
+      --border:#d4e6d4;--border2:#b8d4b8;
+      --mono:'DM Mono',monospace;--sans:'Outfit',sans-serif;
+      --sh:0 2px 12px rgba(27,94,53,.07);--sh2:0 8px 32px rgba(27,94,53,.13);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);font-family:var(--sans);color:var(--text);min-height:100vh;}
+
+    /* NAV */
+    .nav{background:var(--green);height:54px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 16px rgba(0,0,0,.2);}
+    .nav-left{display:flex;align-items:center;gap:20px;}
+    .nav-brand{color:#fff;font-size:.95rem;font-weight:700;}
+    .nav-links{display:flex;gap:4px;}
+    .nl{color:rgba(255,255,255,.65);text-decoration:none;padding:5px 12px;border-radius:6px;font-size:.78rem;font-weight:500;transition:all .15s;}
+    .nl:hover,.nl.active{background:rgba(255,255,255,.15);color:#fff;}
+    .nav-right{display:flex;align-items:center;gap:10px;}
+    .broker-pill{background:rgba(255,255,255,.15);color:#fff;padding:4px 12px;border-radius:20px;font-size:.76rem;font-weight:600;}
+    .btn-ng{background:transparent;color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.25);padding:5px 12px;border-radius:6px;font-size:.76rem;cursor:pointer;font-family:var(--sans);}
+    .btn-ng:hover{color:#fff;border-color:rgba(255,255,255,.6);}
+
+    /* PAGE */
+    .page{max-width:1200px;margin:0 auto;padding:24px 18px 80px;}
+
+    /* TABS */
+    .tabs{display:flex;gap:0;background:var(--surf);border-radius:12px;padding:6px;box-shadow:var(--sh);border:1.5px solid var(--border);margin-bottom:20px;width:fit-content;}
+    .tab-btn{padding:9px 22px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;border:none;font-family:var(--sans);color:var(--text3);background:transparent;transition:all .2s;}
+    .tab-btn.active{background:var(--green);color:#fff;box-shadow:0 2px 8px rgba(27,94,53,.25);}
+    .tab-btn:hover:not(.active){background:var(--green3);color:var(--green);}
+    .tab-panel{display:none;}
+    .tab-panel.active{display:block;}
+
+    /* HEADER SECTION */
+    .report-header{background:var(--surf);border-radius:13px;padding:18px 22px;box-shadow:var(--sh);border:1.5px solid var(--border);margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+    .report-header h1{font-size:1.1rem;font-weight:700;color:var(--green);}
+    .report-header p{font-size:.78rem;color:var(--text3);margin-top:3px;}
+    .fy-selector{display:flex;align-items:center;gap:10px;}
+    .fy-selector label{font-size:.8rem;font-weight:700;color:var(--text2);}
+    select.fy-sel{padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;font-family:var(--sans);color:var(--text);background:#fff;cursor:pointer;}
+    select.fy-sel:focus{outline:none;border-color:var(--green2);}
+
+    .btn{padding:9px 17px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;border:none;font-family:var(--sans);display:inline-flex;align-items:center;gap:6px;transition:all .15s;}
+    .btn-primary{background:var(--green);color:#fff;}.btn-primary:hover{background:#144527;}
+    .btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--border2);}.btn-ghost:hover{border-color:var(--green);color:var(--green);}
+    .btn-wa{background:#25d366;color:#fff;}.btn-wa:hover{background:#1fba58;}
+    .btn-print{background:#1d6fa4;color:#fff;}.btn-print:hover{background:#155a8a;}
+    .btn-pdf{background:#dc2626;color:#fff;}.btn-pdf:hover{background:#b91c1c;}
+
+    /* GRAND TOTAL CARDS */
+    .grand-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px;}
+    .grand-card{background:var(--surf);border-radius:12px;padding:16px 20px;box-shadow:var(--sh);border:1.5px solid var(--border);}
+    .grand-card.factory{border-color:#93c5fd;background:#eff6ff;}
+    .grand-card.wholesaler{border-color:var(--green4);background:var(--green3);}
+    .grand-card.total{border-color:var(--amber);background:var(--amber2);}
+    .grand-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);}
+    .grand-card.factory .grand-label{color:#1d6fa4;}
+    .grand-card.wholesaler .grand-label{color:var(--green);}
+    .grand-card.total .grand-label{color:#92400e;}
+    .grand-val{font-family:var(--mono);font-size:1.35rem;color:var(--text);margin-top:4px;}
+    .grand-card.factory .grand-val{color:#1d6fa4;}
+    .grand-card.wholesaler .grand-val{color:var(--green);}
+    .grand-card.total .grand-val{color:#92400e;}
+    .grand-sub{font-size:.7rem;color:var(--text3);margin-top:2px;}
+
+    /* SECTION TITLE */
+    .section-title{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:8px;margin-top:24px;}
+
+    /* PARTY CARDS */
+    .party-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;}
+    .party-card{background:var(--surf);border-radius:12px;border:1.5px solid var(--border);box-shadow:var(--sh);overflow:hidden;transition:box-shadow .15s;}
+    .party-card:hover{box-shadow:var(--sh2);}
+    .party-card.settled{border-color:var(--green4);}
+    .party-card.due{border-color:#fcd34d;}
+    .pc-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+    .pc-name{font-size:.9rem;font-weight:700;color:var(--text);}
+    .pc-sub{font-size:.72rem;color:var(--text3);margin-top:2px;}
+    .due-badge{padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;font-family:var(--mono);white-space:nowrap;}
+    .due-badge.zero{background:var(--green3);color:var(--green);}
+    .due-badge.has-due{background:#fef3c7;color:#92400e;border:1px solid #fcd34d;}
+    .due-badge.overdue{background:var(--red2);color:var(--red);border:1px solid #fca5a5;}
+    .pc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border);}
+    .pc-stat{padding:10px 14px;border-right:1px solid var(--border);}
+    .pc-stat:last-child{border-right:none;}
+    .pc-stat label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);}
+    .pc-stat .v{font-family:var(--mono);font-size:.88rem;color:var(--text);margin-top:2px;}
+    .pc-stat .v.green{color:var(--green);font-weight:600;}
+    .pc-stat .v.amber{color:#92400e;font-weight:600;}
+    .pc-actions{padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap;}
+    .settle-input{flex:1;min-width:90px;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:.82rem;font-family:var(--mono);}
+    .settle-input:focus{outline:none;border-color:var(--green2);}
+    .btn-settle{padding:7px 14px;border-radius:7px;font-size:.78rem;font-weight:700;cursor:pointer;border:none;background:var(--green);color:#fff;}
+    .btn-settle:hover{background:#144527;}
+    .btn-wa-sm{padding:7px 10px;border-radius:7px;font-size:.78rem;cursor:pointer;border:none;background:#25d366;color:#fff;}
+    .sh-toggle{padding:8px 14px;font-size:.74rem;color:var(--text3);cursor:pointer;border:none;background:none;font-family:var(--sans);display:flex;align-items:center;gap:6px;border-top:1px dashed var(--border);width:100%;}
+    .sh-toggle:hover{color:var(--green);}
+    .sh-list{padding:0 14px 10px;display:none;}
+    .sh-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f4f0;font-size:.77rem;}
+    .sh-row:last-child{border-bottom:none;}
+
+    /* ══════════════════════════════════════
+       INVOICE TAB
+    ══════════════════════════════════════ */
+    .inv-layout{display:grid;grid-template-columns:280px 1fr;gap:18px;align-items:start;}
+    .inv-party-list{background:var(--surf);border-radius:12px;border:1.5px solid var(--border);box-shadow:var(--sh);overflow:hidden;position:sticky;top:74px;}
+    .inv-list-head{padding:12px 16px;background:var(--green);color:#fff;font-size:.78rem;font-weight:700;}
+    .inv-tabs{display:flex;}
+    .inv-type-btn{flex:1;padding:8px;border:none;background:#f4f7f4;font-size:.75rem;font-weight:700;cursor:pointer;color:var(--text3);font-family:var(--sans);border-bottom:2px solid var(--border);transition:all .15s;}
+    .inv-type-btn.active{background:#fff;color:var(--green);border-bottom-color:var(--green);}
+    .inv-party-item{padding:11px 16px;cursor:pointer;border-bottom:1px solid #f0f4f0;display:flex;justify-content:space-between;align-items:center;transition:all .15s;}
+    .inv-party-item:last-child{border-bottom:none;}
+    .inv-party-item:hover{background:var(--green3);}
+    .inv-party-item.selected{background:var(--green3);border-left:3px solid var(--green);}
+    .inv-party-name{font-size:.84rem;font-weight:600;color:var(--text);}
+    .inv-party-sub{font-size:.7rem;color:var(--text3);margin-top:1px;}
+    .inv-due-tag{font-size:.68rem;font-weight:700;font-family:var(--mono);padding:2px 7px;border-radius:10px;background:var(--amber2);color:#92400e;white-space:nowrap;}
+    .inv-due-tag.zero{background:var(--green3);color:var(--green);}
+
+    /* INVOICE PREVIEW */
+    .inv-preview{background:var(--surf);border-radius:12px;border:1.5px solid var(--border);box-shadow:var(--sh);overflow:hidden;}
+    .inv-actions{padding:14px 18px;display:flex;gap:10px;align-items:center;border-bottom:1.5px solid var(--border);flex-wrap:wrap;}
+    .inv-actions h3{font-size:.9rem;font-weight:700;color:var(--text);flex:1;}
+    .inv-empty{padding:60px;text-align:center;color:#bbb;font-size:.88rem;}
+    .inv-empty .icon{font-size:2.5rem;margin-bottom:12px;}
+
+    /* THE ACTUAL INVOICE (printable) */
+    .invoice{padding:32px 36px;font-family:var(--sans);}
+    .inv-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid var(--green);}
+    .inv-brand{display:flex;align-items:center;gap:12px;}
+    .inv-brand-icon{font-size:2rem;}
+    .inv-brand-name{font-size:1.3rem;font-weight:700;color:var(--green);}
+    .inv-brand-sub{font-size:.72rem;color:var(--text3);margin-top:2px;}
+    .inv-meta{text-align:right;}
+    .inv-meta .inv-num{font-size:1rem;font-weight:700;color:var(--text);font-family:var(--mono);}
+    .inv-meta .inv-date{font-size:.75rem;color:var(--text3);margin-top:3px;}
+    .inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;}
+    .inv-from,.inv-to{padding:14px 16px;border-radius:8px;}
+    .inv-from{background:#f6f9f6;border:1px solid var(--border);}
+    .inv-to{background:var(--green3);border:1.5px solid var(--green4);}
+    .inv-party-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:6px;}
+    .inv-to .inv-party-label{color:var(--green2);}
+    .inv-party-name2{font-size:.98rem;font-weight:700;color:var(--text);}
+    .inv-party-detail{font-size:.76rem;color:var(--text3);margin-top:3px;line-height:1.5;}
+
+    /* INVOICE TABLE */
+    .inv-table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:.82rem;}
+    .inv-table thead th{background:var(--green);color:#fff;padding:9px 12px;text-align:left;font-size:.72rem;font-weight:700;letter-spacing:.4px;}
+    .inv-table thead th.r{text-align:right;}
+    .inv-table tbody td{padding:10px 12px;border-bottom:1px solid #eef2ee;vertical-align:top;}
+    .inv-table tbody tr:last-child td{border-bottom:none;}
+    .inv-table tbody tr:hover{background:#fafcfa;}
+    .inv-table .r{text-align:right;font-family:var(--mono);}
+    .inv-table .mono{font-family:var(--mono);}
+    .inv-table tfoot td{padding:10px 12px;font-weight:700;border-top:2px solid var(--green);}
+    .inv-table tfoot .r{text-align:right;font-family:var(--mono);}
+
+    /* INVOICE SUMMARY */
+    .inv-summary{display:flex;justify-content:flex-end;margin-bottom:24px;}
+    .inv-sum-box{background:var(--green3);border:1.5px solid var(--green4);border-radius:10px;padding:16px 20px;min-width:280px;}
+    .inv-sum-row{display:flex;justify-content:space-between;font-size:.85rem;padding:5px 0;border-bottom:1px solid var(--green4);}
+    .inv-sum-row:last-child{border-bottom:none;font-weight:700;font-size:1rem;color:var(--green);padding-top:10px;margin-top:4px;}
+    .inv-sum-row .lbl{color:var(--text2);}
+    .inv-sum-row .val{font-family:var(--mono);color:var(--text);}
+    .inv-sum-row:last-child .val{color:var(--green);}
+
+    /* INVOICE FOOTER */
+    .inv-footer{border-top:1px solid var(--border);padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;}
+    .inv-note{font-size:.74rem;color:var(--text3);line-height:1.5;max-width:340px;}
+    .inv-sig{text-align:right;font-size:.78rem;color:var(--text2);}
+    .inv-sig .sig-name{font-weight:700;color:var(--text);font-size:.9rem;margin-top:24px;}
+
+    /* PRINT */
+    @media print{
+      .nav,.tabs,.inv-party-list,.inv-actions,.page>*:not(.tab-panel.active),.report-header{display:none!important;}
+      body{background:#fff;}
+      .page{padding:0;max-width:100%;}
+      .tab-panel.active{display:block!important;}
+      .inv-layout{display:block!important;}
+      .inv-preview{box-shadow:none;border:none;border-radius:0;}
+      .invoice{padding:20px;}
+    }
+
+    /* MODALS */
+    .mov{position:fixed;inset:0;background:rgba(0,0,0,.48);display:none;align-items:center;justify-content:center;z-index:300;}
+    .mov.show{display:flex;}
+    .mod{background:#fff;border-radius:14px;padding:28px 26px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto;}
+    .mod h3{font-size:.98rem;font-weight:700;color:var(--green);margin-bottom:4px;}
+    .mod .sub{font-size:.8rem;color:var(--text3);margin-bottom:18px;}
+    .mod label{display:block;font-size:.72rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-top:13px;margin-bottom:5px;}
+    .mod input,.mod textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.88rem;font-family:var(--sans);}
+    .mod input:focus,.mod textarea:focus{outline:none;border-color:var(--green2);}
+    .mod textarea{resize:vertical;min-height:120px;font-size:.82rem;line-height:1.55;}
+    .ma{display:flex;gap:10px;margin-top:18px;}
+    .ma .ok{flex:1;padding:10px;background:var(--green);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+    .ma .cn{flex:1;padding:10px;background:#f4f7f4;color:#666;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-family:var(--sans);}
+    .ma .wa{flex:1;padding:10px;background:#25d366;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:26px;right:26px;z-index:500;background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:.86rem;font-weight:600;box-shadow:0 8px 32px rgba(27,94,53,.3);transform:translateY(70px);opacity:0;transition:all .25s cubic-bezier(.34,1.56,.64,1);}
+    .toast.show{transform:translateY(0);opacity:1;}
+    .toast.err{background:var(--red);}
+    .loading{text-align:center;padding:40px;color:var(--text3);font-size:.88rem;}
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-left">
+    <div class="nav-brand">🌾 AgroSetu</div>
+    <div class="nav-links">
+      <a href="/broker/dashboard" class="nl">Dashboard</a>
+      <a href="/broker/entry"     class="nl">Trade Entry</a>
+      <a href="/broker/trades"    class="nl">History</a>
+      <a href="/broker/report"    class="nl active">Settlement</a>
+    </div>
+  </div>
+  <div class="nav-right">
+    <span class="broker-pill" id="brokerName">…</span>
+    <button class="btn-ng" onclick="window.print()">🖨️ Print</button>
+    <button class="btn-ng" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<main class="page">
+
+  <!-- REPORT HEADER -->
+  <div class="report-header">
+    <div>
+      <h1 id="pageTitle">📄 Settlement Report</h1>
+      <p id="reportSubtitle">Annual brokerage summary and invoice generator</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div class="fy-selector">
+        <label>Financial Year:</label>
+        <select class="fy-sel" id="fySelect" onchange="onFYChange()">
+          <option value="2025-26">FY 2025-26 (Apr 2025 – Mar 2026)</option>
+          <option value="2024-25">FY 2024-25 (Apr 2024 – Mar 2025)</option>
+          <option value="2023-24">FY 2023-24 (Apr 2023 – Mar 2024)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('settlement', this)">📊 Settlement Overview</button>
+    <button class="tab-btn"        onclick="switchTab('invoice', this)">🧾 Invoice Generator</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TAB 1 — SETTLEMENT OVERVIEW
+  ════════════════════════════════════════════ -->
+  <div class="tab-panel active" id="tab-settlement">
+
+    <div class="grand-row">
+      <div class="grand-card factory"><div class="grand-label">🏭 Factory Due</div><div class="grand-val" id="gt_fac">—</div><div class="grand-sub">Brokerage owed by factories</div></div>
+      <div class="grand-card wholesaler"><div class="grand-label">🛒 Wholesaler Due</div><div class="grand-val" id="gt_whl">—</div><div class="grand-sub">Brokerage owed by wholesalers</div></div>
+      <div class="grand-card total"><div class="grand-label">🏦 Total Outstanding</div><div class="grand-val" id="gt_total">—</div><div class="grand-sub">Factory + Wholesaler combined</div></div>
+      <div class="grand-card"><div class="grand-label">📦 Total Bags</div><div class="grand-val" id="gt_bags">—</div><div class="grand-sub">All trades this FY</div></div>
+      <div class="grand-card"><div class="grand-label">📋 Total Trades</div><div class="grand-val" id="gt_trades">—</div><div class="grand-sub">Trade records entered</div></div>
+    </div>
+
+    <div class="section-title">🏭 Factories</div>
+    <div class="party-grid" id="factoryGrid"><div class="loading">Loading…</div></div>
+
+    <div class="section-title">🛒 Wholesalers</div>
+    <div class="party-grid" id="wholesalerGrid"><div class="loading">Loading…</div></div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TAB 2 — INVOICE GENERATOR
+  ════════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-invoice">
+    <div class="inv-layout">
+
+      <!-- PARTY LIST SIDEBAR -->
+      <div class="inv-party-list">
+        <div class="inv-list-head">Select Party to Generate Invoice</div>
+        <div class="inv-tabs">
+          <button class="inv-type-btn active" id="btn-factory-list"  onclick="switchPartyType('factory')">🏭 Factories</button>
+          <button class="inv-type-btn"        id="btn-wholesaler-list" onclick="switchPartyType('wholesaler')">🛒 Wholesalers</button>
+        </div>
+        <div id="inv-party-items"><div class="loading">Loading…</div></div>
+      </div>
+
+      <!-- INVOICE PREVIEW -->
+      <div class="inv-preview">
+        <div class="inv-actions">
+          <h3 id="invTitle">Select a party from the left</h3>
+          <button class="btn btn-print" onclick="window.print()" id="btnPrint" style="display:none">🖨️ Print</button>
+          <button class="btn btn-pdf"   onclick="downloadPDF()" id="btnPDF"   style="display:none">📄 Download PDF</button>
+          <button class="btn btn-wa"    onclick="sendInvoiceWA()" id="btnWA"  style="display:none">💬 WhatsApp + PDF</button>
+        </div>
+        <div id="invoiceBody">
+          <div class="inv-empty"><div class="icon">🧾</div><p>Select a factory or wholesaler<br>to generate their brokerage invoice.</p></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- SETTLE MODAL -->
+<div class="mov" id="mSettle">
+  <div class="mod">
+    <h3 id="sTitle">Mark Settlement</h3>
+    <p class="sub" id="sSub">Record payment received</p>
+    <input type="hidden" id="s_type"/>
+    <input type="hidden" id="s_id"/>
+    <label>Amount Received (₹)</label>
+    <input type="number" id="s_amount" placeholder="Enter amount" min="0"/>
+    <label>Settlement Date</label>
+    <input type="date" id="s_date"/>
+    <label>Remarks <span style="font-weight:400;color:#bbb;text-transform:none;">(optional)</span></label>
+    <input type="text" id="s_remarks" placeholder="e.g. Cash, NEFT, Cheque no."/>
+    <div class="ma">
+      <button class="cn" onclick="closeMov('mSettle')">Cancel</button>
+      <button class="ok" onclick="confirmSettle()">✅ Record Settlement</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF + WHATSAPP MODAL -->
+<div class="mov" id="mBill">
+  <div class="mod" style="max-width:540px;">
+    <h3>💬 Send Invoice via WhatsApp</h3>
+    <p class="sub" id="billSub">PDF will be downloaded and WhatsApp will open</p>
+
+    <!-- Step indicators -->
+    <div style="display:flex;gap:0;margin:16px 0;border-radius:8px;overflow:hidden;border:1.5px solid var(--border);">
+      <div style="flex:1;padding:10px 12px;background:var(--green3);text-align:center;">
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--green2);">Step 1</div>
+        <div style="font-size:.8rem;font-weight:600;color:var(--text);margin-top:2px;">📄 PDF Downloads</div>
+        <div style="font-size:.68rem;color:var(--text3);margin-top:2px;">Automatically to your device</div>
+      </div>
+      <div style="width:1px;background:var(--border);"></div>
+      <div style="flex:1;padding:10px 12px;background:#f0fdf4;text-align:center;">
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#16a34a;">Step 2</div>
+        <div style="font-size:.8rem;font-weight:600;color:var(--text);margin-top:2px;">💬 WhatsApp Opens</div>
+        <div style="font-size:.68rem;color:var(--text3);margin-top:2px;">With message pre-filled</div>
+      </div>
+      <div style="width:1px;background:var(--border);"></div>
+      <div style="flex:1;padding:10px 12px;background:#fffbeb;text-align:center;">
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#d97706;">Step 3</div>
+        <div style="font-size:.8rem;font-weight:600;color:var(--text);margin-top:2px;">📎 Attach PDF</div>
+        <div style="font-size:.68rem;color:var(--text3);margin-top:2px;">Click 📎 and select the PDF</div>
+      </div>
+    </div>
+
+    <label style="margin-top:8px;">Message Preview</label>
+    <textarea id="billText" style="height:130px;font-size:.76rem;"></textarea>
+
+    <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;margin-top:12px;font-size:.77rem;color:#92400e;line-height:1.5;">
+      💡 <strong>After WhatsApp opens:</strong> Click the 📎 paperclip icon → select <strong>Document</strong> → choose the downloaded PDF file → Send
+    </div>
+
+    <div id="pdfGenStatus" style="display:none;text-align:center;padding:14px;color:var(--green);font-weight:600;font-size:.85rem;">
+      ⏳ Generating PDF…
+    </div>
+
+    <div class="ma">
+      <button class="cn" onclick="closeMov('mBill')">Cancel</button>
+      <button class="wa" id="btnSendWA" onclick="generatePDFandOpenWA()">📄 Download PDF + Open WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// CONFIG — change these in one place only
+// ═══════════════════════════════════════════════
+const CONFIG = {
+  brokerName:  'Arvindbhai M Patel',
+  address1:    'F3, Market Yard, APMC',
+  address2:    'Mahesana - 382 002, Gujarat, India',
+  mobile:      '9426501245',
+  email:       'info@umiyaagrosetu.com',
+  siteUrl:     'umiyaagrosetu.in',        // ← change to .com when ready
+  siteName:    'Umiya AgroSetu',
+  companyLine: 'Cattle Feed Broker, APMC Mehsana',
+};
+
+let reportData   = null;
+let brokerInfo   = {};
+let currentMobile = '';
+let selectedPartyType = 'factory';
+let selectedParty     = null;
+let currentInvoiceTrades = [];
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+async function init(){
+  const meRes = await fetch('/api/broker/me');
+  if(!meRes.ok){ window.location='/broker/login'; return; }
+  brokerInfo = await meRes.json();
+  document.getElementById('brokerName').textContent = brokerInfo.name;
+
+  const now = new Date();
+  const fy  = now.getMonth()>=3
+    ? `${now.getFullYear()}-${String(now.getFullYear()+1).slice(2)}`
+    : `${now.getFullYear()-1}-${String(now.getFullYear()).slice(2)}`;
+  document.getElementById('fySelect').value = fy;
+
+  loadReport();
+}
+
+function onFYChange(){
+  loadReport();
+  // If invoice tab open, refresh party list
+  if(selectedParty) generateInvoice(selectedPartyType, selectedParty);
+}
+
+// ═══════════════════════════════════════════════
+// TAB SWITCH
+// ═══════════════════════════════════════════════
+function switchTab(name, btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='invoice' && reportData) renderInvoicePartyList();
+}
+
+// ═══════════════════════════════════════════════
+// LOAD REPORT
+// ═══════════════════════════════════════════════
+async function loadReport(){
+  const fy = document.getElementById('fySelect').value;
+  document.getElementById('factoryGrid').innerHTML    = '<div class="loading">Loading…</div>';
+  document.getElementById('wholesalerGrid').innerHTML = '<div class="loading">Loading…</div>';
+  try{
+    const res  = await fetch(`/api/broker/report?fy=${fy}`);
+    reportData = await res.json();
+    renderGrandTotals(reportData);
+    renderFactories(reportData.factories||[], fy);
+    renderWholesalers(reportData.wholesalers||[], fy);
+    renderInvoicePartyList();
+  } catch(e){
+    document.getElementById('factoryGrid').innerHTML='<div class="loading">Error loading. Enter trades first.</div>';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// GRAND TOTALS
+// ═══════════════════════════════════════════════
+function renderGrandTotals(data){
+  const facs=data.factories||[], whls=data.wholesalers||[];
+  const facDue=facs.reduce((s,r)=>s+parseFloat(r.balance_due||0),0);
+  const whlDue=whls.reduce((s,r)=>s+parseFloat(r.balance_due||0),0);
+  const bags  =facs.reduce((s,r)=>s+parseInt(r.total_bags||0),0);
+  const trades=facs.reduce((s,r)=>s+parseInt(r.trades||0),0);
+  document.getElementById('gt_fac').textContent   ='₹'+Math.round(facDue).toLocaleString('en-IN');
+  document.getElementById('gt_whl').textContent   ='₹'+Math.round(whlDue).toLocaleString('en-IN');
+  document.getElementById('gt_total').textContent ='₹'+Math.round(facDue+whlDue).toLocaleString('en-IN');
+  document.getElementById('gt_bags').textContent  =bags.toLocaleString('en-IN');
+  document.getElementById('gt_trades').textContent=trades.toLocaleString('en-IN');
+}
+
+// ═══════════════════════════════════════════════
+// SETTLEMENT TAB — FACTORIES & WHOLESALERS
+// ═══════════════════════════════════════════════
+function renderFactories(factories,fy){
+  const el=document.getElementById('factoryGrid');
+  if(!factories.length){el.innerHTML='<p style="color:#bbb;font-size:.85rem;">No factory data. Enter trades first.</p>';return;}
+  el.innerHTML=factories.map(f=>partyCard('factory',f,fy)).join('');
+}
+function renderWholesalers(wholesalers,fy){
+  const el=document.getElementById('wholesalerGrid');
+  if(!wholesalers.length){el.innerHTML='<p style="color:#bbb;font-size:.85rem;">No wholesaler data. Enter trades first.</p>';return;}
+  el.innerHTML=wholesalers.map(w=>partyCard('wholesaler',w,fy)).join('');
+}
+
+function partyCard(type,p,fy){
+  const due=parseFloat(p.balance_due||0), earned=parseFloat(p.brokerage_earned||0), settled=parseFloat(p.brokerage_settled||0);
+  const badgeClass=due<=0?'zero':due>5000?'overdue':'has-due';
+  const badgeText =due<=0?'✅ Settled':'₹'+Math.round(due).toLocaleString('en-IN')+' due';
+  const mobile=p.mobile||'';
+  return `<div class="party-card ${due<=0?'settled':due>5000?'due':''}" id="card_${type}_${p.id}">
+    <div class="pc-head">
+      <div><div class="pc-name">${esc(p.name)}</div><div class="pc-sub">${mobile?'📱 '+mobile:''}</div></div>
+      <span class="due-badge ${badgeClass}">${badgeText}</span>
+    </div>
+    <div class="pc-stats">
+      <div class="pc-stat"><label>Trades</label><div class="v">${p.trades}</div></div>
+      <div class="pc-stat"><label>Bags</label><div class="v">${parseInt(p.total_bags).toLocaleString('en-IN')}</div></div>
+      <div class="pc-stat"><label>Earned</label><div class="v green">₹${Math.round(earned).toLocaleString('en-IN')}</div></div>
+    </div>
+    <div class="pc-stats">
+      <div class="pc-stat"><label>Settled</label><div class="v">₹${Math.round(settled).toLocaleString('en-IN')}</div></div>
+      <div class="pc-stat"><label>Balance Due</label><div class="v ${due>0?'amber':'green'}">₹${Math.round(due).toLocaleString('en-IN')}</div></div>
+      <div class="pc-stat"><label>Rate</label><div class="v">₹2/bag</div></div>
+    </div>
+    <div class="pc-actions">
+      <input type="number" class="settle-input" id="amt_${type}_${p.id}" placeholder="₹ Amount" value="${due>0?Math.round(due):''}"/>
+      <button class="btn-settle" onclick="openSettle('${type}',${p.id},'${esc(p.name)}')">Mark Settled</button>
+      <button class="btn-wa-sm"  onclick="openBill('${type}',${p.id},'${esc(p.name)}','${mobile}','${fy}')" title="Send WhatsApp">💬</button>
+    </div>
+    <button class="sh-toggle" onclick="toggleHistory(this)">▸ Settlement history</button>
+    <div class="sh-list" id="sh_${type}_${p.id}"></div>
+  </div>`;
+}
+
+async function toggleHistory(btn){
+  const list=btn.nextElementSibling;
+  if(list.style.display==='block'){list.style.display='none';btn.textContent='▸ Settlement history';return;}
+  btn.textContent='▾ Hide history'; list.style.display='block';
+  if(list.dataset.loaded) return;
+  list.dataset.loaded='1';
+  const [,type,id]=list.id.split('_');
+  try{
+    const res=await fetch(`/api/broker/settlements/${type}/${id}`);
+    const rows=await res.json();
+    if(!rows.length){list.innerHTML='<p style="color:#bbb;font-size:.75rem;padding:8px 0;">No settlements yet.</p>';return;}
+    list.innerHTML=rows.map(r=>`<div class="sh-row">
+      <span style="color:var(--text3);font-family:var(--mono)">${new Date(r.settlement_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</span>
+      <span style="color:var(--text3);font-size:.75rem">${r.remarks||''}</span>
+      <span style="color:var(--green);font-family:var(--mono);font-weight:600">₹${parseFloat(r.amount_settled).toLocaleString('en-IN')}</span>
+    </div>`).join('');
+  }catch(e){list.innerHTML='<p style="color:var(--red);font-size:.75rem;">Error loading.</p>';}
+}
+
+// ═══════════════════════════════════════════════
+// SETTLE
+// ═══════════════════════════════════════════════
+function openSettle(type,id,name){
+  const amt=document.getElementById(`amt_${type}_${id}`)?.value||'';
+  document.getElementById('s_type').value  =type;
+  document.getElementById('s_id').value    =id;
+  document.getElementById('s_amount').value=amt;
+  document.getElementById('s_date').value  =new Date().toISOString().split('T')[0];
+  document.getElementById('s_remarks').value='';
+  document.getElementById('sTitle').textContent='Settle — '+name;
+  document.getElementById('sSub').textContent  =`Record brokerage payment from ${name}`;
+  document.getElementById('mSettle').classList.add('show');
+}
+async function confirmSettle(){
+  const type=document.getElementById('s_type').value, id=document.getElementById('s_id').value;
+  const amount=parseFloat(document.getElementById('s_amount').value);
+  const date=document.getElementById('s_date').value, remarks=document.getElementById('s_remarks').value;
+  const fy=document.getElementById('fySelect').value;
+  if(!amount||amount<=0){alert('Enter a valid amount');return;}
+  const res=await fetch('/api/broker/settlements',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({party_type:type,party_id:parseInt(id),amount_settled:amount,settlement_date:date,financial_year:fy,remarks})});
+  if(res.ok){closeMov('mSettle');showToast('✅ Settlement recorded');loadReport();}
+  else{const e=await res.json();alert('Error: '+e.error);}
+}
+
+// ═══════════════════════════════════════════════
+// WHATSAPP SUMMARY (settlement tab)
+// ═══════════════════════════════════════════════
+function openBill(type,id,name,mobile,fy){
+  currentMobile=mobile;
+  const list=reportData?(type==='factory'?reportData.factories:reportData.wholesalers):[];
+  const p=list.find(x=>x.id==id);
+  if(!p){alert('Load report first');return;}
+  const due=Math.round(parseFloat(p.balance_due||0)), earned=Math.round(parseFloat(p.brokerage_earned||0));
+  const settled=Math.round(parseFloat(p.brokerage_settled||0)), bags=parseInt(p.total_bags||0), trades=parseInt(p.trades||0);
+  const msg=[`🌾 *Umiya AgroSetu* — Brokerage Statement`,`━━━━━━━━━━━━━━━━━━━━`,
+    `Party: *${name}*`,`FY: ${fy} (Apr–Mar)`,``,
+    `📦 Total Bags:    ${bags.toLocaleString('en-IN')}`,`📋 Total Trades:  ${trades}`,`💰 Rate: ₹2 per bag`,``,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    `🏦 Earned:  ₹${earned.toLocaleString('en-IN')}`,`✅ Settled: ₹${settled.toLocaleString('en-IN')}`,
+    `📌 *Due:    ₹${due.toLocaleString('en-IN')}*`,`━━━━━━━━━━━━━━━━━━━━`,
+    due<=0?'✅ All dues cleared. Thank you!':'Please settle at your earliest convenience.',``,
+    `— ${CONFIG.brokerName}`,`📱 ${CONFIG.mobile}`,`${CONFIG.siteUrl}`].join('\n');
+  document.getElementById('billText').value=msg;
+  document.getElementById('billSub').textContent=`For ${name}${mobile?' · '+mobile:''}`;
+  document.getElementById('mBill').classList.add('show');
+}
+
+// ═══════════════════════════════════════════════
+// INVOICE TAB — PARTY LIST
+// ═══════════════════════════════════════════════
+function switchPartyType(type){
+  selectedPartyType=type;
+  document.getElementById('btn-factory-list').classList.toggle('active',  type==='factory');
+  document.getElementById('btn-wholesaler-list').classList.toggle('active',type==='wholesaler');
+  renderInvoicePartyList();
+}
+
+function renderInvoicePartyList(){
+  const el=document.getElementById('inv-party-items');
+  if(!reportData){el.innerHTML='<div class="loading">Loading…</div>';return;}
+  const list=selectedPartyType==='factory'?reportData.factories:reportData.wholesalers;
+  if(!list||!list.length){el.innerHTML='<div class="loading" style="padding:20px;">No data for this FY.</div>';return;}
+  el.innerHTML=list.map(p=>{
+    const due=Math.round(parseFloat(p.balance_due||0));
+    return `<div class="inv-party-item ${selectedParty&&selectedParty.id==p.id&&selectedPartyType===selectedParty._type?'selected':''}"
+        onclick="generateInvoice('${selectedPartyType}',${JSON.stringify(p).replace(/"/g,'&quot;')})">
+      <div>
+        <div class="inv-party-name">${esc(p.name)}</div>
+        <div class="inv-party-sub">${parseInt(p.total_bags).toLocaleString('en-IN')} bags · ${p.trades} trades</div>
+      </div>
+      <span class="inv-due-tag ${due<=0?'zero':''}">₹${Math.abs(due).toLocaleString('en-IN')}${due<=0?' ✅':' due'}</span>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// GENERATE INVOICE
+// ═══════════════════════════════════════════════
+async function generateInvoice(type, p){
+  // handle both object and stringified
+  if(typeof p === 'string') p=JSON.parse(p);
+  p._type=type;
+  selectedParty=p;
+  renderInvoicePartyList(); // update selected highlight
+
+  document.getElementById('invTitle').textContent=`Invoice — ${p.name}`;
+  document.getElementById('btnPrint').style.display='';
+  document.getElementById('btnWA').style.display='';
+  document.getElementById('invoiceBody').innerHTML='<div class="loading">Loading trades…</div>';
+
+  const fy=document.getElementById('fySelect').value;
+  const fyYear=parseInt(fy.split('-')[0]);
+  const fyStart=`${fyYear}-04-01`, fyEnd=`${fyYear+1}-03-31`;
+
+  // Fetch all trades for this party this FY (up to 500)
+  const param=type==='factory'?`factory_id=${p.id}`:`wholesaler_id=${p.id}`;
+  const res=await fetch(`/api/broker/trades?${param}&from=${fyStart}&to=${fyEnd}&limit=500`);
+  const data=await res.json();
+  currentInvoiceTrades=data.trades||[];
+
+  renderInvoice(type, p, fy, currentInvoiceTrades);
+}
+
+function renderInvoice(type, p, fy, trades){
+  const earned  =Math.round(parseFloat(p.brokerage_earned||0));
+  const settled =Math.round(parseFloat(p.brokerage_settled||0));
+  const due     =Math.round(parseFloat(p.balance_due||0));
+  const bags    =parseInt(p.total_bags||0);
+  const grossVal=trades.reduce((s,t)=>s+parseInt(t.bags||0)*parseFloat(t.price_per_bag||0),0);
+  const today   =new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+  const invNum  =`AGS-${fy.replace('-','')}-${String(p.id).padStart(3,'0')}`;
+  const fyLabel =`April ${fy.split('-')[0]} – March 20${fy.split('-')[1]}`;
+  const partyLabel=type==='factory'?'Factory / Mill':'Wholesaler / Dealer';
+
+  const tableRows=trades.length?trades.map((t,i)=>{
+    const d=t.trade_date?new Date(t.trade_date+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}):'-';
+    const brkField=type==='factory'?parseFloat(t.factory_brokerage||0):parseFloat(t.wholesaler_brokerage||0);
+    // For factory: show which wholesalers were involved
+    const partyCol=type==='factory'?(t.wholesaler_name||'-'):(t.factory_name||'-');
+    return `<tr>
+      <td class="mono" style="color:var(--text3)">${i+1}</td>
+      <td class="mono">${d}</td>
+      <td>${esc(t.commodity_name||'-')}</td>
+      <td>${esc(partyCol)}</td>
+      <td class="r">${parseInt(t.bags||0).toLocaleString('en-IN')}</td>
+      <td class="r">₹${parseFloat(t.price_per_bag||0).toLocaleString('en-IN')}</td>
+      <td class="r">₹${Math.round(brkField).toLocaleString('en-IN')}</td>
+      ${t.remarks?`<td style="font-size:.72rem;color:#aaa">${esc(t.remarks)}</td>`:'<td style="color:#ddd">—</td>'}
+    </tr>`;
+  }).join(''):`<tr><td colspan="8" style="text-align:center;color:#bbb;padding:28px;">No trades found for this period.</td></tr>`;
+
+  document.getElementById('invoiceBody').innerHTML=`
+  <div class="invoice" id="printInvoice">
+
+    <!-- HEADER -->
+    <div class="inv-top">
+      <div class="inv-brand">
+        <div class="inv-brand-icon">🌾</div>
+        <div>
+          <div class="inv-brand-name">${CONFIG.brokerName}</div>
+          <div class="inv-brand-sub">${CONFIG.address1}, ${CONFIG.address2}</div>
+          <div style="font-size:.72rem;color:var(--text3);margin-top:3px">📱 ${CONFIG.mobile} · ${CONFIG.siteUrl}</div>
+        </div>
+      </div>
+      <div class="inv-meta">
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:4px;">BROKERAGE INVOICE</div>
+        <div class="inv-num">${invNum}</div>
+        <div class="inv-date">Date: ${today}</div>
+        <div class="inv-date" style="margin-top:3px">Period: ${fyLabel}</div>
+      </div>
+    </div>
+
+    <!-- FROM / TO -->
+    <div class="inv-parties">
+      <div class="inv-from">
+        <div class="inv-party-label">From (Broker)</div>
+        <div class="inv-party-name2">${CONFIG.brokerName}</div>
+        <div class="inv-party-detail">${CONFIG.address1}<br>${CONFIG.address2}<br>📱 ${CONFIG.mobile}</div>
+      </div>
+      <div class="inv-to">
+        <div class="inv-party-label">Bill To (${partyLabel})</div>
+        <div class="inv-party-name2">${esc(p.name)}</div>
+        <div class="inv-party-detail">${type==='factory'?'Factory / Mill':'Wholesaler / Dealer'}<br>${p.mobile?'📱 '+p.mobile:''}<br>FY: ${fy}</div>
+      </div>
+    </div>
+
+    <!-- TRADE TABLE -->
+    <table class="inv-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Date</th>
+          <th>Commodity</th>
+          <th>${type==='factory'?'Wholesaler':'Factory'}</th>
+          <th class="r">Bags</th>
+          <th class="r">Price/Bag</th>
+          <th class="r">Brokerage (₹2/bag)</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>${tableRows}</tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" style="font-weight:700">TOTAL</td>
+          <td class="r">${bags.toLocaleString('en-IN')} bags</td>
+          <td class="r" style="color:var(--text3)">—</td>
+          <td class="r" style="color:var(--green)">₹${earned.toLocaleString('en-IN')}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- SUMMARY BOX -->
+    <div class="inv-summary">
+      <div class="inv-sum-box">
+        <div class="inv-sum-row"><span class="lbl">Gross Trade Value</span><span class="val">₹${Math.round(grossVal).toLocaleString('en-IN')}</span></div>
+        <div class="inv-sum-row"><span class="lbl">Total Bags Transacted</span><span class="val">${bags.toLocaleString('en-IN')}</span></div>
+        <div class="inv-sum-row"><span class="lbl">Brokerage Rate</span><span class="val">₹2 per bag</span></div>
+        <div class="inv-sum-row"><span class="lbl">Brokerage Earned</span><span class="val">₹${earned.toLocaleString('en-IN')}</span></div>
+        <div class="inv-sum-row"><span class="lbl">Already Settled</span><span class="val">₹${settled.toLocaleString('en-IN')}</span></div>
+        <div class="inv-sum-row" style="font-size:1.1rem">
+          <span class="lbl" style="font-weight:700">💰 BALANCE DUE</span>
+          <span class="val" style="font-size:1.2rem">₹${due.toLocaleString('en-IN')}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="inv-footer">
+      <div class="inv-note">
+        <strong>Payment Request</strong><br>
+        Kindly settle the outstanding brokerage amount of <strong>₹${due.toLocaleString('en-IN')}</strong> at your earliest convenience.<br>
+        For any queries, contact: ${CONFIG.mobile}<br>
+        <span style="color:var(--text3);font-size:.7rem;">Invoice Generated by: ${CONFIG.siteName} · www.${CONFIG.siteUrl}</span>
+      </div>
+      <div class="inv-sig">
+        <div>Authorised Signatory</div>
+        <div class="sig-name">${CONFIG.brokerName}</div>
+        <div style="font-size:.72rem;color:var(--text3)">${CONFIG.companyLine}</div>
+      </div>
+    </div>
+
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// PDF DOWNLOAD (standalone)
+// ═══════════════════════════════════════════════
+async function downloadPDF(){
+  if(!selectedParty){ showToast('Select a party first','err'); return; }
+  const btn=document.getElementById('btnPDF');
+  btn.textContent='⏳ Generating…'; btn.disabled=true;
+  try{
+    await generatePDFBlob(true); // true = download only
+    showToast('✅ PDF downloaded');
+  } catch(e){
+    showToast('PDF error: '+e.message, true);
+  } finally {
+    btn.textContent='📄 Download PDF'; btn.disabled=false;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// CORE PDF GENERATOR
+// ═══════════════════════════════════════════════
+async function generatePDFBlob(downloadOnly=false){
+  const inv = document.getElementById('printInvoice');
+  if(!inv) throw new Error('Invoice not rendered');
+
+  // Temporarily make invoice full-width for capture
+  const origStyle = inv.style.cssText;
+  inv.style.width  = '900px';
+  inv.style.padding= '24px';
+
+  const canvas = await html2canvas(inv, {
+    scale:       2,
+    useCORS:     true,
+    logging:     false,
+    backgroundColor: '#ffffff',
+  });
+
+  inv.style.cssText = origStyle;
+
+  const { jsPDF } = window.jspdf;
+  const pdf  = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const pW   = pdf.internal.pageSize.getWidth();
+  const pH   = pdf.internal.pageSize.getHeight();
+  const margin = 10;
+  const imgW = pW - margin*2;
+  const imgH = (canvas.height * imgW) / canvas.width;
+
+  const imgData = canvas.toDataURL('image/png');
+
+  // If invoice is taller than one page, split across pages
+  let yPos = margin;
+  let remaining = imgH;
+  let sourceY = 0;
+  const pageContentH = pH - margin*2;
+
+  while(remaining > 0){
+    const sliceH = Math.min(remaining, pageContentH);
+    const sliceCanvas = document.createElement('canvas');
+    sliceCanvas.width  = canvas.width;
+    sliceCanvas.height = (sliceH / imgH) * canvas.height;
+    const ctx = sliceCanvas.getContext('2d');
+    ctx.drawImage(canvas, 0, sourceY * (canvas.height / imgH), canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height);
+    pdf.addImage(sliceCanvas.toDataURL('image/png'),'PNG', margin, yPos, imgW, sliceH);
+    remaining -= sliceH;
+    sourceY   += sliceH;
+    if(remaining > 0){ pdf.addPage(); yPos = margin; }
+  }
+
+  const fy  = document.getElementById('fySelect').value;
+  const fname = `AgroSetu-Invoice-${esc(selectedParty.name).replace(/\s+/g,'-')}-FY${fy}.pdf`;
+
+  if(downloadOnly){
+    pdf.save(fname);
+    return { pdf, fname };
+  }
+  return { pdf, fname };
+}
+
+// ═══════════════════════════════════════════════
+// INVOICE WHATSAPP
+// ═══════════════════════════════════════════════
+function sendInvoiceWA(){
+  if(!selectedParty){ showToast('Select a party first','err'); return; }
+  const p=selectedParty, fy=document.getElementById('fySelect').value;
+  const due    =Math.round(parseFloat(p.balance_due||0));
+  const earned =Math.round(parseFloat(p.brokerage_earned||0));
+  const bags   =parseInt(p.total_bags||0);
+  currentMobile=p.mobile||'';
+
+  const lines=[
+    `🌾 *Umiya AgroSetu* — Brokerage Invoice`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+    `*Invoice No:* AGS-${fy.replace('-','')}-${String(p.id).padStart(3,'0')}`,
+    `*Bill To:* ${p.name}`,
+    `*Period:* FY ${fy} (Apr–Mar)`,``,
+    `📦 Total Bags: ${bags.toLocaleString('en-IN')}`,
+    `📋 Total Trades: ${p.trades}`,
+    `💰 Rate: ₹2 per bag`,``,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+    `Brokerage Earned: ₹${earned.toLocaleString('en-IN')}`,
+  ];
+  if(currentInvoiceTrades.length){
+    lines.push(``,`*Trade Summary:*`);
+    currentInvoiceTrades.slice(0,5).forEach(t=>{
+      const d=t.trade_date?new Date(t.trade_date+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short'}):'';
+      const brk=selectedPartyType==='factory'?parseFloat(t.factory_brokerage||0):parseFloat(t.wholesaler_brokerage||0);
+      lines.push(`  ${d} · ${t.commodity_name} · ${t.bags} bags → ₹${Math.round(brk)}`);
+    });
+    if(currentInvoiceTrades.length>5) lines.push(`  ... and ${currentInvoiceTrades.length-5} more trades`);
+  }
+  lines.push(``,`━━━━━━━━━━━━━━━━━━━━━━`,
+    `📌 *Balance Due: ₹${due.toLocaleString('en-IN')}*`,``,
+    due<=0?`✅ All dues cleared. Thank you!`:`Please find the detailed invoice PDF attached.\nKindly settle at your earliest convenience.`,``,
+    `— ${CONFIG.brokerName}`,
+    `📱 ${CONFIG.mobile}`,
+    `${CONFIG.siteUrl}`
+  );
+  document.getElementById('billText').value=lines.join('\n');
+  document.getElementById('billSub').textContent=`Invoice for ${p.name}${p.mobile?' · '+p.mobile:''}`;
+  document.getElementById('mBill').classList.add('show');
+}
+
+async function generatePDFandOpenWA(){
+  const btn=document.getElementById('btnSendWA');
+  const status=document.getElementById('pdfGenStatus');
+  btn.disabled=true; btn.textContent='⏳ Generating PDF…';
+  status.style.display='block';
+  try{
+    // Step 1: generate + download PDF
+    await generatePDFBlob(true);
+    status.textContent='✅ PDF downloaded! Opening WhatsApp…';
+    // Step 2: small delay so user sees feedback, then open WhatsApp
+    await new Promise(r=>setTimeout(r,800));
+    const text=document.getElementById('billText').value;
+    const url=currentMobile
+      ? `https://web.whatsapp.com/send?phone=91${currentMobile.replace(/\D/g,'')}&text=${encodeURIComponent(text)}`
+      : `https://web.whatsapp.com`;
+    window.open(url,'_blank');
+    closeMov('mBill');
+    showToast('📄 PDF downloaded · WhatsApp opened — attach the PDF file 📎');
+  } catch(e){
+    showToast('Error: '+e.message, true);
+    status.style.display='none';
+  } finally {
+    btn.disabled=false;
+    btn.textContent='📄 Download PDF + Open WhatsApp';
+    setTimeout(()=>{ status.style.display='none'; status.textContent='⏳ Generating PDF…'; }, 3000);
+  }
+}
+function closeMov(id){ document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.mov').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('show');}));
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function showToast(msg,err=false){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'+(err?' err':''); setTimeout(()=>t.className='toast',3500); }
+async function logout(){ await fetch('/api/broker/logout',{method:'POST'}); window.location='/broker/login'; }
+
+init();
+</script>
+</body>
+</html>

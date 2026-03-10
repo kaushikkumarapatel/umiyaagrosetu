@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Master Data — AgroSetu Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#f0f2f0;font-family:'Source Sans 3',sans-serif;min-height:100vh;}
+    .nav{background:#1e3d1a;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
+    .nav-brand{color:#fff;font-size:1rem;font-weight:700;}
+    .nav-links{display:flex;gap:8px;align-items:center;}
+    .nav-btn{padding:6px 14px;border-radius:7px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;text-decoration:none;display:inline-block;}
+    .btn-price{background:#f5a623;color:#1e3d1a;}
+    .btn-logout{background:transparent;color:#ccc;border:1px solid #444;}
+    .btn-logout:hover{border-color:#888;color:#fff;}
+    .main{max-width:1200px;margin:0 auto;padding:28px 20px;}
+    .page-title{font-size:1.4rem;font-weight:700;color:#1e3d1a;margin-bottom:4px;}
+    .page-sub{font-size:.83rem;color:#888;margin-bottom:22px;}
+    .tab-bar{display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid #d8e8d8;}
+    .tab-btn{padding:10px 26px;font-size:.88rem;font-weight:700;cursor:pointer;border:none;border-radius:8px 8px 0 0;font-family:inherit;background:transparent;color:#888;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;}
+    .tab-btn.active{color:#1e3d1a;border-bottom-color:#2d5a27;background:#fff;}
+    .tab-btn:hover:not(.active){color:#2d5a27;background:#eaf2ea;}
+    .cols{display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start;}
+    .form-card{background:#fff;border-radius:14px;padding:26px 24px;box-shadow:0 2px 10px rgba(0,0,0,.07);}
+    .form-card h2{font-size:.95rem;font-weight:700;color:#1e3d1a;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #f0f4f0;}
+    label{display:block;font-size:.75rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-top:14px;margin-bottom:5px;}
+    label .opt{font-weight:400;color:#bbb;text-transform:none;letter-spacing:0;font-size:.72rem;}
+    input,select{width:100%;padding:10px 13px;border:1.5px solid #d0d8d0;border-radius:8px;font-size:.9rem;font-family:inherit;transition:border .15s;}
+    input:focus,select:focus{outline:none;border-color:#2d5a27;box-shadow:0 0 0 3px rgba(45,90,39,.09);}
+    .btn-create{width:100%;margin-top:18px;padding:12px;background:#2d5a27;color:#fff;border:none;border-radius:9px;font-size:.93rem;font-weight:700;cursor:pointer;font-family:inherit;}
+    .btn-create:hover{background:#1e3d1a;}
+    .msg{padding:10px 13px;border-radius:8px;font-size:.82rem;margin-top:12px;display:none;}
+    .msg.ok{background:#e8f5e8;color:#2d5a27;border:1px solid #a8d8a8;display:block;}
+    .msg.err{background:#fdecea;color:#c0392b;border:1px solid #f5c6c6;display:block;}
+    .list-card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.07);overflow:hidden;}
+    .list-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #f0f4f0;}
+    .list-header h2{font-size:.95rem;font-weight:700;color:#1e3d1a;}
+    .list-count{background:#f0f4f0;color:#555;font-size:.74rem;font-weight:700;padding:3px 10px;border-radius:20px;}
+    table{width:100%;border-collapse:collapse;}
+    thead th{background:#f8faf8;padding:10px 16px;font-size:.72rem;font-weight:700;text-align:left;color:#666;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid #eee;}
+    tbody td{padding:13px 16px;font-size:.86rem;border-bottom:1px solid #f5f5f5;vertical-align:middle;}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr:hover{background:#fafcfa;}
+    .n{font-weight:700;color:#1e3d1a;font-size:.9rem;}
+    .s{font-size:.73rem;color:#aaa;margin-top:2px;}
+    .ba{background:#e8f5e8;color:#2d5a27;padding:3px 9px;border-radius:20px;font-size:.7rem;font-weight:700;border:1px solid #a8d8a8;}
+    .bi{background:#fdecea;color:#c0392b;padding:3px 9px;border-radius:20px;font-size:.7rem;font-weight:700;border:1px solid #f5c6c6;}
+    .pill{background:#f0f4f0;color:#666;padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:600;}
+    .ab{padding:5px 11px;border-radius:6px;font-size:.74rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;margin-right:4px;margin-bottom:2px;white-space:nowrap;}
+    .a1{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;}.a1:hover{background:#1565c0;color:#fff;}
+    .a2{background:#fff3e0;color:#e65100;border:1px solid #ffcc80;}.a2:hover{background:#e65100;color:#fff;}
+    .a3{background:#f3e5f5;color:#6a1b9a;border:1px solid #ce93d8;}.a3:hover{background:#6a1b9a;color:#fff;}
+    .a4{background:#f0f4f0;color:#444;border:1px solid #d0d8d0;}.a4:hover{background:#444;color:#fff;}
+    .empty td{text-align:center;color:#bbb;padding:40px 16px;font-size:.85rem;}
+    /* DRAWER */
+    .dov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:200;align-items:flex-start;justify-content:flex-end;}
+    .dov.show{display:flex;}
+    .drw{background:#fff;width:100%;max-width:480px;height:100vh;overflow-y:auto;padding:28px 26px;box-shadow:-10px 0 40px rgba(0,0,0,.15);}
+    .dtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .dtop h2{font-size:1.05rem;font-weight:700;color:#1e3d1a;}
+    .dcls{background:#f0f4f0;border:none;padding:7px 14px;border-radius:7px;cursor:pointer;font-size:.82rem;font-weight:600;font-family:inherit;}
+    .dsub{font-size:.8rem;color:#888;margin-bottom:16px;}
+    .dsh{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#666;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #eee;}
+    .ar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid #eee;border-radius:8px;margin-bottom:7px;}
+    .an{font-size:.88rem;font-weight:600;color:#222;}
+    .as{font-size:.72rem;color:#aaa;margin-top:1px;}
+    .tb{padding:5px 13px;border-radius:6px;font-size:.74rem;font-weight:700;cursor:pointer;border:none;font-family:inherit;}
+    .tb.on{background:#e8f5e8;color:#2d5a27;border:1px solid #a8d8a8;}.tb.on:hover{background:#c0392b;color:#fff;border-color:#c0392b;}
+    .tb.off{background:#f0f4f0;color:#666;border:1px solid #d0d8d0;}.tb.off:hover{background:#2d5a27;color:#fff;}
+    /* MODAL */
+    .mov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:300;}
+    .mov.show{display:flex;}
+    .mod{background:#fff;border-radius:14px;padding:30px 28px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+    .mod h3{font-size:1rem;font-weight:700;color:#1e3d1a;margin-bottom:18px;}
+    .ma{display:flex;gap:10px;margin-top:18px;}
+    .ma .ok{flex:1;padding:10px;background:#2d5a27;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;}
+    .ma .cn{flex:1;padding:10px;background:#f4f7f4;color:#666;border:1px solid #ddd;border-radius:8px;cursor:pointer;font-family:inherit;}
+    @media(max-width:768px){.cols{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-brand">🌾 AgroSetu — Admin</div>
+  <div class="nav-links">
+    <a href="/admin" class="nav-btn btn-price">⚙️ Price Entry</a>
+    <a href="/admin/logout" class="nav-btn btn-logout">Logout</a>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-title">🗂️ Master Data Management</div>
+  <div class="page-sub">Manage brokers · factories · wholesalers</div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('brokers')">👥 Brokers</button>
+    <button class="tab-btn"        onclick="switchTab('factories')">🏭 Factories</button>
+    <button class="tab-btn"        onclick="switchTab('wholesalers')">🛒 Wholesalers</button>
+  </div>
+
+  <!-- BROKERS TAB -->
+  <div id="tab-brokers">
+    <div class="cols">
+      <div class="form-card">
+        <h2>➕ Create New Broker</h2>
+        <label>Full Name</label><input type="text" id="b_name" placeholder="e.g. Arvindbhai Patel"/>
+        <label>Mobile Number</label><input type="tel" id="b_mobile" placeholder="10-digit mobile" maxlength="10"/>
+        <label>Email <span class="opt">(optional)</span></label><input type="email" id="b_email" placeholder="broker@email.com"/>
+        <label>Password</label><input type="password" id="b_password" placeholder="Set login password"/>
+        <button class="btn-create" onclick="createBroker()">✅ Create Broker</button>
+        <div class="msg" id="b_msg"></div>
+      </div>
+      <div class="list-card">
+        <div class="list-header"><h2>All Brokers</h2><span class="list-count" id="b_count">—</span></div>
+        <table><thead><tr><th>Broker</th><th>Factories</th><th>Wholesalers</th><th>Trades</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="b_list"><tr class="empty"><td colspan="6">Loading...</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- FACTORIES TAB -->
+  <div id="tab-factories" style="display:none;">
+    <div class="cols">
+      <div class="form-card">
+        <h2>➕ Add Factory / Mill</h2>
+        <label>Factory Name</label><input type="text" id="f_name" placeholder="e.g. Bhavesh Oil Mill"/>
+        <button class="btn-create" onclick="createFactory()">✅ Add Factory</button>
+        <div class="msg" id="f_msg"></div>
+      </div>
+      <div class="list-card">
+        <div class="list-header"><h2>All Factories</h2><span class="list-count" id="f_count">—</span></div>
+        <table><thead><tr><th>Factory Name</th><th>Assigned Brokers</th><th>Trades</th><th>Action</th></tr></thead>
+        <tbody id="f_list"><tr class="empty"><td colspan="4">Loading...</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHOLESALERS TAB -->
+  <div id="tab-wholesalers" style="display:none;">
+    <div class="cols">
+      <div class="form-card">
+        <h2>➕ Add Wholesaler</h2>
+        <label>Full Name</label><input type="text" id="w_name"     placeholder="e.g. Ramesh Traders"/>
+        <label>Mobile Number</label><input type="tel"  id="w_mobile"   placeholder="10-digit mobile" maxlength="10"/>
+        <label>WhatsApp <span class="opt">(if different)</span></label><input type="tel" id="w_whatsapp" placeholder="Leave blank → same as mobile"/>
+        <label>City / Town</label><input type="text" id="w_city" placeholder="e.g. Mehsana"/>
+        <button class="btn-create" onclick="createWholesaler()">✅ Add Wholesaler</button>
+        <div class="msg" id="w_msg"></div>
+      </div>
+      <div class="list-card">
+        <div class="list-header"><h2>All Wholesalers</h2><span class="list-count" id="w_count">—</span></div>
+        <table><thead><tr><th>Wholesaler</th><th>City</th><th>Brokers</th><th>Trades</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="w_list"><tr class="empty"><td colspan="6">Loading...</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ASSIGN DRAWER -->
+<div class="dov" id="dov" onclick="maybeDClose(event)">
+  <div class="drw">
+    <div class="dtop"><h2 id="dtitle">Assign</h2><button class="dcls" onclick="closeDrawer()">✕ Close</button></div>
+    <p class="dsub">Click buttons to assign or unassign</p>
+    <div class="dsh">🏭 Factories</div><div id="d_factories">Loading...</div>
+    <div class="dsh">🛒 Wholesalers</div><div id="d_wholesalers">Loading...</div>
+  </div>
+</div>
+
+<!-- RESET PW MODAL -->
+<div class="mov" id="mReset">
+  <div class="mod">
+    <h3>🔑 Reset Broker Password</h3>
+    <input type="hidden" id="r_id"/>
+    <label>New Password</label><input type="password" id="r_pw" placeholder="New password"/>
+    <div class="ma"><button class="cn" onclick="closeMod('mReset')">Cancel</button><button class="ok" onclick="doReset()">Reset</button></div>
+  </div>
+</div>
+
+<!-- EDIT FACTORY MODAL -->
+<div class="mov" id="mEF">
+  <div class="mod">
+    <h3>✏️ Edit Factory</h3>
+    <input type="hidden" id="ef_id"/>
+    <label>Factory Name</label><input type="text" id="ef_name"/>
+    <div class="ma"><button class="cn" onclick="closeMod('mEF')">Cancel</button><button class="ok" onclick="doEditFactory()">Save</button></div>
+  </div>
+</div>
+
+<!-- EDIT WHOLESALER MODAL -->
+<div class="mov" id="mEW">
+  <div class="mod">
+    <h3>✏️ Edit Wholesaler</h3>
+    <input type="hidden" id="ew_id"/>
+    <label>Name</label><input type="text" id="ew_name"/>
+    <label>Mobile</label><input type="tel" id="ew_mobile" maxlength="10"/>
+    <label>WhatsApp</label><input type="tel" id="ew_wa"/>
+    <label>City</label><input type="text" id="ew_city"/>
+    <div class="ma"><button class="cn" onclick="closeMod('mEW')">Cancel</button><button class="ok" onclick="doEditWholesaler()">Save</button></div>
+  </div>
+</div>
+
+<script>
+// ── TABS ──
+const TABS=['brokers','factories','wholesalers'];
+function switchTab(t){
+  TABS.forEach((x,i)=>{
+    document.getElementById('tab-'+x).style.display=x===t?'':'none';
+    document.querySelectorAll('.tab-btn')[i].classList.toggle('active',x===t);
+  });
+}
+
+// ── BROKERS ──
+async function loadBrokers(){
+  const r=await fetch('/api/admin/brokers'); const d=await r.json();
+  document.getElementById('b_count').textContent=d.length+' broker'+(d.length!==1?'s':'');
+  const tb=document.getElementById('b_list');
+  if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="6">No brokers yet.</td></tr>';return;}
+  tb.innerHTML=d.map(b=>`<tr>
+    <td><div class="n">${b.name}</div><div class="s">${b.mobile}${b.email?' · '+b.email:''}</div></td>
+    <td><span class="pill">${b.factory_count}</span></td>
+    <td><span class="pill">${b.wholesaler_count}</span></td>
+    <td><span class="pill">${b.trade_count}</span></td>
+    <td><span class="${b.is_active?'ba':'bi'}">${b.is_active?'Active':'Inactive'}</span></td>
+    <td>
+      <button class="ab a1" onclick="openDrawer(${b.id},'${b.name}')">🔗 Assign</button>
+      <button class="ab a3" onclick="openReset(${b.id})">🔑 Reset PW</button>
+      <button class="ab a2" onclick="toggleBroker(${b.id},${!b.is_active})">${b.is_active?'Deactivate':'Activate'}</button>
+    </td></tr>`).join('');
+}
+async function createBroker(){
+  const body={name:g('b_name'),mobile:g('b_mobile'),email:g('b_email'),password:g('b_password')};
+  const msg=document.getElementById('b_msg');msg.className='msg';
+  if(!body.name||!body.mobile||!body.password){msg.className='msg err';msg.textContent='Name, mobile and password required.';return;}
+  const r=await fetch('/api/admin/brokers',{method:'POST',headers:h,body:JSON.stringify(body)});
+  if(r.ok){msg.className='msg ok';msg.textContent='✅ Broker created!';['b_name','b_mobile','b_email','b_password'].forEach(id=>document.getElementById(id).value='');loadBrokers();}
+  else{const d=await r.json();msg.className='msg err';msg.textContent='❌ '+d.error;}
+}
+async function toggleBroker(id,s){await fetch(`/api/admin/brokers/${id}`,{method:'PUT',headers:h,body:JSON.stringify({is_active:s})});loadBrokers();}
+
+// ── FACTORIES ──
+async function loadFactories(){
+  const r=await fetch('/api/admin/factories');const d=await r.json();
+  document.getElementById('f_count').textContent=d.length+' factor'+(d.length!==1?'ies':'y');
+  const tb=document.getElementById('f_list');
+  if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="4">No factories yet.</td></tr>';return;}
+  tb.innerHTML=d.map(f=>`<tr>
+    <td><div class="n">${f.name}</div></td>
+    <td><span class="pill">${f.broker_count} broker${f.broker_count!='1'?'s':''}</span></td>
+    <td><span class="pill">${f.trade_count} trades</span></td>
+    <td><button class="ab a4" onclick="openEF(${f.id},'${f.name.replace(/'/g,"\\'")}')">✏️ Edit</button></td></tr>`).join('');
+}
+async function createFactory(){
+  const name=g('f_name');const msg=document.getElementById('f_msg');msg.className='msg';
+  if(!name){msg.className='msg err';msg.textContent='Factory name required.';return;}
+  const r=await fetch('/api/admin/factories',{method:'POST',headers:h,body:JSON.stringify({name})});
+  if(r.ok){msg.className='msg ok';msg.textContent='✅ Factory added!';document.getElementById('f_name').value='';loadFactories();}
+  else{const d=await r.json();msg.className='msg err';msg.textContent='❌ '+d.error;}
+}
+function openEF(id,name){document.getElementById('ef_id').value=id;document.getElementById('ef_name').value=name;document.getElementById('mEF').classList.add('show');}
+async function doEditFactory(){
+  const id=document.getElementById('ef_id').value,name=document.getElementById('ef_name').value.trim();
+  if(!name)return;
+  await fetch(`/api/admin/factories/${id}`,{method:'PUT',headers:h,body:JSON.stringify({name})});
+  closeMod('mEF');loadFactories();
+}
+
+// ── WHOLESALERS ──
+async function loadWholesalers(){
+  const r=await fetch('/api/admin/wholesalers');const d=await r.json();
+  document.getElementById('w_count').textContent=d.length+' wholesaler'+(d.length!==1?'s':'');
+  const tb=document.getElementById('w_list');
+  if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="6">No wholesalers yet.</td></tr>';return;}
+  tb.innerHTML=d.map(w=>`<tr>
+    <td><div class="n">${w.name}</div><div class="s">${w.mobile}${w.whatsapp_number&&w.whatsapp_number!==w.mobile?' · WA:'+w.whatsapp_number:''}</div></td>
+    <td>${w.city||'<span style="color:#ddd">—</span>'}</td>
+    <td><span class="pill">${w.broker_count} broker${w.broker_count!='1'?'s':''}</span></td>
+    <td><span class="pill">${w.trade_count} trades</span></td>
+    <td><span class="${w.is_active?'ba':'bi'}">${w.is_active?'Active':'Inactive'}</span></td>
+    <td>
+      <button class="ab a4" onclick='openEW(${JSON.stringify(w)})'>✏️ Edit</button>
+      <button class="ab a2" onclick="toggleW(${w.id},${!w.is_active})">${w.is_active?'Deactivate':'Activate'}</button>
+    </td></tr>`).join('');
+}
+async function createWholesaler(){
+  const body={name:g('w_name'),mobile:g('w_mobile'),whatsapp_number:g('w_whatsapp')||g('w_mobile'),city:g('w_city')};
+  const msg=document.getElementById('w_msg');msg.className='msg';
+  if(!body.name||!body.mobile){msg.className='msg err';msg.textContent='Name and mobile required.';return;}
+  const r=await fetch('/api/admin/wholesalers',{method:'POST',headers:h,body:JSON.stringify(body)});
+  if(r.ok){msg.className='msg ok';msg.textContent='✅ Wholesaler added!';['w_name','w_mobile','w_whatsapp','w_city'].forEach(id=>document.getElementById(id).value='');loadWholesalers();}
+  else{const d=await r.json();msg.className='msg err';msg.textContent='❌ '+d.error;}
+}
+function openEW(w){document.getElementById('ew_id').value=w.id;document.getElementById('ew_name').value=w.name;document.getElementById('ew_mobile').value=w.mobile;document.getElementById('ew_wa').value=w.whatsapp_number||'';document.getElementById('ew_city').value=w.city||'';document.getElementById('mEW').classList.add('show');}
+async function doEditWholesaler(){
+  const id=document.getElementById('ew_id').value;
+  const body={name:document.getElementById('ew_name').value.trim(),mobile:document.getElementById('ew_mobile').value.trim(),whatsapp_number:document.getElementById('ew_wa').value.trim(),city:document.getElementById('ew_city').value.trim()};
+  await fetch(`/api/admin/wholesalers/${id}`,{method:'PUT',headers:h,body:JSON.stringify(body)});
+  closeMod('mEW');loadWholesalers();
+}
+async function toggleW(id,s){await fetch(`/api/admin/wholesalers/${id}`,{method:'PUT',headers:h,body:JSON.stringify({is_active:s})});loadWholesalers();}
+
+// ── ASSIGN DRAWER ──
+let curBroker=null;
+async function openDrawer(id,name){curBroker=id;document.getElementById('dtitle').textContent='Assign — '+name;document.getElementById('dov').classList.add('show');await loadDrawer(id);}
+function maybeDClose(e){if(e.target===document.getElementById('dov'))closeDrawer();}
+function closeDrawer(){document.getElementById('dov').classList.remove('show');}
+async function loadDrawer(id){
+  document.getElementById('d_factories').innerHTML='<p style="color:#aaa;font-size:.82rem;">Loading...</p>';
+  document.getElementById('d_wholesalers').innerHTML='<p style="color:#aaa;font-size:.82rem;">Loading...</p>';
+  const [fr,wr]=await Promise.all([fetch(`/api/admin/brokers/${id}/factories`),fetch(`/api/admin/brokers/${id}/wholesalers`)]);
+  const fa=await fr.json(),wa=await wr.json();
+  document.getElementById('d_factories').innerHTML=fa.length
+    ?fa.map(f=>`<div class="ar"><div><div class="an">${f.name}</div></div><button class="tb ${f.assigned?'on':'off'}" onclick="tAssign('factory',${id},${f.id},${f.assigned})">${f.assigned?'✅ Assigned':'+ Assign'}</button></div>`).join('')
+    :'<p style="color:#aaa;font-size:.82rem;">No factories — add from Factories tab first.</p>';
+  document.getElementById('d_wholesalers').innerHTML=wa.length
+    ?wa.map(w=>`<div class="ar"><div><div class="an">${w.name}</div><div class="as">${w.mobile||''}${w.city?' · '+w.city:''}</div></div><button class="tb ${w.assigned?'on':'off'}" onclick="tAssign('wholesaler',${id},${w.id},${w.assigned})">${w.assigned?'✅ Assigned':'+ Assign'}</button></div>`).join('')
+    :'<p style="color:#aaa;font-size:.82rem;">No wholesalers — add from Wholesalers tab first.</p>';
+}
+async function tAssign(type,bid,pid,assigned){
+  const base=`/api/admin/brokers/${bid}/${type==='factory'?'factories':'wholesalers'}`;
+  const method=assigned?'DELETE':'POST';
+  const url=assigned?`${base}/${pid}`:base;
+  const body=assigned?null:JSON.stringify({[type+'_id']:pid});
+  await fetch(url,{method,headers:h,body});loadDrawer(bid);loadBrokers();
+}
+
+// ── MODALS ──
+function openReset(id){document.getElementById('r_id').value=id;document.getElementById('r_pw').value='';document.getElementById('mReset').classList.add('show');}
+async function doReset(){
+  const id=document.getElementById('r_id').value,pw=document.getElementById('r_pw').value;
+  if(!pw){alert('Please enter a password');return;}
+  await fetch(`/api/admin/brokers/${id}`,{method:'PUT',headers:h,body:JSON.stringify({password:pw})});
+  closeMod('mReset');alert('✅ Password reset!');
+}
+function closeMod(id){document.getElementById(id).classList.remove('show');}
+
+// ── UTILS ──
+const h={'Content-Type':'application/json'};
+const g=id=>document.getElementById(id).value.trim();
+
+// ── INIT ──
+loadBrokers();loadFactories();loadWholesalers();
+</script>
+</body>
+</html>
