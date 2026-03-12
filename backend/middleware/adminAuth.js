@@ -1,12 +1,15 @@
-// middleware/adminAuth.js
-// Simple session-based password protection for /admin routes
-// Password is stored in .env — never hardcoded
-
 function requireAdmin(req, res, next) {
+
   if (req.session && req.session.isAdmin) {
-    return next(); // ✅ logged in — allow through
+    return next();
   }
-  // ❌ not logged in — redirect to login page
+
+  // If API request → return JSON
+  if (req.originalUrl.startsWith("/api/")) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  // If page request → redirect
   res.redirect("/admin/login");
 }
 

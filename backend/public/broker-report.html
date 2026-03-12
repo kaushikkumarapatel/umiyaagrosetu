@@ -393,7 +393,7 @@ const CONFIG = {
   address2:    'Mahesana - 382 002, Gujarat, India',
   mobile:      '9426501245',
   email:       'info@umiyaagrosetu.com',
-  siteUrl:     'umiyaagrosetu.in',        // ← change to .com when ready
+  siteUrl:     'umiyaagrosetu.com',        // ← change to .com when ready
   siteName:    'Umiya AgroSetu',
   companyLine: 'Cattle Feed Broker, APMC Mehsana',
 };
@@ -662,8 +662,8 @@ function renderInvoice(type, p, fy, trades){
     return `<tr>
       <td class="mono" style="color:var(--text3)">${i+1}</td>
       <td class="mono" style="white-space:nowrap">${d}</td>
-      <td>${esc(t.commodity_name||'-')}</td>
-      <td>${esc(partyCol)}</td>
+      <td style="white-space:nowrap">${esc(t.commodity_name||'-')}</td>
+      <td style="white-space:nowrap;padding-left:20px">${esc(partyCol)}</td>
       <td class="r">${parseInt(t.bags||0).toLocaleString('en-IN')}</td>
       <td class="r">₹${parseFloat(t.price_per_bag||0).toLocaleString('en-IN')}</td>
       <td class="r">₹${Math.round(brkField).toLocaleString('en-IN')}</td>

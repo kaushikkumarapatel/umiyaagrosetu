@@ -33,12 +33,7 @@
     body{background:var(--bg);font-family:var(--sans);color:var(--text);min-height:100vh;}
 
     /* ── NAV ── */
-    .nav{
-      background:var(--green);height:56px;padding:0 22px;
-      display:flex;align-items:center;justify-content:space-between;
-      position:sticky;top:0;z-index:100;
-      box-shadow:0 2px 16px rgba(0,0,0,.22);
-    }
+    .nav{background:var(--green);height:56px;padding:0 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.22);}
     .nav-left{display:flex;align-items:center;gap:10px;}
     .nav-brand{color:#fff;font-size:1rem;font-weight:700;letter-spacing:-.2px;}
     .nav-divider{width:1px;height:20px;background:rgba(255,255,255,.2);}
@@ -51,12 +46,7 @@
     /* ── TABS ── */
     .tab-shell{background:var(--green);padding:0 22px;border-top:1px solid rgba(255,255,255,.1);}
     .tab-list{display:flex;gap:0;}
-    .tab-btn{
-      padding:11px 22px;font-size:.84rem;font-weight:600;cursor:pointer;
-      border:none;background:transparent;font-family:var(--sans);
-      color:rgba(255,255,255,.55);border-bottom:3px solid transparent;
-      transition:all .15s;display:flex;align-items:center;gap:7px;
-    }
+    .tab-btn{padding:11px 22px;font-size:.84rem;font-weight:600;cursor:pointer;border:none;background:transparent;font-family:var(--sans);color:rgba(255,255,255,.55);border-bottom:3px solid transparent;transition:all .15s;display:flex;align-items:center;gap:7px;}
     .tab-btn:hover{color:rgba(255,255,255,.85);}
     .tab-btn.active{color:#fff;border-bottom-color:#4ade80;}
     .tab-badge{background:rgba(255,255,255,.18);color:#fff;font-size:.62rem;padding:1px 6px;border-radius:10px;font-family:var(--mono);}
@@ -116,7 +106,7 @@
     .banner.err{background:#f8d7da;color:#721c24;border:1px solid #f5c6c6;display:block;}
     .banner.info{background:#d1ecf1;color:#0c5460;border:1px solid #bee5eb;display:block;}
 
-    /* ── MASTER DATA (Brokers/Factories/Wholesalers) ── */
+    /* ── MASTER DATA ── */
     .sub-tabs{display:flex;gap:4px;margin-bottom:18px;padding-bottom:10px;border-bottom:1.5px solid var(--border);}
     .sub-tab{padding:7px 18px;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;border:none;font-family:var(--sans);background:transparent;color:var(--text3);transition:all .15s;}
     .sub-tab.active{background:var(--green3);color:var(--green);border:1.5px solid var(--green4);}
@@ -213,30 +203,19 @@
 <!-- TAB BAR -->
 <div class="tab-shell">
   <div class="tab-list">
-    <button class="tab-btn active" onclick="switchTab('prices')" id="tbtn-prices">
-      📊 Daily Price Entry
-    </button>
-    <button class="tab-btn" onclick="switchTab('master')" id="tbtn-master">
-      🗂️ Master Data
-    </button>
-    <button class="tab-btn" onclick="switchTab('records')" id="tbtn-records">
-      📋 Price Records
-    </button>
+    <button class="tab-btn active" onclick="switchTab('prices')" id="tbtn-prices">📊 Daily Price Entry</button>
+    <button class="tab-btn" onclick="switchTab('master')" id="tbtn-master">🗂️ Master Data</button>
+    <button class="tab-btn" onclick="switchTab('records')" id="tbtn-records">📋 Price Records</button>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════ -->
-<!-- TAB 1 — DAILY PRICE ENTRY                          -->
-<!-- ════════════════════════════════════════════════════ -->
+<!-- ════════════ TAB 1 — DAILY PRICE ENTRY ════════════ -->
 <div id="tab-prices" class="page">
-
-  <!-- Stats -->
   <div class="stat-row">
     <div class="stat"><label>Today's Entries</label><div class="val" id="st_today">—</div></div>
     <div class="stat"><label>Factories Active</label><div class="val" id="st_fac">—</div></div>
     <div class="stat hi"><label>Last Saved</label><div class="val" id="st_saved">—</div></div>
   </div>
-
   <div class="card">
     <div class="card-head">
       <div class="card-title">📝 Enter Today's Rates</div>
@@ -249,12 +228,7 @@
     <div class="card-body">
       <div class="pe-wrap">
         <table class="pe-table" id="priceTable">
-          <thead>
-            <tr>
-              <th>Factory</th><th>Commodity</th><th>Price (₹)</th>
-              <th>Remarks</th><th>Date</th><th style="width:60px">✕</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Factory</th><th>Commodity</th><th>Price (₹)</th><th>Remarks</th><th>Date</th><th style="width:60px">✕</th></tr></thead>
           <tbody id="priceBody"></tbody>
         </table>
       </div>
@@ -263,12 +237,9 @@
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════ -->
-<!-- TAB 2 — MASTER DATA                                -->
-<!-- ════════════════════════════════════════════════════ -->
+<!-- ════════════ TAB 2 — MASTER DATA ════════════ -->
 <div id="tab-master" class="page" style="display:none;">
 
-  <!-- Sub tabs -->
   <div class="sub-tabs">
     <button class="sub-tab active" onclick="switchSub('brokers')">👥 Brokers</button>
     <button class="sub-tab"        onclick="switchSub('factories')">🏭 Factories</button>
@@ -281,17 +252,25 @@
     <div class="md-cols">
       <div class="form-card">
         <h3>➕ Create New Broker</h3>
-        <label class="fl">Full Name</label><input type="text" id="b_name" class="fi" placeholder="e.g. Arvindbhai Patel"/>
-        <label class="fl">Mobile Number</label><input type="tel" id="b_mobile" class="fi" placeholder="10-digit mobile" maxlength="10"/>
-        <label class="fl">Email <span class="opt">(optional)</span></label><input type="email" id="b_email" class="fi" placeholder="broker@email.com"/>
-        <label class="fl">Password</label><input type="password" id="b_password" class="fi" placeholder="Set login password"/>
+        <label class="fl">Full Name</label>
+        <input type="text"     id="b_name"     class="fi" placeholder="e.g. Arvindbhai Patel"/>
+        <label class="fl">Mobile Number</label>
+        <input type="tel"      id="b_mobile"   class="fi" placeholder="10-digit mobile" maxlength="10"/>
+        <label class="fl">City / Town</label>
+        <input type="text"     id="b_city"     class="fi" placeholder="e.g. Mehsana"/>
+        <label class="fl">Email <span class="opt">(optional)</span></label>
+        <input type="email"    id="b_email"    class="fi" placeholder="broker@email.com"/>
+        <label class="fl">Password</label>
+        <input type="password" id="b_password" class="fi" placeholder="Set login password"/>
         <button class="btn-create" onclick="createBroker()">✅ Create Broker</button>
         <div class="msg" id="b_msg"></div>
       </div>
       <div class="list-card">
         <div class="lh"><h3>All Brokers</h3><span class="badge" id="b_count">0</span></div>
-        <table class="lt"><thead><tr><th>Broker</th><th>Factories</th><th>Wholesalers</th><th>Trades</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody id="b_list"><tr class="empty"><td colspan="6">Loading…</td></tr></tbody></table>
+        <table class="lt">
+          <thead><tr><th>Broker</th><th>City</th><th>Factories</th><th>Wholesalers</th><th>Trades</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="b_list"><tr class="empty"><td colspan="7">Loading…</td></tr></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -301,16 +280,21 @@
     <div class="md-cols">
       <div class="form-card">
         <h3>➕ Add Factory / Mill</h3>
-        <label class="fl">Factory Name *</label><input type="text" id="f_name" class="fi" placeholder="e.g. Bhavesh Oil Mill"/>
-        <label class="fl">City / Town</label><input type="text" id="f_city" class="fi" placeholder="e.g. Mehsana"/>
-        <label class="fl">Contact Number</label><input type="text" id="f_contact" class="fi" placeholder="10-digit mobile"/>
+        <label class="fl">Factory Name *</label>
+        <input type="text" id="f_name"    class="fi" placeholder="e.g. Bhavesh Oil Mill"/>
+        <label class="fl">City / Town</label>
+        <input type="text" id="f_city"    class="fi" placeholder="e.g. Mehsana"/>
+        <label class="fl">Contact Number</label>
+        <input type="text" id="f_contact" class="fi" placeholder="10-digit mobile"/>
         <button class="btn-create" onclick="createFactory()">✅ Add Factory</button>
         <div class="msg" id="f_msg"></div>
       </div>
       <div class="list-card">
         <div class="lh"><h3>All Factories</h3><span class="badge" id="f_count">0</span></div>
-        <table class="lt"><thead><tr><th>Factory Name</th><th>City</th><th>Contact</th><th>Brokers</th><th>Trades</th><th>Status</th><th>Action</th></tr></thead>
-        <tbody id="f_list"><tr class="empty"><td colspan="7">Loading…</td></tr></tbody></table>
+        <table class="lt">
+          <thead><tr><th>Factory Name</th><th>City</th><th>Contact</th><th>Brokers</th><th>Trades</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="f_list"><tr class="empty"><td colspan="7">Loading…</td></tr></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -320,17 +304,23 @@
     <div class="md-cols">
       <div class="form-card">
         <h3>➕ Add Wholesaler</h3>
-        <label class="fl">Full Name</label><input type="text" id="w_name" class="fi" placeholder="e.g. Ramesh Traders"/>
-        <label class="fl">Mobile</label><input type="tel" id="w_mobile" class="fi" placeholder="10-digit mobile" maxlength="10"/>
-        <label class="fl">WhatsApp <span class="opt">(if different)</span></label><input type="tel" id="w_wa" class="fi" placeholder="Leave blank → same as mobile"/>
-        <label class="fl">City / Town</label><input type="text" id="w_city" class="fi" placeholder="e.g. Mehsana"/>
+        <label class="fl">Full Name</label>
+        <input type="text" id="w_name"   class="fi" placeholder="e.g. Ramesh Traders"/>
+        <label class="fl">Mobile</label>
+        <input type="tel"  id="w_mobile" class="fi" placeholder="10-digit mobile" maxlength="10"/>
+        <label class="fl">WhatsApp <span class="opt">(if different from mobile)</span></label>
+        <input type="tel"  id="w_wa"     class="fi" placeholder="Leave blank → same as mobile"/>
+        <label class="fl">City / Town</label>
+        <input type="text" id="w_city"   class="fi" placeholder="e.g. Unjha"/>
         <button class="btn-create" onclick="createWholesaler()">✅ Add Wholesaler</button>
         <div class="msg" id="w_msg"></div>
       </div>
       <div class="list-card">
         <div class="lh"><h3>All Wholesalers</h3><span class="badge" id="w_count">0</span></div>
-        <table class="lt"><thead><tr><th>Wholesaler</th><th>City</th><th>Brokers</th><th>Trades</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody id="w_list"><tr class="empty"><td colspan="6">Loading…</td></tr></tbody></table>
+        <table class="lt">
+          <thead><tr><th>Wholesaler</th><th>City</th><th>Brokers</th><th>Trades</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="w_list"><tr class="empty"><td colspan="6">Loading…</td></tr></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -367,9 +357,7 @@
 
 </div>
 
-<!-- ════════════════════════════════════════════════════ -->
-<!-- TAB 3 — PRICE RECORDS                              -->
-<!-- ════════════════════════════════════════════════════ -->
+<!-- ════════════ TAB 3 — PRICE RECORDS ════════════ -->
 <div id="tab-records" class="page" style="display:none;">
   <div class="card">
     <div class="card-head">
@@ -385,7 +373,7 @@
   </div>
 </div>
 
-<!-- ── ASSIGN DRAWER ── -->
+<!-- ════════════ ASSIGN DRAWER ════════════ -->
 <div class="dov" id="dov" onclick="maybeCloseDrw(event)">
   <div class="drw">
     <div class="dtop"><h2 id="dtitle">Assign</h2><button class="dcls" onclick="closeDrw()">✕ Close</button></div>
@@ -395,47 +383,79 @@
   </div>
 </div>
 
-<!-- ── RESET PW MODAL ── -->
+<!-- ════════════ MODALS ════════════ -->
+
+<!-- Edit Broker -->
+<div class="mov" id="mEB">
+  <div class="mod">
+    <h3>✏️ Edit Broker</h3>
+    <input type="hidden" id="eb_id"/>
+    <label class="fl">Full Name *</label><input type="text"     id="eb_name"   class="fi"/>
+    <label class="fl">Mobile</label>     <input type="tel"      id="eb_mobile" class="fi" maxlength="10"/>
+    <label class="fl">City / Town</label><input type="text"     id="eb_city"   class="fi"/>
+    <label class="fl">Email <span class="opt">(optional)</span></label><input type="email" id="eb_email" class="fi"/>
+    <label class="fl">Status</label>
+    <select id="eb_active" class="fi" style="padding:8px 12px;">
+      <option value="true">✅ Active</option>
+      <option value="false">❌ Inactive</option>
+    </select>
+    <div class="ma">
+      <button class="cn" onclick="closeMov('mEB')">Cancel</button>
+      <button class="ok" onclick="doEB()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Password -->
 <div class="mov" id="mReset">
   <div class="mod">
     <h3>🔑 Reset Password</h3>
     <input type="hidden" id="r_id"/>
     <label class="fl">New Password</label><input type="password" id="r_pw" class="fi" placeholder="New password"/>
-    <div class="ma"><button class="cn" onclick="closeMov('mReset')">Cancel</button><button class="ok" onclick="doReset()">Reset</button></div>
+    <div class="ma">
+      <button class="cn" onclick="closeMov('mReset')">Cancel</button>
+      <button class="ok" onclick="doReset()">Reset</button>
+    </div>
   </div>
 </div>
 
-<!-- ── EDIT FACTORY MODAL ── -->
+<!-- Edit Factory -->
 <div class="mov" id="mEF">
   <div class="mod">
     <h3>✏️ Edit Factory</h3>
     <input type="hidden" id="ef_id"/>
-    <label class="fl">Name *</label><input type="text" id="ef_name" class="fi"/>
-    <label class="fl">City / Town</label><input type="text" id="ef_city" class="fi" placeholder="e.g. Mehsana"/>
+    <label class="fl">Name *</label>       <input type="text" id="ef_name"    class="fi"/>
+    <label class="fl">City / Town</label>  <input type="text" id="ef_city"    class="fi" placeholder="e.g. Mehsana"/>
     <label class="fl">Contact Number</label><input type="text" id="ef_contact" class="fi" placeholder="10-digit mobile"/>
     <label class="fl">Status</label>
     <select id="ef_active" class="fi" style="padding:8px 12px;">
       <option value="true">✅ Active</option>
       <option value="false">❌ Inactive</option>
     </select>
-    <div class="ma"><button class="cn" onclick="closeMov('mEF')">Cancel</button><button class="ok" onclick="doEF()">Save Changes</button></div>
+    <div class="ma">
+      <button class="cn" onclick="closeMov('mEF')">Cancel</button>
+      <button class="ok" onclick="doEF()">Save Changes</button>
+    </div>
   </div>
 </div>
 
-<!-- ── EDIT WHOLESALER MODAL ── -->
+<!-- Edit Wholesaler -->
 <div class="mov" id="mEW">
   <div class="mod">
     <h3>✏️ Edit Wholesaler</h3>
     <input type="hidden" id="ew_id"/>
-    <label class="fl">Name</label><input type="text" id="ew_name" class="fi"/>
-    <label class="fl">Mobile</label><input type="tel" id="ew_mobile" class="fi" maxlength="10"/>
-    <label class="fl">WhatsApp</label><input type="tel" id="ew_wa2" class="fi"/>
-    <label class="fl">City</label><input type="text" id="ew_city" class="fi"/>
-    <div class="ma"><button class="cn" onclick="closeMov('mEW')">Cancel</button><button class="ok" onclick="doEW()">Save</button></div>
+    <label class="fl">Name</label>    <input type="text" id="ew_name"   class="fi"/>
+    <label class="fl">Mobile</label>  <input type="tel"  id="ew_mobile" class="fi" maxlength="10"/>
+    <label class="fl">WhatsApp</label><input type="tel"  id="ew_wa"     class="fi"/>
+    <label class="fl">City</label>    <input type="text" id="ew_city"   class="fi"/>
+    <div class="ma">
+      <button class="cn" onclick="closeMov('mEW')">Cancel</button>
+      <button class="ok" onclick="doEW()">Save Changes</button>
+    </div>
   </div>
 </div>
 
-<!-- ── EDIT COMMODITY MODAL ── -->
+<!-- Edit Commodity -->
 <div class="mov" id="mECM">
   <div class="mod">
     <h3>✏️ Edit Commodity</h3>
@@ -455,25 +475,31 @@
       <option value="true">✅ Active</option>
       <option value="false">❌ Inactive</option>
     </select>
-    <div class="ma"><button class="cn" onclick="closeMov('mECM')">Cancel</button><button class="ok" onclick="doECM()">Save Changes</button></div>
+    <div class="ma">
+      <button class="cn" onclick="closeMov('mECM')">Cancel</button>
+      <button class="ok" onclick="doECM()">Save Changes</button>
+    </div>
   </div>
 </div>
 
-<!-- ── EDIT PRICE MODAL ── -->
+<!-- Edit Price Record -->
 <div class="mov" id="mEP">
   <div class="mod">
     <h3>✏️ Edit Price Record</h3>
     <input type="hidden" id="ep_id"/>
-    <label class="fl">Factory</label><select id="ep_factory" class="fi"></select>
+    <label class="fl">Factory</label>  <select id="ep_factory"   class="fi"></select>
     <label class="fl">Commodity</label><select id="ep_commodity" class="fi"></select>
-    <label class="fl">Price</label><input type="number" id="ep_price" class="fi"/>
-    <label class="fl">Remarks</label><input type="text" id="ep_remarks" class="fi"/>
-    <label class="fl">Date</label><input type="date" id="ep_date" class="fi"/>
-    <div class="ma"><button class="cn" onclick="closeMov('mEP')">Cancel</button><button class="ok" onclick="doEP()">Save</button></div>
+    <label class="fl">Price</label>    <input type="number" id="ep_price"   class="fi"/>
+    <label class="fl">Remarks</label>  <input type="text"   id="ep_remarks" class="fi"/>
+    <label class="fl">Date</label>     <input type="date"   id="ep_date"    class="fi"/>
+    <div class="ma">
+      <button class="cn" onclick="closeMov('mEP')">Cancel</button>
+      <button class="ok" onclick="doEP()">Save</button>
+    </div>
   </div>
 </div>
 
-<!-- ── BROADCAST MODAL ── -->
+<!-- Broadcast Modal -->
 <div class="mov" id="mBcast">
   <div class="mod bmod">
     <div class="bmod-head">💬 WhatsApp Broadcast Preview</div>
@@ -493,403 +519,605 @@
 
 <script>
 // ═══════════════════════════════════════════════════
-// GLOBALS
+// GLOBALS & HELPERS
 // ═══════════════════════════════════════════════════
 const H = {'Content-Type':'application/json'};
-const g = id => document.getElementById(id).value.trim();
-let factories=[], commodities=[], wholesalers=[];
-let currentBroker=null;
+const gv = id => document.getElementById(id).value.trim();
 
-// ═══════════════════════════════════════════════════
-// TAB SWITCHING
-// ═══════════════════════════════════════════════════
-const TABS=['prices','master','records'];
-function switchTab(t){
-  TABS.forEach(x=>{
-    document.getElementById('tab-'+x).style.display=x===t?'':'none';
-    document.getElementById('tbtn-'+x).classList.toggle('active',x===t);
-  });
-  if(t==='records') loadRecords();
-  if(t==='master')  { loadBrokers();loadFactories();loadWholesalers();loadCommodities(); }
-}
+let factories    = [];
+let commodities  = [];
+let currentBroker = null;
+let _wCache = {};  // wholesaler cache to avoid Gujarati name issues in onclick
+let _bCache = {};  // broker cache
 
-const SUBS=['brokers','factories','wholesalers','commodities'];
-function switchSub(s){
-  SUBS.forEach((x,i)=>{
-    document.getElementById('sub-'+x).style.display=x===s?'':'none';
-    document.querySelectorAll('.sub-tab')[i].classList.toggle('active',x===s);
-  });
+// ── Auth-aware fetch: auto-redirects to login on 401 ──
+async function apiFetch(url, opts = {}) {
+  const res = await fetch(url, { credentials: 'include', ...opts });
+  if (res.status === 401) {
+    window.location.replace('/admin/login');
+    throw new Error('Session expired');
+  }
+  return res;
 }
 
 // ═══════════════════════════════════════════════════
-// INIT — load dropdown data
+// TAB & SUB-TAB SWITCHING
 // ═══════════════════════════════════════════════════
-async function init(){
-  try{
-    const [fRes,cRes]=await Promise.all([
+const TABS = ['prices','master','records'];
+function switchTab(t) {
+  TABS.forEach(x => {
+    document.getElementById('tab-'+x).style.display  = x===t ? '' : 'none';
+    document.getElementById('tbtn-'+x).classList.toggle('active', x===t);
+  });
+  if (t === 'records') loadRecords();
+  if (t === 'master')  loadAllMaster();
+}
+
+const SUBS = ['brokers','factories','wholesalers','commodities'];
+function switchSub(s) {
+  SUBS.forEach((x,i) => {
+    document.getElementById('sub-'+x).style.display = x===s ? '' : 'none';
+    document.querySelectorAll('.sub-tab')[i].classList.toggle('active', x===s);
+  });
+}
+
+function loadAllMaster() {
+  loadBrokers();
+  loadFactories();
+  loadWholesalers();
+  loadCommodities();
+}
+
+// ═══════════════════════════════════════════════════
+// INIT — price entry dropdowns
+// ═══════════════════════════════════════════════════
+async function init() {
+  try {
+    const [fRes, cRes] = await Promise.all([
       fetch('/api/factories'),
       fetch('/api/commodities')
     ]);
-    if(fRes.ok) factories   = await fRes.json();
-    if(cRes.ok) commodities = await cRes.json();
+    if (fRes.ok) factories   = await fRes.json();
+    if (cRes.ok) commodities = await cRes.json();
     addPriceRow();
     loadPriceStats();
-  } catch(e){ console.warn('Price entry init error:', e.message); }
+  } catch(e) {
+    console.warn('Price entry init error:', e.message);
+  }
 }
 
 // ═══════════════════════════════════════════════════
-// ── TAB 1: PRICE ENTRY ──────────────────────────
+// TAB 1 — PRICE ENTRY
 // ═══════════════════════════════════════════════════
-function todayStr(){ return new Date().toISOString().split('T')[0]; }
+function todayStr() { return new Date().toISOString().split('T')[0]; }
 
-function buildFactoryOptions(selId=''){
-  return '<option value="">Select Factory</option>'+factories.map(f=>`<option value="${f.id}"${f.id==selId?' selected':''}>${esc(f.name)}</option>`).join('');
+function buildFactoryOptions(selId='') {
+  return '<option value="">Select Factory</option>'
+    + factories.map(f=>`<option value="${f.id}"${f.id==selId?' selected':''}>${esc(f.name)}</option>`).join('');
 }
-function buildCommodityOptions(selId=''){
-  return '<option value="">Select Commodity</option>'+commodities.map(c=>`<option value="${c.id}"${c.id==selId?' selected':''}>${esc(c.name)}</option>`).join('');
+function buildCommodityOptions(selId='') {
+  return '<option value="">Select Commodity</option>'
+    + commodities.map(c=>`<option value="${c.id}"${c.id==selId?' selected':''}>${esc(c.name)}</option>`).join('');
 }
 
-function addPriceRow(){
-  const tr=document.createElement('tr');
-  tr.innerHTML=`
+function addPriceRow() {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
     <td><select class="pe-input factory">${buildFactoryOptions()}</select></td>
     <td><select class="pe-input commodity">${buildCommodityOptions()}</select></td>
-    <td><input type="number" class="pe-input price" placeholder="Enter price" min="0"/></td>
-    <td><input type="text"   class="pe-input remarks" placeholder="Remarks (Gujarati supported)"/></td>
+    <td><input type="number" class="pe-input price"      placeholder="Enter price" min="0"/></td>
+    <td><input type="text"   class="pe-input remarks"    placeholder="Remarks (Gujarati ok)"/></td>
     <td><input type="date"   class="pe-input price_date" value="${todayStr()}"/></td>
     <td style="text-align:center"><button class="btn btn-red btn-xs" onclick="this.closest('tr').remove()">✕</button></td>
   `;
   document.getElementById('priceBody').appendChild(tr);
 }
 
-async function savePrices(){
-  const rows=[...document.querySelectorAll('#priceBody tr')];
-  const prices=rows.map(r=>({
+async function savePrices() {
+  const rows  = [...document.querySelectorAll('#priceBody tr')];
+  const prices = rows.map(r => ({
     factory_id:   r.querySelector('.factory').value,
     commodity_id: r.querySelector('.commodity').value,
     price:        parseFloat(r.querySelector('.price').value),
     remarks:      r.querySelector('.remarks').value,
     price_date:   r.querySelector('.price_date').value
-  })).filter(p=>p.factory_id&&p.commodity_id&&p.price);
+  })).filter(p => p.factory_id && p.commodity_id && p.price);
 
-  if(!prices.length){ showBanner('priceBanner','err','Please fill at least one complete row.'); return; }
-  const btn=document.getElementById('saveBtn');
-  btn.disabled=true; btn.textContent='⏳ Saving…';
-
-  try{
-    let saved=0;
-    for(const p of prices){
-      await fetch('/api/prices',{method:'POST',headers:H,body:JSON.stringify(p)});
-      saved++;
+  if (!prices.length) { showBanner('priceBanner','err','Please fill at least one complete row.'); return; }
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = '⏳ Saving…';
+  try {
+    for (const p of prices) {
+      await fetch('/api/prices', {method:'POST', headers:H, body:JSON.stringify(p)});
     }
-    showBanner('priceBanner','ok',`✅ Saved ${saved} price records.`);
-    document.getElementById('st_saved').textContent=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    showBanner('priceBanner','ok',`✅ Saved ${prices.length} price record(s).`);
+    document.getElementById('st_saved').textContent = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
     loadPriceStats();
     showToast('✅ Prices saved!');
-  } catch(e){ showBanner('priceBanner','err','❌ Save failed: '+e.message); }
-  finally{ btn.disabled=false; btn.innerHTML='💾 Save Prices'; }
+  } catch(e) {
+    showBanner('priceBanner','err','❌ Save failed: '+e.message);
+  } finally {
+    btn.disabled = false; btn.innerHTML = '💾 Save Prices';
+  }
 }
 
-async function loadPriceStats(){
-  try{
-    const res=await fetch('/api/prices/latest');
-    const data=await res.json();
-    const arr=Array.isArray(data)?data:[];
-    document.getElementById('st_today').textContent=arr.length;
-    const facs=new Set(arr.map(r=>r.factory_id||r.factory_name));
-    document.getElementById('st_fac').textContent=facs.size;
-  } catch(e){}
+async function loadPriceStats() {
+  try {
+    const res  = await fetch('/api/prices/latest');
+    const data = await res.json();
+    const arr  = Array.isArray(data) ? data : [];
+    document.getElementById('st_today').textContent = arr.length;
+    document.getElementById('st_fac').textContent   = new Set(arr.map(r=>r.factory_id||r.factory_name)).size;
+  } catch(e) {}
 }
 
 // ═══════════════════════════════════════════════════
-// ── TAB 3: RECORDS ──────────────────────────────
+// TAB 3 — PRICE RECORDS
 // ═══════════════════════════════════════════════════
-async function loadRecords(){
-  const tbody=document.getElementById('recBody');
-  tbody.innerHTML='<tr class="empty"><td colspan="6">Loading…</td></tr>';
-  try{
-    const res=await fetch('/api/prices');
-    const data=await res.json();
-    const arr=Array.isArray(data)?data:(data.prices||[]);
-    document.getElementById('rec_count').textContent=arr.length+' records';
-    if(!arr.length){ tbody.innerHTML='<tr class="empty"><td colspan="6">No records yet.</td></tr>'; return; }
-    tbody.innerHTML=arr.map(r=>{
-      const d=r.price_date||r.date||'';
-      const dFmt=d?new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—';
+async function loadRecords() {
+  const tbody = document.getElementById('recBody');
+  tbody.innerHTML = '<tr class="empty"><td colspan="6">Loading…</td></tr>';
+  try {
+    const res  = await apiFetch('/api/prices');
+    const data = await res.json();
+    const arr  = Array.isArray(data) ? data : (data.prices||[]);
+    document.getElementById('rec_count').textContent = arr.length + ' records';
+    if (!arr.length) { tbody.innerHTML='<tr class="empty"><td colspan="6">No records yet.</td></tr>'; return; }
+    tbody.innerHTML = arr.map(r => {
+      const d = r.price_date||r.date||'';
+      const dFmt = d ? new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
       return `<tr>
         <td style="font-family:var(--mono);color:var(--text3)">#${r.id}</td>
         <td><strong>${esc(r.factory_name||r.factory||'—')}</strong></td>
         <td>${esc(r.commodity_name||r.commodity||'—')}</td>
         <td class="rec-price">₹${parseFloat(r.price||0).toLocaleString('en-IN')}</td>
-        <td class="rec-date">${dFmt}</td>
+        <td class="rec-date" style="white-space:nowrap">${dFmt}</td>
         <td>
-          <button class="ab a4" onclick='openEP(${JSON.stringify(r)})'>✏️ Edit</button>
+          <button class="ab a4" onclick="openEP(${r.id})">✏️ Edit</button>
           <button class="ab a2" style="background:var(--red2);color:var(--red);border:1px solid #fca5a5;" onclick="deletePrice(${r.id})">Delete</button>
         </td></tr>`;
     }).join('');
-  } catch(e){ tbody.innerHTML='<tr class="empty"><td colspan="6">Error loading records.</td></tr>'; }
+    // cache records for edit modal
+    window._recCache = {};
+    arr.forEach(r => window._recCache[r.id] = r);
+  } catch(e) {
+    tbody.innerHTML = '<tr class="empty"><td colspan="6">Error loading records.</td></tr>';
+  }
 }
 
-function openEP(r){
-  document.getElementById('ep_id').value=r.id;
-  document.getElementById('ep_factory').innerHTML=buildFactoryOptions(r.factory_id);
-  document.getElementById('ep_commodity').innerHTML=buildCommodityOptions(r.commodity_id);
-  document.getElementById('ep_price').value=r.price;
-  document.getElementById('ep_remarks').value=r.remarks||'';
-  const d=r.price_date||r.date||'';
-  document.getElementById('ep_date').value=d?d.split('T')[0]:'';
+function openEP(id) {
+  const r = (window._recCache||{})[id];
+  if (!r) return;
+  document.getElementById('ep_id').value       = r.id;
+  document.getElementById('ep_factory').innerHTML   = buildFactoryOptions(r.factory_id);
+  document.getElementById('ep_commodity').innerHTML = buildCommodityOptions(r.commodity_id);
+  document.getElementById('ep_price').value    = r.price;
+  document.getElementById('ep_remarks').value  = r.remarks||'';
+  const d = r.price_date||r.date||'';
+  document.getElementById('ep_date').value     = d ? d.split('T')[0] : '';
   document.getElementById('mEP').classList.add('show');
 }
-async function doEP(){
-  const id=g('ep_id');
-  const body={factory_id:document.getElementById('ep_factory').value,commodity_id:document.getElementById('ep_commodity').value,price:parseFloat(document.getElementById('ep_price').value),remarks:g('ep_remarks'),price_date:document.getElementById('ep_date').value};
-  await fetch(`/api/prices/${id}`,{method:'PUT',headers:H,body:JSON.stringify(body)});
+async function doEP() {
+  const id   = gv('ep_id');
+  const body = {
+    factory_id:   document.getElementById('ep_factory').value,
+    commodity_id: document.getElementById('ep_commodity').value,
+    price:        parseFloat(document.getElementById('ep_price').value),
+    remarks:      gv('ep_remarks'),
+    price_date:   document.getElementById('ep_date').value
+  };
+  await apiFetch(`/api/prices/${id}`, {method:'PUT', headers:H, body:JSON.stringify(body)});
   closeMov('mEP'); loadRecords(); showToast('✅ Price updated');
 }
-async function deletePrice(id){
-  if(!confirm('Delete this price record?')) return;
-  await fetch(`/api/prices/${id}`,{method:'DELETE'});
+async function deletePrice(id) {
+  if (!confirm('Delete this price record?')) return;
+  await apiFetch(`/api/prices/${id}`, {method:'DELETE'});
   loadRecords(); showToast('Deleted');
 }
 
 // ═══════════════════════════════════════════════════
-// ── BROADCAST ───────────────────────────────────
+// BROADCAST
 // ═══════════════════════════════════════════════════
-async function previewBroadcast(){
-  const btn=document.getElementById('broadcastBtn');
-  btn.disabled=true; btn.textContent='⏳ Loading…';
-  try{
-    const res=await fetch('/api/broadcast/today-message');
-    if(!res.ok) throw new Error('Could not load message');
-    const data=await res.json();
-    document.getElementById('msgPreview').textContent=data.message;
-    document.getElementById('bcastBanner').className='banner';
-    document.getElementById('confirmSendBtn').disabled=false;
+async function previewBroadcast() {
+  const btn = document.getElementById('broadcastBtn');
+  btn.disabled = true; btn.textContent = '⏳ Loading…';
+  try {
+    const res = await fetch('/api/broadcast/today-message');
+    if (!res.ok) throw new Error('Could not load message');
+    const data = await res.json();
+    document.getElementById('msgPreview').textContent = data.message;
+    document.getElementById('bcastBanner').className = 'banner';
+    document.getElementById('confirmSendBtn').disabled = false;
     document.getElementById('mBcast').classList.add('show');
-  } catch(e){ showBanner('priceBanner','err','❌ Could not load broadcast preview.'); }
-  finally{ btn.disabled=false; btn.innerHTML='💬 WhatsApp Broadcast'; }
+  } catch(e) {
+    showBanner('priceBanner','err','❌ Could not load broadcast preview.');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '💬 WhatsApp Broadcast';
+  }
 }
-async function confirmBroadcast(){
-  const btn=document.getElementById('confirmSendBtn');
-  btn.disabled=true; btn.textContent='⏳ Sending…';
+async function confirmBroadcast() {
+  const btn = document.getElementById('confirmSendBtn');
+  btn.disabled = true; btn.textContent = '⏳ Sending…';
   showBanner('bcastBanner','info','📣 Sending to all subscribers…');
-  try{
-    const res=await fetch('/api/broadcast/send-broadcast');
-    if(!res.ok) throw new Error('Failed');
+  try {
+    const res = await fetch('/api/broadcast/send-broadcast');
+    if (!res.ok) throw new Error('Failed');
     showBanner('bcastBanner','ok','✅ Broadcast sent!');
     setTimeout(()=>{ closeMov('mBcast'); showToast('✅ WhatsApp broadcast sent!'); },1800);
-  } catch(e){ showBanner('bcastBanner','err','❌ Failed: '+e.message); btn.disabled=false; btn.innerHTML='✅ Confirm & Send'; }
+  } catch(e) {
+    showBanner('bcastBanner','err','❌ Failed: '+e.message);
+    btn.disabled = false; btn.innerHTML = '✅ Confirm & Send';
+  }
 }
 
 // ═══════════════════════════════════════════════════
-// ── BROKERS ─────────────────────────────────────
+// BROKERS
 // ═══════════════════════════════════════════════════
-async function loadBrokers(){
-  const r=await fetch('/api/admin/brokers');
-  if(!r.ok){ console.error('loadBrokers failed:', r.status); return; }
-  const d=await r.json();
-  document.getElementById('b_count').textContent=d.length;
-  const tb=document.getElementById('b_list');
-  if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="6">No brokers yet.</td></tr>';return;}
-  tb.innerHTML=d.map(b=>`<tr>
-    <td><div class="n">${b.name}</div><div class="s">${b.mobile}${b.email?' · '+b.email:''}</div></td>
-    <td><span class="pill">${b.factory_count}</span></td>
-    <td><span class="pill">${b.wholesaler_count}</span></td>
-    <td><span class="pill">${b.trade_count}</span></td>
-    <td><span class="${b.is_active?'ba':'bi'}">${b.is_active?'Active':'Inactive'}</span></td>
-    <td>
-      <button class="ab a1" onclick="openDrw(${b.id},'${esc(b.name)}')">🔗 Assign</button>
-      <button class="ab a3" onclick="openReset(${b.id})">🔑 PW</button>
-      <button class="ab a2" onclick="toggleBroker(${b.id},${!b.is_active})">${b.is_active?'Deactivate':'Activate'}</button>
-    </td></tr>`).join('');
+async function loadBrokers() {
+  const tbody = document.getElementById('b_list');
+  try {
+    const res     = await apiFetch('/api/admin/brokers');
+    const brokers = await res.json();
+    _bCache = {};
+    brokers.forEach(b => _bCache[b.id] = b);
+    document.getElementById('b_count').textContent = brokers.length;
+    if (!brokers.length) {
+      tbody.innerHTML = '<tr class="empty"><td colspan="7">No brokers yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = brokers.map(b => `
+      <tr>
+        <td><div class="n">${esc(b.name)}</div><div class="s">${b.mobile||''}</div></td>
+        <td>${b.city ? esc(b.city) : '<span style="color:#ddd">—</span>'}</td>
+        <td><span class="pill">${b.factory_count||0}</span></td>
+        <td><span class="pill">${b.wholesaler_count||0}</span></td>
+        <td><span class="pill">${b.trade_count||0}</span></td>
+        <td><span class="${b.is_active?'ba':'bi'}">${b.is_active?'Active':'Inactive'}</span></td>
+        <td>
+          <button class="ab a4" onclick="openEB(${b.id})">✏️ Edit</button>
+          <button class="ab a1" onclick="openDrw(${b.id},'${esc(b.name)}')">Assign</button>
+          <button class="ab a3" onclick="openReset(${b.id})">🔑 PW</button>
+        </td>
+      </tr>`).join('');
+  } catch(e) {
+    if (e.message !== 'Session expired')
+      tbody.innerHTML = '<tr class="empty"><td colspan="7">Error loading brokers.</td></tr>';
+  }
 }
-async function createBroker(){
-  const body={name:g('b_name'),mobile:g('b_mobile'),email:g('b_email'),password:g('b_password')};
-  const msg=document.getElementById('b_msg'); msg.className='msg';
-  if(!body.name||!body.mobile||!body.password){msg.className='msg err';msg.textContent='Name, mobile and password required.';return;}
-  const r=await fetch('/api/admin/brokers',{method:'POST',headers:H,body:JSON.stringify(body)});
-  if(r.ok){msg.className='msg ok';msg.textContent='✅ Broker created!';['b_name','b_mobile','b_email','b_password'].forEach(id=>document.getElementById(id).value='');loadBrokers();}
-  else{const d=await r.json();msg.className='msg err';msg.textContent='❌ '+d.error;}
-}
-async function toggleBroker(id,s){await fetch(`/api/admin/brokers/${id}`,{method:'PUT',headers:H,body:JSON.stringify({is_active:s})});loadBrokers();}
 
-// ── FACTORIES ──
-async function loadFactories(){
-  const r=await fetch('/api/admin/factories');
-  if(!r.ok){ console.error('loadFactories failed:', r.status); return; }
-  const d=await r.json();
-  document.getElementById('f_count').textContent=d.length;
-  const tb=document.getElementById('f_list');
-  if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="7">No factories yet.</td></tr>';return;}
-  tb.innerHTML=d.map(f=>`<tr>
-    <td><div class="n">${f.name}</div></td>
-    <td>${f.city||'<span style="color:#ddd">—</span>'}</td>
-    <td>${f.contact_number?`<span style="font-family:monospace;font-size:.8rem">${f.contact_number}</span>`:'<span style="color:#ddd">—</span>'}</td>
-    <td><span class="pill">${f.broker_count} broker${f.broker_count!=1?'s':''}</span></td>
-    <td><span class="pill">${f.trade_count} trades</span></td>
-    <td><span class="pill ${f.is_active?'active':'inactive'}" style="background:${f.is_active?'#dcfce7':'#fee2e2'};color:${f.is_active?'#166534':'#991b1b'}">${f.is_active?'Active':'Inactive'}</span></td>
-    <td><button class="ab a4" onclick="openEF(${f.id},'${esc(f.name)}','${f.city||''}','${f.contact_number||''}',${f.is_active})">✏️ Edit</button></td></tr>`).join('');
+async function createBroker() {
+  const body = {
+    name:     gv('b_name'),
+    mobile:   gv('b_mobile'),
+    city:     gv('b_city'),
+    email:    gv('b_email'),
+    password: gv('b_password')
+  };
+  const msg = document.getElementById('b_msg'); msg.className = 'msg';
+  if (!body.name||!body.mobile||!body.password) {
+    msg.className='msg err'; msg.textContent='Name, mobile and password required.'; return;
+  }
+  const r = await apiFetch('/api/admin/brokers', {method:'POST', headers:H, body:JSON.stringify(body)});
+  if (r.ok) {
+    msg.className = 'msg ok'; msg.textContent = '✅ Broker created!';
+    ['b_name','b_mobile','b_city','b_email','b_password'].forEach(id => document.getElementById(id).value='');
+    loadBrokers();
+  } else {
+    const d = await r.json(); msg.className='msg err'; msg.textContent='❌ '+d.error;
+  }
 }
-async function createFactory(){
-  const name=g('f_name'), city=g('f_city'), contact_number=g('f_contact');
-  const msg=document.getElementById('f_msg'); msg.className='msg';
-  if(!name){msg.className='msg err';msg.textContent='Factory name required.';return;}
-  const r=await fetch('/api/admin/factories',{method:'POST',headers:H,body:JSON.stringify({name,city,contact_number})});
-  if(r.ok){
-    msg.className='msg ok';msg.textContent='✅ Factory added!';
-    ['f_name','f_city','f_contact'].forEach(id=>document.getElementById(id).value='');
-    loadFactories();init();
-  } else{const d=await r.json();msg.className='msg err';msg.textContent='❌ '+d.error;}
+
+function openEB(id) {
+  const b = _bCache[id]; if (!b) return;
+  document.getElementById('eb_id').value     = b.id;
+  document.getElementById('eb_name').value   = b.name;
+  document.getElementById('eb_mobile').value = b.mobile||'';
+  document.getElementById('eb_city').value   = b.city||'';
+  document.getElementById('eb_email').value  = b.email||'';
+  document.getElementById('eb_active').value = String(b.is_active);
+  document.getElementById('mEB').classList.add('show');
 }
-function openEF(id,name,city,contact,is_active){
-  document.getElementById('ef_id').value=id;
-  document.getElementById('ef_name').value=name;
-  document.getElementById('ef_city').value=city;
-  document.getElementById('ef_contact').value=contact;
-  document.getElementById('ef_active').value=String(is_active);
+async function doEB() {
+  const id   = gv('eb_id');
+  const body = {
+    name:      gv('eb_name'),
+    mobile:    gv('eb_mobile'),
+    city:      gv('eb_city'),
+    email:     gv('eb_email'),
+    is_active: document.getElementById('eb_active').value === 'true'
+  };
+  if (!body.name) return;
+  await apiFetch(`/api/admin/brokers/${id}`, {method:'PUT', headers:H, body:JSON.stringify(body)});
+  closeMov('mEB'); loadBrokers(); showToast('✅ Broker updated');
+}
+
+// ═══════════════════════════════════════════════════
+// FACTORIES
+// ═══════════════════════════════════════════════════
+async function loadFactories() {
+  const tbody = document.getElementById('f_list');
+  try {
+    const res = await apiFetch('/api/admin/factories');
+    const d   = await res.json();
+    document.getElementById('f_count').textContent = d.length;
+    if (!d.length) { tbody.innerHTML='<tr class="empty"><td colspan="7">No factories yet.</td></tr>'; return; }
+    tbody.innerHTML = d.map(f => `<tr>
+      <td><div class="n">${esc(f.name)}</div></td>
+      <td>${f.city ? esc(f.city) : '<span style="color:#ddd">—</span>'}</td>
+      <td>${f.contact_number ? `<span style="font-family:monospace;font-size:.8rem">${f.contact_number}</span>` : '<span style="color:#ddd">—</span>'}</td>
+      <td><span class="pill">${f.broker_count||0} broker${(f.broker_count||0)!=1?'s':''}</span></td>
+      <td><span class="pill">${f.trade_count||0} trades</span></td>
+      <td><span style="background:${f.is_active?'#dcfce7':'#fee2e2'};color:${f.is_active?'#166534':'#991b1b'};padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:700">${f.is_active?'Active':'Inactive'}</span></td>
+      <td><button class="ab a4" onclick="openEF(${f.id})">✏️ Edit</button></td>
+    </tr>`).join('');
+    // cache for modal
+    window._fCache = {};
+    d.forEach(f => window._fCache[f.id] = f);
+  } catch(e) {
+    if (e.message !== 'Session expired')
+      tbody.innerHTML = '<tr class="empty"><td colspan="7">Error loading factories.</td></tr>';
+  }
+}
+
+async function createFactory() {
+  const name           = gv('f_name');
+  const city           = gv('f_city');
+  const contact_number = gv('f_contact');
+  const msg = document.getElementById('f_msg'); msg.className='msg';
+  if (!name) { msg.className='msg err'; msg.textContent='Factory name required.'; return; }
+  const r = await apiFetch('/api/admin/factories', {method:'POST', headers:H, body:JSON.stringify({name,city,contact_number})});
+  if (r.ok) {
+    msg.className='msg ok'; msg.textContent='✅ Factory added!';
+    ['f_name','f_city','f_contact'].forEach(id => document.getElementById(id).value='');
+    loadFactories();
+    // refresh dropdowns for price entry
+    const fr = await fetch('/api/factories');
+    if (fr.ok) factories = await fr.json();
+  } else {
+    const d = await r.json(); msg.className='msg err'; msg.textContent='❌ '+d.error;
+  }
+}
+
+function openEF(id) {
+  const f = (window._fCache||{})[id]; if (!f) return;
+  document.getElementById('ef_id').value      = f.id;
+  document.getElementById('ef_name').value    = f.name;
+  document.getElementById('ef_city').value    = f.city||'';
+  document.getElementById('ef_contact').value = f.contact_number||'';
+  document.getElementById('ef_active').value  = String(f.is_active);
   document.getElementById('mEF').classList.add('show');
 }
-async function doEF(){
-  const id=g('ef_id'),name=g('ef_name'),city=g('ef_city'),contact_number=g('ef_contact');
-  const is_active=document.getElementById('ef_active').value==='true';
-  if(!name)return;
-  await fetch(`/api/admin/factories/${id}`,{method:'PUT',headers:H,body:JSON.stringify({name,city,contact_number,is_active})});
-  closeMov('mEF');loadFactories();init();
+async function doEF() {
+  const id   = gv('ef_id');
+  const body = {
+    name:           gv('ef_name'),
+    city:           gv('ef_city'),
+    contact_number: gv('ef_contact'),
+    is_active:      document.getElementById('ef_active').value === 'true'
+  };
+  if (!body.name) return;
+  await apiFetch(`/api/admin/factories/${id}`, {method:'PUT', headers:H, body:JSON.stringify(body)});
+  closeMov('mEF'); loadFactories(); showToast('✅ Factory updated');
 }
 
-// ── WHOLESALERS ──
-async function loadWholesalers(){
-  const r=await fetch('/api/admin/wholesalers');
-  if(!r.ok){ console.error('loadWholesalers failed:', r.status); return; }
-  const d=await r.json();
-  window._wCache = {}; d.forEach(w => window._wCache[w.id] = w);
-  document.getElementById('w_count').textContent=d.length;
-  const tb=document.getElementById('w_list');
-  if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="6">No wholesalers yet.</td></tr>';return;}
-  tb.innerHTML=d.map(w=>`<tr>
-    <td><div class="n">${w.name}</div><div class="s">${w.mobile}</div></td>
-    <td>${w.city||'<span style="color:#ddd">—</span>'}</td>
-    <td><span class="pill">${w.broker_count}</span></td>
-    <td><span class="pill">${w.trade_count}</span></td>
-    <td><span class="${w.is_active?'ba':'bi'}">${w.is_active?'Active':'Inactive'}</span></td>
-    <td>
-      <button class="ab a4" onclick="openEW(window._wCache[${w.id}])">✏️</button>
-      <button class="ab a2" onclick="toggleW(${w.id},${!w.is_active})">${w.is_active?'Off':'On'}</button>
-    </td></tr>`).join('');
+// ═══════════════════════════════════════════════════
+// WHOLESALERS
+// ═══════════════════════════════════════════════════
+async function loadWholesalers() {
+  const tbody = document.getElementById('w_list');
+  try {
+    const res = await apiFetch('/api/admin/wholesalers');
+    const d   = await res.json();
+    _wCache = {};
+    d.forEach(w => _wCache[w.id] = w);
+    document.getElementById('w_count').textContent = d.length;
+    if (!d.length) { tbody.innerHTML='<tr class="empty"><td colspan="6">No wholesalers yet.</td></tr>'; return; }
+    tbody.innerHTML = d.map(w => `<tr>
+      <td><div class="n">${esc(w.name)}</div><div class="s">${w.mobile||''}</div></td>
+      <td>${w.city ? esc(w.city) : '<span style="color:#ddd">—</span>'}</td>
+      <td><span class="pill">${w.broker_count||0}</span></td>
+      <td><span class="pill">${w.trade_count||0}</span></td>
+      <td><span class="${w.is_active?'ba':'bi'}">${w.is_active?'Active':'Inactive'}</span></td>
+      <td>
+        <button class="ab a4" onclick="_openEW(${w.id})">✏️ Edit</button>
+        <button class="ab a2" onclick="toggleW(${w.id},${!w.is_active})">${w.is_active?'Disable':'Enable'}</button>
+      </td></tr>`).join('');
+  } catch(e) {
+    if (e.message !== 'Session expired')
+      tbody.innerHTML = '<tr class="empty"><td colspan="6">Error loading wholesalers.</td></tr>';
+  }
 }
-async function createWholesaler(){
-  const body={name:g('w_name'),mobile:g('w_mobile'),whatsapp_number:g('w_wa')||g('w_mobile'),city:g('w_city')};
-  const msg=document.getElementById('w_msg'); msg.className='msg';
-  if(!body.name||!body.mobile){msg.className='msg err';msg.textContent='Name and mobile required.';return;}
-  if(!/^[6-9]\d{9}$/.test(body.mobile)){msg.className='msg err';msg.textContent='❌ Enter valid 10-digit Indian mobile (starts with 6-9)';return;}
-  const r=await fetch('/api/admin/wholesalers',{method:'POST',headers:H,body:JSON.stringify(body)});
-  if(r.ok){msg.className='msg ok';msg.textContent='✅ Added!';['w_name','w_mobile','w_wa','w_city'].forEach(id=>document.getElementById(id).value='');loadWholesalers();}
-  else{const d=await r.json();msg.className='msg err';msg.textContent='❌ '+d.error;}
-}
-function openEW(w){document.getElementById('ew_id').value=w.id;document.getElementById('ew_name').value=w.name;document.getElementById('ew_mobile').value=w.mobile;document.getElementById('ew_wa2').value=w.whatsapp_number||'';document.getElementById('ew_city').value=w.city||'';document.getElementById('mEW').classList.add('show');}
-async function doEW(){
-  const id=g('ew_id');
-  const body={name:g('ew_name'),mobile:g('ew_mobile'),whatsapp_number:g('ew_wa2'),city:g('ew_city')};
-  if(body.mobile && !/^[6-9]\d{9}$/.test(body.mobile)){alert('❌ Invalid mobile number. Must be 10 digits starting with 6-9.');return;}
-  await fetch(`/api/admin/wholesalers/${id}`,{method:'PUT',headers:H,body:JSON.stringify(body)});
-  closeMov('mEW');loadWholesalers();
-}
-async function toggleW(id,s){await fetch(`/api/admin/wholesalers/${id}`,{method:'PUT',headers:H,body:JSON.stringify({is_active:s})});loadWholesalers();}
 
-// ── COMMODITIES ──
-const CATEGORY_LABELS = {cattle_feed:'Cattle Feed',grain:'Grain',oilcake:'Oil Cake',supplement:'Supplement',other:'Other'};
-async function loadCommodities(){
-  const r=await fetch('/api/admin/commodities');
-  if(!r.ok){ console.error('loadCommodities failed:', r.status); return; }
-  const d=await r.json();
-  document.getElementById('cm_count').textContent=d.length;
-  const tb=document.getElementById('cm_list');
-  if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="5">No commodities yet.</td></tr>';return;}
-  tb.innerHTML=d.map(c=>`<tr>
-    <td><div class="n">${c.name}</div></td>
-    <td><span class="pill">${CATEGORY_LABELS[c.category]||c.category||'—'}</span></td>
-    <td style="font-size:.8rem;color:#666">${c.unit||'<span style="color:#ddd">—</span>'}</td>
-    <td><span class="${c.is_active?'ba':'bi'}">${c.is_active?'Active':'Inactive'}</span></td>
-    <td>
-      <button class="ab a4" onclick='openECM(${JSON.stringify(c)})'>✏️</button>
-      <button class="ab a2" onclick="toggleCM(${c.id},${!c.is_active})">${c.is_active?'Off':'On'}</button>
-    </td></tr>`).join('');
+async function createWholesaler() {
+  const body = {
+    name:             gv('w_name'),
+    mobile:           gv('w_mobile'),
+    whatsapp_number:  gv('w_wa') || gv('w_mobile'),
+    city:             gv('w_city')
+  };
+  const msg = document.getElementById('w_msg'); msg.className='msg';
+  if (!body.name||!body.mobile) { msg.className='msg err'; msg.textContent='Name and mobile required.'; return; }
+  if (!/^[6-9]\d{9}$/.test(body.mobile)) { msg.className='msg err'; msg.textContent='❌ Valid 10-digit mobile required (starts 6-9)'; return; }
+  const r = await apiFetch('/api/admin/wholesalers', {method:'POST', headers:H, body:JSON.stringify(body)});
+  if (r.ok) {
+    msg.className='msg ok'; msg.textContent='✅ Added!';
+    ['w_name','w_mobile','w_wa','w_city'].forEach(id => document.getElementById(id).value='');
+    loadWholesalers();
+  } else {
+    const d = await r.json(); msg.className='msg err'; msg.textContent='❌ '+d.error;
+  }
 }
-async function createCommodity(){
-  const body={name:g('cm_name'),category:document.getElementById('cm_category').value,unit:g('cm_unit')};
-  const msg=document.getElementById('cm_msg'); msg.className='msg';
-  if(!body.name){msg.className='msg err';msg.textContent='Commodity name required.';return;}
-  const r=await fetch('/api/admin/commodities',{method:'POST',headers:H,body:JSON.stringify(body)});
-  if(r.ok){
-    msg.className='msg ok';msg.textContent='✅ Added!';
+
+function _openEW(id) {
+  const w = _wCache[id]; if (!w) return;
+  document.getElementById('ew_id').value     = w.id;
+  document.getElementById('ew_name').value   = w.name;
+  document.getElementById('ew_mobile').value = w.mobile||'';
+  document.getElementById('ew_wa').value     = w.whatsapp_number||'';
+  document.getElementById('ew_city').value   = w.city||'';
+  document.getElementById('mEW').classList.add('show');
+}
+async function doEW() {
+  const id   = gv('ew_id');
+  const body = {
+    name:            gv('ew_name'),
+    mobile:          gv('ew_mobile'),
+    whatsapp_number: gv('ew_wa'),
+    city:            gv('ew_city')
+  };
+  if (body.mobile && !/^[6-9]\d{9}$/.test(body.mobile)) {
+    alert('❌ Invalid mobile. Must be 10 digits starting with 6-9.'); return;
+  }
+  await apiFetch(`/api/admin/wholesalers/${id}`, {method:'PUT', headers:H, body:JSON.stringify(body)});
+  closeMov('mEW'); loadWholesalers(); showToast('✅ Wholesaler updated');
+}
+async function toggleW(id, s) {
+  await apiFetch(`/api/admin/wholesalers/${id}`, {method:'PUT', headers:H, body:JSON.stringify({is_active:s})});
+  loadWholesalers();
+}
+
+// ═══════════════════════════════════════════════════
+// COMMODITIES
+// ═══════════════════════════════════════════════════
+const CAT_LABELS = {cattle_feed:'Cattle Feed',grain:'Grain',oilcake:'Oil Cake',supplement:'Supplement',other:'Other'};
+
+async function loadCommodities() {
+  const tbody = document.getElementById('cm_list');
+  try {
+    const res = await apiFetch('/api/admin/commodities');
+    const d   = await res.json();
+    document.getElementById('cm_count').textContent = d.length;
+    if (!d.length) { tbody.innerHTML='<tr class="empty"><td colspan="5">No commodities yet.</td></tr>'; return; }
+    window._cmCache = {};
+    d.forEach(c => window._cmCache[c.id] = c);
+    tbody.innerHTML = d.map(c => `<tr>
+      <td><div class="n">${esc(c.name)}</div></td>
+      <td><span class="pill">${CAT_LABELS[c.category]||c.category||'—'}</span></td>
+      <td style="font-size:.8rem;color:#666">${c.unit||'<span style="color:#ddd">—</span>'}</td>
+      <td><span class="${c.is_active?'ba':'bi'}">${c.is_active?'Active':'Inactive'}</span></td>
+      <td>
+        <button class="ab a4" onclick="openECM(${c.id})">✏️ Edit</button>
+        <button class="ab a2" onclick="toggleCM(${c.id},${!c.is_active})">${c.is_active?'Disable':'Enable'}</button>
+      </td></tr>`).join('');
+  } catch(e) {
+    if (e.message !== 'Session expired')
+      tbody.innerHTML = '<tr class="empty"><td colspan="5">Error loading commodities.</td></tr>';
+  }
+}
+
+async function createCommodity() {
+  const body = {name:gv('cm_name'), category:document.getElementById('cm_category').value, unit:gv('cm_unit')};
+  const msg  = document.getElementById('cm_msg'); msg.className='msg';
+  if (!body.name) { msg.className='msg err'; msg.textContent='Commodity name required.'; return; }
+  const r = await apiFetch('/api/admin/commodities', {method:'POST', headers:H, body:JSON.stringify(body)});
+  if (r.ok) {
+    msg.className='msg ok'; msg.textContent='✅ Added!';
     ['cm_name','cm_unit'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('cm_category').value='cattle_feed';
     loadCommodities();
-  } else{const d=await r.json();msg.className='msg err';msg.textContent='❌ '+d.error;}
+    // refresh dropdown
+    const cr = await fetch('/api/commodities');
+    if (cr.ok) commodities = await cr.json();
+  } else {
+    const d = await r.json(); msg.className='msg err'; msg.textContent='❌ '+d.error;
+  }
 }
-function openECM(c){
-  document.getElementById('ecm_id').value=c.id;
-  document.getElementById('ecm_name').value=c.name;
-  document.getElementById('ecm_category').value=c.category||'cattle_feed';
-  document.getElementById('ecm_unit').value=c.unit||'';
-  document.getElementById('ecm_active').value=String(c.is_active);
+
+function openECM(id) {
+  const c = (window._cmCache||{})[id]; if (!c) return;
+  document.getElementById('ecm_id').value       = c.id;
+  document.getElementById('ecm_name').value     = c.name;
+  document.getElementById('ecm_category').value = c.category||'cattle_feed';
+  document.getElementById('ecm_unit').value     = c.unit||'';
+  document.getElementById('ecm_active').value   = String(c.is_active);
   document.getElementById('mECM').classList.add('show');
 }
-async function doECM(){
-  const id=g('ecm_id');
-  const body={name:g('ecm_name'),category:document.getElementById('ecm_category').value,unit:g('ecm_unit'),is_active:document.getElementById('ecm_active').value==='true'};
-  if(!body.name)return;
-  await fetch(`/api/admin/commodities/${id}`,{method:'PUT',headers:H,body:JSON.stringify(body)});
-  closeMov('mECM');loadCommodities();
+async function doECM() {
+  const id   = gv('ecm_id');
+  const body = {
+    name:      gv('ecm_name'),
+    category:  document.getElementById('ecm_category').value,
+    unit:      gv('ecm_unit'),
+    is_active: document.getElementById('ecm_active').value === 'true'
+  };
+  if (!body.name) return;
+  await apiFetch(`/api/admin/commodities/${id}`, {method:'PUT', headers:H, body:JSON.stringify(body)});
+  closeMov('mECM'); loadCommodities(); showToast('✅ Commodity updated');
 }
-async function toggleCM(id,s){await fetch(`/api/admin/commodities/${id}`,{method:'PUT',headers:H,body:JSON.stringify({is_active:s})});loadCommodities();}
-
-// ═══════════════════════════════════════════════════
-// ── ASSIGN DRAWER ───────────────────────────────
-// ═══════════════════════════════════════════════════
-async function openDrw(id,name){currentBroker=id;document.getElementById('dtitle').textContent='Assign — '+name;document.getElementById('dov').classList.add('show');await loadDrw(id);}
-function maybeCloseDrw(e){if(e.target===document.getElementById('dov'))closeDrw();}
-function closeDrw(){document.getElementById('dov').classList.remove('show');}
-async function loadDrw(id){
-  const [fr,wr]=await Promise.all([fetch(`/api/admin/brokers/${id}/factories`),fetch(`/api/admin/brokers/${id}/wholesalers`)]);
-  const fa=await fr.json(), wa=await wr.json();
-  document.getElementById('d_f').innerHTML=fa.length
-    ?fa.map(f=>`<div class="ar"><div><div class="an">${f.name}</div></div><button class="tb ${f.assigned?'on':'off'}" onclick="tAssign('factory',${id},${f.id},${f.assigned})">${f.assigned?'✅ Assigned':'+ Assign'}</button></div>`).join('')
-    :'<p style="color:#bbb;font-size:.8rem;">No factories — add from Factories tab first.</p>';
-  document.getElementById('d_w').innerHTML=wa.length
-    ?wa.map(w=>`<div class="ar"><div><div class="an">${w.name}</div><div class="as">${w.mobile||''}${w.city?' · '+w.city:''}</div></div><button class="tb ${w.assigned?'on':'off'}" onclick="tAssign('wholesaler',${id},${w.id},${w.assigned})">${w.assigned?'✅ Assigned':'+ Assign'}</button></div>`).join('')
-    :'<p style="color:#bbb;font-size:.8rem;">No wholesalers — add from Wholesalers tab first.</p>';
-}
-async function tAssign(type,bid,pid,assigned){
-  const base=`/api/admin/brokers/${bid}/${type==='factory'?'factories':'wholesalers'}`;
-  const method=assigned?'DELETE':'POST';
-  const url=assigned?`${base}/${pid}`:base;
-  const body=assigned?null:JSON.stringify({[type+'_id']:pid});
-  await fetch(url,{method,headers:H,body});loadDrw(bid);loadBrokers();
+async function toggleCM(id, s) {
+  await apiFetch(`/api/admin/commodities/${id}`, {method:'PUT', headers:H, body:JSON.stringify({is_active:s})});
+  loadCommodities();
 }
 
 // ═══════════════════════════════════════════════════
-// ── MODALS ──────────────────────────────────────
+// ASSIGN DRAWER
 // ═══════════════════════════════════════════════════
-function openReset(id){document.getElementById('r_id').value=id;document.getElementById('r_pw').value='';document.getElementById('mReset').classList.add('show');}
-async function doReset(){const id=g('r_id'),pw=g('r_pw');if(!pw){alert('Enter a password');return;}await fetch(`/api/admin/brokers/${id}`,{method:'PUT',headers:H,body:JSON.stringify({password:pw})});closeMov('mReset');showToast('✅ Password reset');}
-function closeMov(id){document.getElementById(id).classList.remove('show');}
-document.querySelectorAll('.mov').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('show');}));
-
-// ═══════════════════════════════════════════════════
-// ── UTILS ───────────────────────────────────────
-// ═══════════════════════════════════════════════════
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;');}
-
-function showBanner(id,type,msg){
-  const el=document.getElementById(id);
-  el.className='banner '+type; el.textContent=msg;
-  setTimeout(()=>el.className='banner',5000);
+async function openDrw(id, name) {
+  currentBroker = id;
+  document.getElementById('dtitle').textContent = 'Assign — ' + name;
+  document.getElementById('dov').classList.add('show');
+  await loadDrw(id);
 }
-function showToast(msg,type=''){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast show'+(type?' '+type:'');
-  setTimeout(()=>t.className='toast',3500);
+function maybeCloseDrw(e) { if (e.target === document.getElementById('dov')) closeDrw(); }
+function closeDrw() { document.getElementById('dov').classList.remove('show'); }
+
+async function loadDrw(id) {
+  const [fr, wr] = await Promise.all([
+    apiFetch(`/api/admin/brokers/${id}/factories`),
+    apiFetch(`/api/admin/brokers/${id}/wholesalers`)
+  ]);
+  const fa = await fr.json(), wa = await wr.json();
+  document.getElementById('d_f').innerHTML = fa.length
+    ? fa.map(f=>`<div class="ar"><div><div class="an">${esc(f.name)}</div></div><button class="tb ${f.assigned?'on':'off'}" onclick="tAssign('factory',${id},${f.id},${f.assigned})">${f.assigned?'✅ Assigned':'+ Assign'}</button></div>`).join('')
+    : '<p style="color:#bbb;font-size:.8rem;">No factories — add from Factories tab first.</p>';
+  document.getElementById('d_w').innerHTML = wa.length
+    ? wa.map(w=>`<div class="ar"><div><div class="an">${esc(w.name)}</div><div class="as">${w.mobile||''}${w.city?' · '+esc(w.city):''}</div></div><button class="tb ${w.assigned?'on':'off'}" onclick="tAssign('wholesaler',${id},${w.id},${w.assigned})">${w.assigned?'✅ Assigned':'+ Assign'}</button></div>`).join('')
+    : '<p style="color:#bbb;font-size:.8rem;">No wholesalers — add from Wholesalers tab first.</p>';
+}
+async function tAssign(type, bid, pid, assigned) {
+  const base   = `/api/admin/brokers/${bid}/${type==='factory'?'factories':'wholesalers'}`;
+  const method = assigned ? 'DELETE' : 'POST';
+  const url    = assigned ? `${base}/${pid}` : base;
+  const body   = assigned ? null : JSON.stringify({[type+'_id']:pid});
+  await apiFetch(url, {method, headers:H, body});
+  loadDrw(bid); loadBrokers();
+}
+
+// ═══════════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════════
+function openReset(id) {
+  document.getElementById('r_id').value = id;
+  document.getElementById('r_pw').value = '';
+  document.getElementById('mReset').classList.add('show');
+}
+async function doReset() {
+  const id = gv('r_id'), pw = gv('r_pw');
+  if (!pw) { alert('Enter a password'); return; }
+  await apiFetch(`/api/admin/brokers/${id}`, {method:'PUT', headers:H, body:JSON.stringify({password:pw})});
+  closeMov('mReset'); showToast('✅ Password reset');
+}
+
+function closeMov(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.mov').forEach(el =>
+  el.addEventListener('click', e => { if (e.target===el) el.classList.remove('show'); })
+);
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;');
+}
+function showBanner(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = 'banner '+type; el.textContent = msg;
+  setTimeout(()=>el.className='banner', 5000);
+}
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show'+(type?' '+type:'');
+  setTimeout(()=>t.className='toast', 3500);
 }
 
 // ─── START ───
