@@ -530,11 +530,11 @@ async function init(){
       fetch('/api/factories'),
       fetch('/api/commodities')
     ]);
-    factories   = (await fRes.json());
-    commodities = (await cRes.json());
+    if(fRes.ok) factories   = await fRes.json();
+    if(cRes.ok) commodities = await cRes.json();
     addPriceRow();
     loadPriceStats();
-  } catch(e){ showToast('Could not load data','err'); }
+  } catch(e){ console.warn('Price entry init error:', e.message); }
 }
 
 // ═══════════════════════════════════════════════════
@@ -685,7 +685,9 @@ async function confirmBroadcast(){
 // ── BROKERS ─────────────────────────────────────
 // ═══════════════════════════════════════════════════
 async function loadBrokers(){
-  const r=await fetch('/api/admin/brokers'); const d=await r.json();
+  const r=await fetch('/api/admin/brokers');
+  if(!r.ok){ console.error('loadBrokers failed:', r.status); return; }
+  const d=await r.json();
   document.getElementById('b_count').textContent=d.length;
   const tb=document.getElementById('b_list');
   if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="6">No brokers yet.</td></tr>';return;}
@@ -713,7 +715,9 @@ async function toggleBroker(id,s){await fetch(`/api/admin/brokers/${id}`,{method
 
 // ── FACTORIES ──
 async function loadFactories(){
-  const r=await fetch('/api/admin/factories'); const d=await r.json();
+  const r=await fetch('/api/admin/factories');
+  if(!r.ok){ console.error('loadFactories failed:', r.status); return; }
+  const d=await r.json();
   document.getElementById('f_count').textContent=d.length;
   const tb=document.getElementById('f_list');
   if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="7">No factories yet.</td></tr>';return;}
@@ -755,7 +759,10 @@ async function doEF(){
 
 // ── WHOLESALERS ──
 async function loadWholesalers(){
-  const r=await fetch('/api/admin/wholesalers'); const d=await r.json();
+  const r=await fetch('/api/admin/wholesalers');
+  if(!r.ok){ console.error('loadWholesalers failed:', r.status); return; }
+  const d=await r.json();
+  window._wCache = {}; d.forEach(w => window._wCache[w.id] = w);
   document.getElementById('w_count').textContent=d.length;
   const tb=document.getElementById('w_list');
   if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="6">No wholesalers yet.</td></tr>';return;}
@@ -766,7 +773,7 @@ async function loadWholesalers(){
     <td><span class="pill">${w.trade_count}</span></td>
     <td><span class="${w.is_active?'ba':'bi'}">${w.is_active?'Active':'Inactive'}</span></td>
     <td>
-      <button class="ab a4" onclick='openEW(${JSON.stringify(w)})'>✏️</button>
+      <button class="ab a4" onclick="openEW(window._wCache[${w.id}])">✏️</button>
       <button class="ab a2" onclick="toggleW(${w.id},${!w.is_active})">${w.is_active?'Off':'On'}</button>
     </td></tr>`).join('');
 }
@@ -792,7 +799,9 @@ async function toggleW(id,s){await fetch(`/api/admin/wholesalers/${id}`,{method:
 // ── COMMODITIES ──
 const CATEGORY_LABELS = {cattle_feed:'Cattle Feed',grain:'Grain',oilcake:'Oil Cake',supplement:'Supplement',other:'Other'};
 async function loadCommodities(){
-  const r=await fetch('/api/admin/commodities'); const d=await r.json();
+  const r=await fetch('/api/admin/commodities');
+  if(!r.ok){ console.error('loadCommodities failed:', r.status); return; }
+  const d=await r.json();
   document.getElementById('cm_count').textContent=d.length;
   const tb=document.getElementById('cm_list');
   if(!d.length){tb.innerHTML='<tr class="empty"><td colspan="5">No commodities yet.</td></tr>';return;}

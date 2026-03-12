@@ -29,7 +29,10 @@ router.post('/login', async (req, res) => {
     req.session.brokerId   = broker.id;
     req.session.brokerName = broker.name;
 
-    res.json({ success: true, broker: { id: broker.id, name: broker.name, mobile: broker.mobile } });
+    req.session.save(err => {
+      if (err) return res.status(500).json({ error: 'Session save failed' });
+      res.json({ success: true, broker: { id: broker.id, name: broker.name, mobile: broker.mobile } });
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -191,8 +194,18 @@ router.post('/trades', async (req, res) => {
 // ── GET /api/broker/trades ───────────────────────
 router.get('/trades', async (req, res) => {
   const brokerId = req.session.brokerId;
-  const { from, to, factory_id, wholesaler_id, page = 1, limit = 50 } = req.query;
+  const { from, to, factory_id, wholesaler_id, commodity_id, page = 1, limit = 50, sort, dir } = req.query;
   const offset = (page - 1) * limit;
+
+  // Whitelist sort columns to prevent SQL injection
+  const SORT_COLS = {
+    trade_date:     't.trade_date',
+    factory_name:   'f.name',
+    wholesaler_name:'s.name',
+    commodity_name: 'c.name',
+  };
+  const sortExpr = SORT_COLS[sort] || 't.trade_date';
+  const sortDir  = dir === 'asc' ? 'ASC' : 'DESC';
 
   try {
     let where = [`t.broker_id = $1`];
@@ -203,6 +216,7 @@ router.get('/trades', async (req, res) => {
     if (to)            { where.push(`t.trade_date <= $${i++}`); params.push(to); }
     if (factory_id)    { where.push(`t.factory_id = $${i++}`);  params.push(factory_id); }
     if (wholesaler_id) { where.push(`t.wholesaler_id = $${i++}`); params.push(wholesaler_id); }
+    if (commodity_id)  { where.push(`t.commodity_id = $${i++}`); params.push(commodity_id); }
 
     const result = await pool.query(`
       SELECT
@@ -217,7 +231,7 @@ router.get('/trades', async (req, res) => {
       JOIN wholesalers s ON s.id = t.wholesaler_id
       JOIN commodities c ON c.id = t.commodity_id
       WHERE ${where.join(' AND ')}
-      ORDER BY t.trade_date DESC, t.created_at DESC
+      ORDER BY ${sortExpr} ${sortDir}, t.created_at DESC
       LIMIT $${i} OFFSET $${i+1}
     `, [...params, limit, offset]);
 
@@ -287,7 +301,7 @@ router.get('/report', async (req, res) => {
 
     const factoryReport = await pool.query(`
       SELECT
-        f.id, f.name,
+        f.id, f.name, f.city,
         COUNT(t.id)                         AS trades,
         COALESCE(SUM(t.bags),0)             AS total_bags,
         COALESCE(SUM(t.factory_brokerage),0) AS brokerage_earned,
@@ -313,7 +327,7 @@ router.get('/report', async (req, res) => {
     // Reuse same pattern for wholesalers
     const wholesalerReport = await pool.query(`
       SELECT
-        s.id, s.name, s.mobile,
+        s.id, s.name, s.mobile, s.city,
         COUNT(t.id)                              AS trades,
         COALESCE(SUM(t.bags),0)                  AS total_bags,
         COALESCE(SUM(t.wholesaler_brokerage),0)  AS brokerage_earned,

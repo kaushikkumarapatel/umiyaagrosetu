@@ -60,6 +60,7 @@
     table{width:100%;border-collapse:collapse;}
     thead th{background:#f6f9f6;padding:10px 14px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);border-bottom:1.5px solid var(--border);text-align:left;white-space:nowrap;}
     thead th.r{text-align:right;}
+    thead th span:hover{color:var(--green2);}
     tbody td{padding:12px 14px;font-size:.85rem;border-bottom:1px solid #f0f4f0;vertical-align:middle;}
     tbody tr:last-child td{border-bottom:none;}
     tbody tr.data-row:hover{background:#f4fcf7;cursor:pointer;}
@@ -202,10 +203,10 @@
       <table>
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Factory</th>
-            <th>Wholesaler</th>
-            <th>Commodity</th>
+            <th id="date_th">Date</th>
+            <th id="factory_th">Factory</th>
+            <th id="wholesaler_th">Wholesaler</th>
+            <th id="commodity_th">Commodity</th>
             <th class="r">Bags</th>
             <th class="r">Price/Bag</th>
             <th class="r">Factory Brk.</th>
@@ -302,8 +303,9 @@ const BROK = 2; // ₹2 per bag per side
 let currentPage = 1;
 const pageSize  = 50;
 let totalTrades = 0;
-let allTrades   = []; // current page trades (for PDF)
+let allTrades   = [];
 let factories=[], wholesalers=[], commodities=[];
+let sortCol = 'trade_date', sortDir = 'desc'; // default: newest first
 
 // ═══════════════════════════════════════════════
 // INIT
@@ -354,15 +356,18 @@ async function loadTrades(page=1){
   currentPage = page;
   const params = new URLSearchParams({
     page, limit: pageSize,
-    from:        document.getElementById('f_from').value,
-    to:          document.getElementById('f_to').value,
-    factory_id:  document.getElementById('f_factory').value,
+    from:         document.getElementById('f_from').value,
+    to:           document.getElementById('f_to').value,
+    factory_id:   document.getElementById('f_factory').value,
     wholesaler_id:document.getElementById('f_wholesaler').value,
-    commodity_id:document.getElementById('f_commodity').value,
+    commodity_id: document.getElementById('f_commodity').value,
+    sort:         sortCol,
+    dir:          sortDir,
   });
 
   const tbody = document.getElementById('tradeBody');
   tbody.innerHTML = '<tr class="empty-row"><td colspan="11">Loading…</td></tr>';
+  renderSortHeaders();
 
   try {
     const r    = await fetch('/api/broker/trades?'+params);
@@ -376,6 +381,28 @@ async function loadTrades(page=1){
   } catch(e) {
     tbody.innerHTML='<tr class="empty-row"><td colspan="11">Error loading trades.</td></tr>';
   }
+}
+
+function setSort(col){
+  if(sortCol === col) sortDir = sortDir==='asc' ? 'desc' : 'asc';
+  else { sortCol = col; sortDir = col==='trade_date' ? 'desc' : 'asc'; }
+  loadTrades(1);
+}
+
+function renderSortHeaders(){
+  const cols = [
+    { id:'date_th',       col:'trade_date',      label:'Date' },
+    { id:'factory_th',    col:'factory_name',    label:'Factory' },
+    { id:'wholesaler_th', col:'wholesaler_name',  label:'Wholesaler' },
+    { id:'commodity_th',  col:'commodity_name',   label:'Commodity' },
+  ];
+  cols.forEach(({id, col, label}) => {
+    const th = document.getElementById(id);
+    if(!th) return;
+    const arrow = sortCol===col ? (sortDir==='asc' ? ' ↑' : ' ↓') : ' ⇅';
+    const active = sortCol===col ? 'color:var(--green);' : '';
+    th.innerHTML = `<span style="cursor:pointer;user-select:none;${active}" onclick="setSort('${col}')">${label}${arrow}</span>`;
+  });
 }
 
 // ═══════════════════════════════════════════════
@@ -392,11 +419,12 @@ function renderTrades(trades){
   if(!trades.length){ tbody.innerHTML='<tr class="empty-row"><td colspan="11">No trades found.</td></tr>'; return; }
 
   let html='', prevKey='';
+  const showGroups = (sortCol === 'trade_date');
   trades.forEach(t=>{
     const d       = String(t.trade_date||'').slice(0,10);
     const groupKey= d+'|'+t.factory_name;
-    if(groupKey !== prevKey){
-      const dFmt = d ? new Date(d+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) : '—';
+    if(showGroups && groupKey !== prevKey){
+      const dFmt = fmtDate(d,{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
       html += `<tr class="group-header"><td colspan="11">📅 ${dFmt} &nbsp;·&nbsp; 🏭 ${esc(t.factory_name)}</td></tr>`;
       prevKey = groupKey;
     }

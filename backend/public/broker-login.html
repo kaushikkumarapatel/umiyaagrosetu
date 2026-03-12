@@ -39,27 +39,16 @@
       font-family:inherit;
     }
     .btn:hover{background:#1e3d1a;}
-    .btn:disabled{background:#aaa;cursor:not-allowed;}
 
     .error{
       background:#fdecea;color:#c0392b;
       border:1px solid #f5c6c6;border-radius:8px;
       padding:10px 14px;font-size:.84rem;
-      margin-top:16px;display:none;
+      margin-bottom:16px;
     }
-    .error.show{display:block;}
-
-    .hint{
-      text-align:center;margin-top:20px;
-      font-size:.78rem;color:#aaa;
-    }
-    .divider{
-      border:none;border-top:1px solid #eee;margin:28px 0 0;
-    }
-    .admin-link{
-      text-align:center;margin-top:14px;
-      font-size:.78rem;color:#bbb;
-    }
+    .hint{text-align:center;margin-top:20px;font-size:.78rem;color:#aaa;}
+    .divider{border:none;border-top:1px solid #eee;margin:28px 0 0;}
+    .admin-link{text-align:center;margin-top:14px;font-size:.78rem;color:#bbb;}
     .admin-link a{color:#888;text-decoration:none;}
     .admin-link a:hover{color:#2d5a27;}
   </style>
@@ -73,58 +62,33 @@
     <p>Umiya AgroSetu Digital LLP</p>
   </div>
 
-  <div class="error" id="errorMsg">❌ Invalid mobile number or password.</div>
+  <!-- Show error from query param if login failed -->
+  <script>
+    const p = new URLSearchParams(location.search).get('error');
+    if(p) document.write(`<div class="error">❌ ${
+      p==='invalid' ? 'Invalid mobile number or password.' :
+      p==='missing' ? 'Please enter mobile and password.' :
+      p==='session' ? 'Session error. Please try again.' :
+      'Server error. Please try again.'
+    }</div>`);
+  </script>
 
-  <label>Mobile Number / મોબાઈલ નંબર</label>
-  <input type="tel" id="mobile" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric"/>
+  <!-- Plain HTML form — no fetch, no JS, works in all browsers with all extensions -->
+  <form method="POST" action="/broker/login">
+    <label>Mobile Number / મોબાઈલ નંબર</label>
+    <input type="tel" name="mobile" placeholder="10-digit mobile number"
+           maxlength="10" inputmode="numeric" autocomplete="username" required/>
 
-  <label>Password / પાસવર્ડ</label>
-  <input type="password" id="password" placeholder="Enter your password"/>
+    <label>Password / પાસવર્ડ</label>
+    <input type="password" name="password" placeholder="Enter your password"
+           autocomplete="current-password" required/>
 
-  <button class="btn" id="loginBtn" onclick="doLogin()">Login → પ્રવેશ કરો</button>
+    <button type="submit" class="btn">Login → પ્રવેશ કરો</button>
+  </form>
 
   <p class="hint">Registered brokers only. Contact admin for access.</p>
   <hr class="divider"/>
   <div class="admin-link">Admin? <a href="/admin/login">Admin Panel →</a></div>
 </div>
-
-<script>
-  document.getElementById('password').addEventListener('keydown', e => {
-    if(e.key==='Enter') doLogin();
-  });
-
-  async function doLogin(){
-    const mobile   = document.getElementById('mobile').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const btn      = document.getElementById('loginBtn');
-    const err      = document.getElementById('errorMsg');
-
-    err.classList.remove('show');
-    if(!mobile || !password){ err.textContent='Please enter mobile and password.'; err.classList.add('show'); return; }
-
-    btn.disabled   = true;
-    btn.textContent = 'Logging in...';
-
-    try{
-      const res = await fetch('/api/broker/login',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({mobile, password})
-      });
-      if(res.ok){
-        window.location.href = '/broker/dashboard';
-      } else {
-        const data = await res.json();
-        err.textContent = '❌ ' + (data.error || 'Invalid credentials');
-        err.classList.add('show');
-      }
-    } catch(e){
-      err.textContent = '❌ Server error. Please try again.';
-      err.classList.add('show');
-    }
-    btn.disabled   = false;
-    btn.textContent = 'Login → પ્રવેશ કરો';
-  }
-</script>
 </body>
 </html>

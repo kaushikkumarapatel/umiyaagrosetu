@@ -19,6 +19,7 @@ const brokerRoutes      = require("./routes/brokerRoutes");
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 /* ─────────────────────────────
    SESSION
@@ -30,7 +31,7 @@ app.use(session({
   cookie: {
     maxAge:   8 * 60 * 60 * 1000,
     httpOnly: true,
-    secure:   process.env.NODE_ENV === "production",
+    secure:   false,   // must be false for localhost,
   },
 }));
 
@@ -70,7 +71,10 @@ app.post("/admin/login", (req, res) => {
   }
   if (password === process.env.ADMIN_PASSWORD) {
     req.session.isAdmin = true;
-    return res.json({ success: true });
+    return req.session.save(err => {
+      if (err) return res.status(500).json({ error: "Session save failed" });
+      res.json({ success: true });
+    });
   }
   res.status(401).json({ error: "Invalid password" });
 });
@@ -90,6 +94,34 @@ app.get("/admin/brokers", requireAdmin, (req, res) => res.redirect("/admin")); /
 app.get("/broker/login", (req, res) => {
   if (req.session.brokerId) return res.redirect("/broker/dashboard");
   res.sendFile(path.join(__dirname, "public/broker-login.html"));
+});
+
+// Direct form POST — bypasses fetch/JS entirely (extension-proof)
+app.post("/broker/login", async (req, res) => {
+  const { mobile, password } = req.body;
+  if (!mobile || !password) {
+    return res.redirect("/broker/login?error=missing");
+  }
+  try {
+    const bcrypt = require("bcrypt");
+    const result = await pool.query(
+      `SELECT * FROM brokers WHERE mobile = $1 AND is_active = true`, [mobile]
+    );
+    if (!result.rows.length) return res.redirect("/broker/login?error=invalid");
+    const broker = result.rows[0];
+    const match  = await bcrypt.compare(password, broker.password_hash);
+    if (!match) return res.redirect("/broker/login?error=invalid");
+
+    req.session.brokerId   = broker.id;
+    req.session.brokerName = broker.name;
+    req.session.save(err => {
+      if (err) return res.redirect("/broker/login?error=session");
+      res.redirect("/broker/dashboard");
+    });
+  } catch (err) {
+    console.error("[broker login]", err.message);
+    res.redirect("/broker/login?error=server");
+  }
 });
 
 app.get("/broker/dashboard",  requireBroker, (req, res) => res.sendFile(path.join(__dirname, "public/broker-dashboard.html")));

@@ -661,15 +661,14 @@ function renderInvoice(type, p, fy, trades){
     const partyCol=type==='factory'?(t.wholesaler_name||'-'):(t.factory_name||'-');
     return `<tr>
       <td class="mono" style="color:var(--text3)">${i+1}</td>
-      <td class="mono">${d}</td>
+      <td class="mono" style="white-space:nowrap">${d}</td>
       <td>${esc(t.commodity_name||'-')}</td>
       <td>${esc(partyCol)}</td>
       <td class="r">${parseInt(t.bags||0).toLocaleString('en-IN')}</td>
       <td class="r">₹${parseFloat(t.price_per_bag||0).toLocaleString('en-IN')}</td>
       <td class="r">₹${Math.round(brkField).toLocaleString('en-IN')}</td>
-      ${t.remarks?`<td style="font-size:.72rem;color:#aaa">${esc(t.remarks)}</td>`:'<td style="color:#ddd">—</td>'}
     </tr>`;
-  }).join(''):`<tr><td colspan="8" style="text-align:center;color:#bbb;padding:28px;">No trades found for this period.</td></tr>`;
+  }).join(''):`<tr><td colspan="7" style="text-align:center;color:#bbb;padding:28px;">No trades found for this period.</td></tr>`;
 
   document.getElementById('invoiceBody').innerHTML=`
   <div class="invoice" id="printInvoice">
@@ -702,7 +701,7 @@ function renderInvoice(type, p, fy, trades){
       <div class="inv-to">
         <div class="inv-party-label">Bill To (${partyLabel})</div>
         <div class="inv-party-name2">${esc(p.name)}</div>
-        <div class="inv-party-detail">${type==='factory'?'Factory / Mill':'Wholesaler / Dealer'}<br>${p.mobile?'📱 '+p.mobile:''}<br>FY: ${fy}</div>
+        <div class="inv-party-detail">${type==='factory'?'Factory / Mill':'Wholesaler / Dealer'}${p.city?'<br>'+esc(p.city):''}<br>${p.mobile?'📱 '+p.mobile+'<br>':''}FY: ${fy}</div>
       </div>
     </div>
 
@@ -711,13 +710,12 @@ function renderInvoice(type, p, fy, trades){
       <thead>
         <tr>
           <th>#</th>
-          <th>Date</th>
+          <th style="white-space:nowrap">Date</th>
           <th>Commodity</th>
           <th>${type==='factory'?'Wholesaler':'Factory'}</th>
           <th class="r">Bags</th>
           <th class="r">Price/Bag</th>
           <th class="r">Brokerage (₹2/bag)</th>
-          <th>Remarks</th>
         </tr>
       </thead>
       <tbody>${tableRows}</tbody>
@@ -727,7 +725,6 @@ function renderInvoice(type, p, fy, trades){
           <td class="r">${bags.toLocaleString('en-IN')} bags</td>
           <td class="r" style="color:var(--text3)">—</td>
           <td class="r" style="color:var(--green)">₹${earned.toLocaleString('en-IN')}</td>
-          <td></td>
         </tr>
       </tfoot>
     </table>
