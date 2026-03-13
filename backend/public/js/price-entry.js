@@ -13,8 +13,17 @@ function getToday(){
 ----------------------------*/
 async function loadFactories(){
 
-  const res = await fetch("/api/factories");
-  factoriesData = await res.json();
+  try {
+    const res = await fetch("/api/admin/factories");
+    if(!res.ok) throw new Error(`Factories API returned ${res.status}`);
+    const data = await res.json();
+    if(!Array.isArray(data)) throw new Error("Factories response is not an array: " + JSON.stringify(data));
+    factoriesData = data.filter(f => f.is_active !== false);
+  } catch(err) {
+    console.error("❌ loadFactories failed:", err);
+    showToast("Could not load factories. Check console.", true);
+    return;
+  }
 
   document.querySelectorAll(".factory").forEach(select=>{
     populateFactoryDropdown(select);
@@ -48,8 +57,17 @@ function populateFactoryDropdown(select){
 ----------------------------*/
 async function loadCommodities(){
 
-  const res = await fetch("/api/commodities");
-  commoditiesData = await res.json();
+  try {
+    const res = await fetch("/api/admin/commodities");
+    if(!res.ok) throw new Error(`Commodities API returned ${res.status}`);
+    const data = await res.json();
+    if(!Array.isArray(data)) throw new Error("Commodities response is not an array: " + JSON.stringify(data));
+    commoditiesData = data.filter(c => c.is_active !== false);
+  } catch(err) {
+    console.error("❌ loadCommodities failed:", err);
+    showToast("Could not load commodities. Check console.", true);
+    return;
+  }
 
   document.querySelectorAll(".commodity").forEach(select=>{
     populateCommodityDropdown(select);
@@ -199,13 +217,15 @@ async function savePrices(){
 
   try{
 
-    await fetch("/api/prices",{
+    const res = await fetch("/api/prices",{
       method:"POST",
       headers:{
         "Content-Type":"application/json"
       },
       body: JSON.stringify({prices})
     });
+    const data = await res.json();
+    console.log(data);
 
     showToast("Prices saved successfully");
     loadAllRecords();

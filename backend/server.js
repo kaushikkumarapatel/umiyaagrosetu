@@ -18,6 +18,7 @@ const visitorRoutes    = require("./routes/visitorRoutes");
 const brokerRoutes     = require("./routes/brokerRoutes");
 const adminRoutes      = require("./routes/adminRoutes");
 const masterDataRoutes = require("./routes/admin/masterDataRoutes");
+const publishRatesRoute = require('./routes/admin/publishRatesRoute');
 
 const app = express();
 
@@ -52,9 +53,11 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "../frontend")));
 
 /* ───────── BLOCK DIRECT FILE ACCESS ───────── */
+/* ───────── BLOCK DIRECT FILE ACCESS ───────── */
 
 app.use((req, res, next) => {
   if (req.path.startsWith("/api/")) return next();
+
   const blocked = [
     "/price-entry.html",
     "/admin.html",
@@ -66,10 +69,15 @@ app.use((req, res, next) => {
     "/broker-trades.html",
     "/broker-report.html",
   ];
-  if (blocked.includes(req.path.toLowerCase())) return res.redirect("/admin/login");
+
+  if (blocked.includes(req.path.toLowerCase())) {
+    // ✅ Allow if already logged in as admin or broker
+    if (req.session && (req.session.isAdmin || req.session.brokerId)) return next();
+    return res.redirect("/admin/login");
+  }
+
   next();
 });
-
 /* ───────── ADMIN AUTH PAGES ───────── */
 
 app.get("/admin/login", (req, res) => {
@@ -152,15 +160,17 @@ app.get("/broker/report",    requireBroker, (req, res) =>
 
 /* ───────── ADMIN API ROUTES ───────── */
 
-app.use("/api/admin", requireAdmin, masterDataRoutes);  // all master data CRUD
+app.use("/api/admin",  masterDataRoutes);  // all master data CRUD
+app.use('/api/admin', requireAdmin, publishRatesRoute);
 
 /* ───────── PUBLIC API ROUTES ───────── */
 
 app.use("/api", commodityRoutes);
-app.use("/api", priceRoutes);
+app.use("/api", requireAdmin, priceRoutes);
 app.use("/api", broadcastRoutes);
 app.use("/api", factoryRoutes);
 app.use("/api", visitorRoutes);
+
 
 /* ───────── BROKER API ROUTES ───────── */
 

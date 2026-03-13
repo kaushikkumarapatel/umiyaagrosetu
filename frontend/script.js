@@ -1,172 +1,142 @@
-/* ── loadMarketIndicators: MCX/NCDEX cards ────────── */
-async function loadMarketIndicators() {
-  const grid = document.getElementById("indicatorsGrid");
-  if (!grid) return;
+/* ═══════════════════════════════════════════════════════════
+   AgroSetu — Public Website script.js
+   Data source: data/rates.csv  (written by backend on Publish)
+   No backend dependency on public page — works purely static.
+   ═══════════════════════════════════════════════════════════ */
 
-  try {
-    const res  = await fetch("/api/market/indicators");
-    const data = await res.json();
-
-    if (!data || data.length === 0) {
-      grid.innerHTML = `<div class="ind-error">⚠️ Market data unavailable. Try again later.</div>`;
-      return;
-    }
-
-    grid.innerHTML = data.map(ind => {
-      const changeAbs = Math.abs(ind.change).toFixed(2);
-      const changePct = Math.abs(ind.changePct).toFixed(2);
-      const arrow     = ind.trend === "up" ? "▲" : ind.trend === "down" ? "▼" : "—";
-      const sign      = ind.trend === "up" ? "+" : ind.trend === "down" ? "-" : "";
-      const price     = ind.price?.toLocaleString("en-IN", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-
-      return `
-        <div class="ind-card">
-          <div class="ind-left">
-            <div class="ind-exchange">${ind.exchange}</div>
-            <div class="ind-name">${ind.label}</div>
-            <div class="ind-name-gu">${ind.labelGu}</div>
-          </div>
-          <div class="ind-right">
-            <div class="ind-price">₹${price}<span class="ind-unit">${ind.unit}</span></div>
-            <div class="ind-change ${ind.trend}">
-              ${arrow} ${sign}₹${changeAbs} (${sign}${changePct}%)
-            </div>
-          </div>
-        </div>
-      `;
-    }).join("");
-
-  } catch (err) {
-    console.error("Indicators error:", err);
-    grid.innerHTML = `<div class="ind-error">⚠️ Could not load MCX/NCDEX data. Please refresh.</div>`;
-  }
-}
-
-/* ── loadPrices: Market Snapshot Cards ───────────── */
-async function loadPrices() {
-  try {
-    const res  = await fetch("/api/prices/latest");
-    const data = await res.json();
-
-    const cards = document.getElementById("marketCards");
-    if (!cards) return;
-
-    cards.innerHTML = "";
-
-    data.slice(0, 4).forEach(p => {
-      cards.innerHTML += `
-        <div class="market-card">
-          <div class="market-top">
-            <div class="market-commodity">${p.commodity}</div>
-            <div class="market-icon"><i data-lucide="bar-chart-3"></i></div>
-          </div>
-          <div class="market-price">₹${p.price}</div>
-          <div class="market-market">🏭 ${p.factory}</div>
-          <div class="trend-pill trend-flat">
-            Updated: ${new Date(p.price_date).toLocaleDateString("en-IN")}
-          </div>
-        </div>
-      `;
+async function fetchRatesCSV() {
+  return new Promise((resolve, reject) => {
+    Papa.parse('data/rates.csv', {
+      download: true, header: true, skipEmptyLines: true, dynamicTyping: true,
+      complete: (r) => resolve(r.data),
+      error: (e) => reject(e)
     });
-
-    lucide.createIcons();
-
-  } catch (err) {
-    console.error("Error loading market cards:", err);
-  }
+  });
 }
 
-/* ── loadTodayRates: Daily Rates Table ───────────── */
-async function loadTodayRates() {
-  const table = document.getElementById("ratesTable");
-  if (!table) return;
-
-  table.innerHTML = `
-    <tr>
-      <td colspan="4" style="text-align:center; padding:20px; color:#888;">
-        ⏳ Loading rates...
-      </td>
-    </tr>
-  `;
-
-  try {
-    const res  = await fetch("/api/prices/all");
-    const data = await res.json();
-
-    if (!data || data.length === 0) {
-      table.innerHTML = `
-        <tr>
-          <td colspan="4" style="text-align:center; padding:20px; color:#888;">
-            No rates available yet. Please check back later.
-          </td>
-        </tr>
-      `;
-      return;
-    }
-
-    table.innerHTML = data.map(p => `
-      <tr>
-        <td>${p.commodity}</td>
-        <td>${p.factory}</td>
-        <td>₹${p.price}</td>
-        <td>${new Date(p.price_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}</td>
-      </tr>
-    `).join("");
-
-  } catch (err) {
-    console.error("Error loading today's rates:", err);
-    table.innerHTML = `
-      <tr>
-        <td colspan="4" style="text-align:center; padding:20px; color:#c00;">
-          ⚠️ Could not load rates. Please refresh.
-        </td>
-      </tr>
-    `;
-  }
+function fmtDate(s, opts) {
+  if (!s) return '—';
+  return new Date(String(s).slice(0,10)+'T00:00:00').toLocaleDateString('en-IN',
+    opts || {day:'2-digit',month:'short'});
+}
+function fmtPrice(p) {
+  return '₹' + parseFloat(p||0).toLocaleString('en-IN');
 }
 
-/* ── WhatsApp join ───────────────────────────────── */
-function joinWhatsApp() {
-  const number = document.getElementById("mobileNumber").value;
-  if (!number) {
-    alert("Please enter mobile number");
+function renderMarketCards(rows) {
+  const el = document.getElementById('marketCards');
+  if (!el) return;
+  el.innerHTML = rows.slice(0,4).map(p => `
+    <div class="market-card">
+      <div class="market-top">
+        <div class="market-commodity">${p.commodity_name||'—'}</div>
+        <div class="market-icon">📦</div>
+      </div>
+      <div class="market-price">${fmtPrice(p.price)}</div>
+      <div class="market-market">🏭 ${p.factory_name||'—'}</div>
+      <div class="trend-pill trend-flat">Updated: ${fmtDate(p.price_date)}</div>
+    </div>`).join('');
+}
+
+function renderRatesTable(rows) {
+  const el = document.getElementById('ratesTable');
+  if (!el) return;
+  if (!rows.length) {
+    el.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:24px;color:#888;">⏳ Rates not published yet. Please check back later.</td></tr>`;
     return;
   }
-  window.open(
-    "https://wa.me/917041037812?text=Add%20me%20to%20daily%20cattle%20feed%20price%20updates",
-    "_blank"
-  );
+  el.innerHTML = rows.map(p => `
+    <tr>
+      <td>${p.commodity_name||'—'}</td>
+      <td>${p.factory_name||'—'}${p.factory_city?'<br><small style="color:#888">📍 '+p.factory_city+'</small>':''}</td>
+      <td><strong>${fmtPrice(p.price)}</strong><small style="color:#888">/bag</small></td>
+      <td>${fmtDate(p.price_date)}</td>
+    </tr>`).join('');
 }
 
-/* ── Visitor logging ─────────────────────────────── */
-async function logVisitor() {
-  try {
-    const location = await fetch("https://ipapi.co/json/");
-    const data     = await location.json();
-    await fetch("/api/visitor", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify(data)
-    });
-  } catch (err) {
-    console.log("Visitor logging skipped");
+function injectStructuredData(rows) {
+  if (!rows.length) return;
+  const dateStr = (rows[0].price_date||'').slice(0,10) || new Date().toISOString().split('T')[0];
+  const ld = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: `Gujarat Cattle Feed Daily Rates — ${dateStr}`,
+    description: 'Daily cattle feed prices in Gujarat — Kapasiya Khal, Binola Khal, DOC rates',
+    url: 'https://umiyaagrosetu.com',
+    numberOfItems: rows.length,
+    itemListElement: rows.map((r,i) => ({
+      '@type': 'ListItem',
+      position: i+1,
+      item: {
+        '@type': 'Product',
+        name: r.commodity_name,
+        brand: { '@type': 'Brand', name: r.factory_name },
+        offers: {
+          '@type': 'Offer',
+          price: String(r.price),
+          priceCurrency: 'INR',
+          priceValidUntil: dateStr,
+          availability: 'https://schema.org/InStock',
+          seller: { '@type': 'Organization', name: 'Umiya AgroSetu Digital LLP' }
+        }
+      }
+    }))
+  };
+  const s = document.createElement('script');
+  s.type = 'application/ld+json';
+  s.textContent = JSON.stringify(ld);
+  document.head.appendChild(s);
+
+  // Update meta description with live price data
+  const meta = document.querySelector('meta[name="description"]');
+  if (meta && rows[0]) {
+    meta.content = `Today's cattle feed rates Gujarat — ${rows[0].commodity_name}: ${fmtPrice(rows[0].price)}/bag. Daily updated Kapasiya Khal, Binola Khal, DOC prices from Gujarat mills.`;
   }
 }
 
-/* ── On page load ────────────────────────────────── */
-window.onload = () => {
-  document.getElementById("today").innerText =
-    new Date().toLocaleDateString("en-IN");
+function updateTimestamp(rows) {
+  const el = document.getElementById('publishedAt');
+  if (!el || !rows.length) return;
+  const ts = rows[0].published_at || rows[0].price_date;
+  if (ts) el.textContent = new Date(ts).toLocaleString('en-IN',
+    {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
 
-  loadMarketIndicators();             // MCX/NCDEX cards
-  loadPrices();                       // Market snapshot cards
-  loadTodayRates();                   // Daily rates table
-  setTimeout(logVisitor, 2000);       // Delayed visitor log
+async function loadFromCSV() {
+  try {
+    const rows = await fetchRatesCSV();
+    if (!rows || !rows.length) throw new Error('empty');
+    renderMarketCards(rows);
+    renderRatesTable(rows);
+    injectStructuredData(rows);
+    updateTimestamp(rows);
+  } catch(e) {
+    console.warn('CSV load:', e.message);
+    const el = document.getElementById('ratesTable');
+    if (el) el.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:24px;color:#888;">⏳ Today's rates not yet published. Please check back after 10 AM.</td></tr>`;
+    const cards = document.getElementById('marketCards');
+    if (cards) cards.innerHTML = '';
+  }
+}
+
+function joinWhatsApp() {
+  const n = document.getElementById('mobileNumber').value.trim();
+  if (!n || n.length < 10) { alert('Please enter a valid 10-digit mobile number'); return; }
+  window.open(`https://wa.me/917041037812?text=${encodeURIComponent('Add me to daily cattle feed price updates\nMobile: '+n)}`,'_blank');
+}
+
+async function logVisitor() {
+  try {
+    const d = await (await fetch('https://ipapi.co/json/')).json();
+    await fetch('/api/visitor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+  } catch(e) {}
+}
+
+window.onload = () => {
+  const todayEl = document.getElementById('today');
+  if (todayEl) todayEl.innerText = new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+  loadFromCSV();
+  setTimeout(logVisitor, 3000);
 };
 
-/* ── Auto-refresh every 5 minutes ───────────────── */
-setInterval(loadMarketIndicators, 5 * 60 * 1000);
-setInterval(loadPrices, 90 * 1000);
+setInterval(loadFromCSV, 30 * 60 * 1000);

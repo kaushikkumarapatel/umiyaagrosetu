@@ -223,6 +223,7 @@
         <button class="btn btn-ghost btn-sm" onclick="addPriceRow()">+ Add Row</button>
         <button class="btn btn-primary btn-sm" onclick="savePrices()" id="saveBtn">💾 Save Prices</button>
         <button class="btn btn-whatsapp btn-sm" onclick="previewBroadcast()" id="broadcastBtn">💬 WhatsApp Broadcast</button>
+        <button class="btn btn-green2 btn-sm" onclick="publishRates()" id="publishBtn">📤 Publish Rates</button>
       </div>
     </div>
     <div class="card-body">
@@ -574,8 +575,8 @@ function loadAllMaster() {
 async function init() {
   try {
     const [fRes, cRes] = await Promise.all([
-      fetch('/api/factories'),
-      fetch('/api/commodities')
+      fetch('/api/admin/factories'),
+      fetch('/api/admin/commodities')
     ]);
     if (fRes.ok) factories   = await fRes.json();
     if (cRes.ok) commodities = await cRes.json();
@@ -627,8 +628,10 @@ async function savePrices() {
   const btn = document.getElementById('saveBtn');
   btn.disabled = true; btn.textContent = '⏳ Saving…';
   try {
-    for (const p of prices) {
-      await fetch('/api/prices', {method:'POST', headers:H, body:JSON.stringify(p)});
+    const r = await fetch('/api/prices', {method:'POST', headers:H, body:JSON.stringify({prices})});
+    if (!r.ok) {
+      const err = await r.json().catch(()=>({}));
+      throw new Error(err.error || `Server error ${r.status}`);
     }
     showBanner('priceBanner','ok',`✅ Saved ${prices.length} price record(s).`);
     document.getElementById('st_saved').textContent = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
@@ -1016,7 +1019,7 @@ async function createCommodity() {
     document.getElementById('cm_category').value='cattle_feed';
     loadCommodities();
     // refresh dropdown
-    const cr = await fetch('/api/commodities');
+    const cr = await fetch('/api/admin/commodities');
     if (cr.ok) commodities = await cr.json();
   } else {
     const d = await r.json(); msg.className='msg err'; msg.textContent='❌ '+d.error;
@@ -1120,8 +1123,31 @@ function showToast(msg, type='') {
   setTimeout(()=>t.className='toast', 3500);
 }
 
+// ─── PUBLISH RATES TO CSV ───
+async function publishRates() {
+  const btn = document.getElementById('publishBtn');
+  btn.disabled = true; btn.textContent = '⏳ Publishing…';
+  try {
+    const res = await apiFetch('/api/admin/publish-rates', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      showBanner('priceBanner', 'ok', `✅ ${data.count} rates published to umiyaagrosetu.com — CSV updated!`);
+      showToast('✅ Rates published to website!');
+    } else {
+      showBanner('priceBanner', 'err', '⚠️ ' + (data.message || 'No rates for today'));
+    }
+  } catch(e) {
+    showBanner('priceBanner', 'err', '❌ Publish failed: ' + e.message);
+    showToast('❌ Publish failed', true);
+  } finally {
+    btn.disabled = false; btn.innerHTML = '📤 Publish Rates';
+  }
+}
+
 // ─── START ───
 init();
+
 </script>
+<!-- price-entry.js removed: admin.html has its own complete implementation -->
 </body>
 </html>

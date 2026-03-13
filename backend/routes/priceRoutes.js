@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../db");
 const pool = require("../db");
+const db = pool;   // ← add this line
+
 
 router.post("/prices", async (req, res) => {
 
@@ -54,7 +55,7 @@ router.post("/prices", async (req, res) => {
   }
 
 });
-router.get("/prices/all", async (req, res) => {
+router.get("/prices/history", async (req, res) => {
 
   const result = await pool.query(`
     SELECT 
