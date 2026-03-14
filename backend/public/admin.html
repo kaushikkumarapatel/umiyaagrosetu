@@ -205,7 +205,6 @@
   <div class="tab-list">
     <button class="tab-btn active" onclick="switchTab('prices')" id="tbtn-prices">📊 Daily Price Entry</button>
     <button class="tab-btn" onclick="switchTab('master')" id="tbtn-master">🗂️ Master Data</button>
-    <button class="tab-btn" onclick="switchTab('records')" id="tbtn-records">📋 Price Records</button>
   </div>
 </div>
 
@@ -234,6 +233,46 @@
         </table>
       </div>
       <div class="banner" id="priceBanner"></div>
+    </div>
+  </div>
+
+  <!-- ── INLINE PRICE RECORDS ── -->
+  <div class="card" style="margin-top:18px;">
+    <div class="card-head">
+      <div class="card-title">📋 Price Records</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <label style="font-size:.78rem;color:var(--text2);font-weight:600;">Date:</label>
+        <input type="date" id="rec_date_filter" class="pe-input" style="width:160px;padding:5px 10px;font-size:.82rem;"
+               onchange="loadPriceRecords()" />
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('rec_date_filter').value='';loadPriceRecords()">All dates</button>
+        <span class="badge" id="rec_count">—</span>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <div class="pe-wrap">
+        <table class="rec-table" style="min-width:750px;">
+          <thead>
+            <tr>
+              <th style="width:40px">#</th>
+              <th>Factory</th>
+              <th>Commodity</th>
+              <th style="width:110px">Price (₹)</th>
+              <th>Remarks</th>
+              <th style="width:120px">Date</th>
+              <th style="width:140px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="recBody"><tr class="empty"><td colspan="7">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <!-- Pagination -->
+      <div id="rec_pagination" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-top:1px solid var(--border);font-size:.8rem;color:var(--text2);">
+        <span id="rec_page_info">—</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-sm" id="rec_prev" onclick="recChangePage(-1)">← Prev</button>
+          <button class="btn btn-ghost btn-sm" id="rec_next" onclick="recChangePage(1)">Next →</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -358,21 +397,7 @@
 
 </div>
 
-<!-- ════════════ TAB 3 — PRICE RECORDS ════════════ -->
-<div id="tab-records" class="page" style="display:none;">
-  <div class="card">
-    <div class="card-head">
-      <div class="card-title">📋 All Price Records</div>
-      <span class="badge" id="rec_count">—</span>
-    </div>
-    <div class="card-body" style="padding:0;">
-      <table class="rec-table" id="recTable">
-        <thead><tr><th>ID</th><th>Factory</th><th>Commodity</th><th>Price</th><th>Date</th><th>Actions</th></tr></thead>
-        <tbody id="recBody"><tr class="empty"><td colspan="6">Loading…</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-</div>
+<!-- TAB 3 removed — price records moved inline to tab-prices -->
 
 <!-- ════════════ ASSIGN DRAWER ════════════ -->
 <div class="dov" id="dov" onclick="maybeCloseDrw(event)">
@@ -544,13 +569,12 @@ async function apiFetch(url, opts = {}) {
 // ═══════════════════════════════════════════════════
 // TAB & SUB-TAB SWITCHING
 // ═══════════════════════════════════════════════════
-const TABS = ['prices','master','records'];
+const TABS = ['prices','master'];
 function switchTab(t) {
   TABS.forEach(x => {
     document.getElementById('tab-'+x).style.display  = x===t ? '' : 'none';
     document.getElementById('tbtn-'+x).classList.toggle('active', x===t);
   });
-  if (t === 'records') loadRecords();
   if (t === 'master')  loadAllMaster();
 }
 
@@ -575,8 +599,8 @@ function loadAllMaster() {
 async function init() {
   try {
     const [fRes, cRes] = await Promise.all([
-      fetch('/api/admin/factories'),
-      fetch('/api/admin/commodities')
+      fetch('/api/admin/factories',   { credentials: 'include' }),
+      fetch('/api/admin/commodities', { credentials: 'include' })
     ]);
     if (fRes.ok) factories   = await fRes.json();
     if (cRes.ok) commodities = await cRes.json();
@@ -585,6 +609,11 @@ async function init() {
   } catch(e) {
     console.warn('Price entry init error:', e.message);
   }
+  loadAllMaster();
+  // set default date filter to today and load records
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('rec_date_filter').value = today;
+  loadPriceRecords();
 }
 
 // ═══════════════════════════════════════════════════
@@ -636,6 +665,7 @@ async function savePrices() {
     showBanner('priceBanner','ok',`✅ Saved ${prices.length} price record(s).`);
     document.getElementById('st_saved').textContent = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
     loadPriceStats();
+    loadPriceRecords();
     showToast('✅ Prices saved!');
   } catch(e) {
     showBanner('priceBanner','err','❌ Save failed: '+e.message);
@@ -655,68 +685,115 @@ async function loadPriceStats() {
 }
 
 // ═══════════════════════════════════════════════════
-// TAB 3 — PRICE RECORDS
+// INLINE PRICE RECORDS (paginated, inline edit)
 // ═══════════════════════════════════════════════════
-async function loadRecords() {
+let _recAll = [], _recPage = 1;
+const REC_PER_PAGE = 20;
+
+async function loadPriceRecords() {
+  _recPage = 1;
   const tbody = document.getElementById('recBody');
-  tbody.innerHTML = '<tr class="empty"><td colspan="6">Loading…</td></tr>';
+  tbody.innerHTML = '<tr class="empty"><td colspan="7">Loading…</td></tr>';
   try {
-    const res  = await apiFetch('/api/prices');
+    const dateVal = document.getElementById('rec_date_filter').value;
+    const url = dateVal ? `/api/prices?date=${dateVal}` : '/api/prices';
+    const res  = await apiFetch(url);
     const data = await res.json();
-    const arr  = Array.isArray(data) ? data : (data.prices||[]);
-    document.getElementById('rec_count').textContent = arr.length + ' records';
-    if (!arr.length) { tbody.innerHTML='<tr class="empty"><td colspan="6">No records yet.</td></tr>'; return; }
-    tbody.innerHTML = arr.map(r => {
-      const d = r.price_date||r.date||'';
-      const dFmt = d ? new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
-      return `<tr>
-        <td style="font-family:var(--mono);color:var(--text3)">#${r.id}</td>
-        <td><strong>${esc(r.factory_name||r.factory||'—')}</strong></td>
-        <td>${esc(r.commodity_name||r.commodity||'—')}</td>
-        <td class="rec-price">₹${parseFloat(r.price||0).toLocaleString('en-IN')}</td>
-        <td class="rec-date" style="white-space:nowrap">${dFmt}</td>
-        <td>
-          <button class="ab a4" onclick="openEP(${r.id})">✏️ Edit</button>
-          <button class="ab a2" style="background:var(--red2);color:var(--red);border:1px solid #fca5a5;" onclick="deletePrice(${r.id})">Delete</button>
-        </td></tr>`;
-    }).join('');
-    // cache records for edit modal
+    _recAll = Array.isArray(data) ? data : (data.prices||[]);
+    // cache for inline edit
     window._recCache = {};
-    arr.forEach(r => window._recCache[r.id] = r);
+    _recAll.forEach(r => window._recCache[r.id] = r);
+    renderRecPage();
   } catch(e) {
-    tbody.innerHTML = '<tr class="empty"><td colspan="6">Error loading records.</td></tr>';
+    if (e.message !== 'Session expired')
+      document.getElementById('recBody').innerHTML = '<tr class="empty"><td colspan="7">Error loading records.</td></tr>';
   }
 }
 
-function openEP(id) {
+function renderRecPage() {
+  const tbody  = document.getElementById('recBody');
+  const total  = _recAll.length;
+  const pages  = Math.ceil(total / REC_PER_PAGE) || 1;
+  if (_recPage > pages) _recPage = pages;
+  const start  = (_recPage - 1) * REC_PER_PAGE;
+  const slice  = _recAll.slice(start, start + REC_PER_PAGE);
+
+  document.getElementById('rec_count').textContent     = total + ' records';
+  document.getElementById('rec_page_info').textContent = `Showing ${start+1}–${Math.min(start+REC_PER_PAGE,total)} of ${total}`;
+  document.getElementById('rec_prev').disabled = _recPage <= 1;
+  document.getElementById('rec_next').disabled = _recPage >= pages;
+
+  if (!slice.length) {
+    tbody.innerHTML = '<tr class="empty"><td colspan="7">No records found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = slice.map((r, i) => {
+    const d    = r.price_date||r.date||'';
+    const dFmt = d ? new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    return `<tr id="rec_row_${r.id}">
+      <td style="font-family:var(--mono);color:var(--text3);font-size:.75rem">${start+i+1}</td>
+      <td><strong>${esc(r.factory_name||r.factory||'—')}</strong></td>
+      <td>${esc(r.commodity_name||r.commodity||'—')}</td>
+      <td id="rec_price_${r.id}" class="rec-price">₹${parseFloat(r.price||0).toLocaleString('en-IN')}</td>
+      <td id="rec_remarks_${r.id}" style="color:var(--text2);font-size:.82rem">${esc(r.remarks||'—')}</td>
+      <td class="rec-date" style="white-space:nowrap">${dFmt}</td>
+      <td>
+        <button class="ab a4" id="rec_edit_btn_${r.id}" onclick="startRecEdit(${r.id})">✏️ Edit</button>
+        <button class="ab a2" style="background:var(--red2);color:var(--red);border:1px solid #fca5a5;" onclick="deletePrice(${r.id})">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function recChangePage(dir) {
+  _recPage += dir;
+  renderRecPage();
+  document.querySelector('.card:last-of-type').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function startRecEdit(id) {
   const r = (window._recCache||{})[id];
   if (!r) return;
-  document.getElementById('ep_id').value       = r.id;
-  document.getElementById('ep_factory').innerHTML   = buildFactoryOptions(r.factory_id);
-  document.getElementById('ep_commodity').innerHTML = buildCommodityOptions(r.commodity_id);
-  document.getElementById('ep_price').value    = r.price;
-  document.getElementById('ep_remarks').value  = r.remarks||'';
-  const d = r.price_date||r.date||'';
-  document.getElementById('ep_date').value     = d ? d.split('T')[0] : '';
-  document.getElementById('mEP').classList.add('show');
+  // swap price cell to input
+  document.getElementById(`rec_price_${id}`).innerHTML =
+    `<input type="number" id="rec_price_inp_${id}" class="pe-input" style="width:90px;padding:5px 8px;font-size:.82rem;" value="${r.price}" min="0"/>`;
+  // swap remarks cell to input
+  const rem = r.remarks||'';
+  document.getElementById(`rec_remarks_${id}`).innerHTML =
+    `<input type="text" id="rec_remarks_inp_${id}" class="pe-input" style="width:130px;padding:5px 8px;font-size:.82rem;" value="${esc(rem)}" placeholder="Remarks…"/>`;
+  // swap buttons
+  document.getElementById(`rec_edit_btn_${id}`).outerHTML =
+    `<button class="ab btn-primary" style="background:var(--green);color:#fff;" onclick="saveRecEdit(${id})">✓ Save</button>
+     <button class="ab a4" onclick="cancelRecEdit(${id})">✕</button>`;
 }
-async function doEP() {
-  const id   = gv('ep_id');
-  const body = {
-    factory_id:   document.getElementById('ep_factory').value,
-    commodity_id: document.getElementById('ep_commodity').value,
-    price:        parseFloat(document.getElementById('ep_price').value),
-    remarks:      gv('ep_remarks'),
-    price_date:   document.getElementById('ep_date').value
-  };
-  await apiFetch(`/api/prices/${id}`, {method:'PUT', headers:H, body:JSON.stringify(body)});
-  closeMov('mEP'); loadRecords(); showToast('✅ Price updated');
+
+async function saveRecEdit(id) {
+  const price   = parseFloat(document.getElementById(`rec_price_inp_${id}`)?.value);
+  const remarks = document.getElementById(`rec_remarks_inp_${id}`)?.value||'';
+  if (!price || isNaN(price)) { showToast('Enter a valid price','err'); return; }
+  try {
+    await apiFetch(`/api/prices/${id}`, {method:'PUT', headers:H, body:JSON.stringify({price, remarks})});
+    showToast('✅ Updated');
+    await loadPriceRecords();
+  } catch(e) {
+    showToast('❌ Update failed','err');
+  }
 }
+
+function cancelRecEdit(id) {
+  renderRecPage(); // re-render to restore row
+}
+
 async function deletePrice(id) {
   if (!confirm('Delete this price record?')) return;
   await apiFetch(`/api/prices/${id}`, {method:'DELETE'});
-  loadRecords(); showToast('Deleted');
+  _recAll = _recAll.filter(r => r.id !== id);
+  renderRecPage();
+  showToast('Deleted');
 }
+
+// kept for backward compat (old tab-3 flow)
+function loadRecords() { loadPriceRecords(); }
 
 // ═══════════════════════════════════════════════════
 // BROADCAST

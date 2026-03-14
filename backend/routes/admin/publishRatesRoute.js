@@ -112,7 +112,7 @@ router.post('/publish-rates', async (req, res) => {
 
     // ── 4. Write files ─────────────────────────────
     // Resolves to: project-root/frontend/data/
-    const dataDir = path.resolve(__dirname, '../../frontend/data');
+    const dataDir = path.resolve(__dirname, '../../../frontend/data');
     fs.mkdirSync(dataDir, { recursive: true });
 
     const ratesPath = path.join(dataDir, 'rates.csv');
@@ -121,16 +121,66 @@ router.post('/publish-rates', async (req, res) => {
     fs.writeFileSync(ratesPath, ratesCSV, 'utf8');
     fs.writeFileSync(seoPath,   seoCSV,   'utf8');
 
+    // ── 4b. Write daily SEO CSV (one file per day) ──
+    // Used for historical SEO tracking & future DB import
+    const todayStr    = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const seoDir      = path.resolve(__dirname, '../../../frontend/data/seo');
+    fs.mkdirSync(seoDir, { recursive: true });
+    const dailySeoPath = path.join(seoDir, `seo-${todayStr}.csv`);
+
+    // Commodity name → English mapping for SEO
+    const COMMODITY_EN = {
+      'કપાસિયા ખોળ': 'Kapasiya Khal (Cottonseed Cake)',
+      'બિનોળા':       'Binola (Cottonseed)',
+      'બિનોળા ખોળ':   'Binola Khal (Cottonseed Cake)',
+      'DOC':           'DOC (De-Oiled Cake)',
+      'જાડુ ભુસુ':     'Jaadu Bhusu (Coarse Wheat Bran)',
+      'જીણું ભુસુ':    'Jinu Bhusu (Fine Wheat Bran)',
+      'મકાઈ':          'Corn / Maize',
+      'ઘઉ ભુસુ':       'Wheat Bran',
+    };
+
+    const dailySeoHeaders = [
+      'date','commodity_gu','commodity_en','price','unit',
+      'factory','city','remarks','page_slug','published_at'
+    ].join(',');
+
+    const dailySeoRows = rows.map(r => {
+      const dateStr  = r.price_date
+        ? new Date(r.price_date).toISOString().split('T')[0]
+        : todayStr;
+      const commEn   = COMMODITY_EN[r.commodity_name] || r.commodity_name;
+      const slug     = r.commodity_name
+        .toLowerCase()
+        .replace(/\s+/g,'-')
+        .replace(/[^a-z0-9-]/g,'');
+      return [
+        csvCell(dateStr),
+        csvCell(r.commodity_name),
+        csvCell(commEn),
+        r.price,
+        csvCell('bag'),
+        csvCell(r.factory_name),
+        csvCell(r.factory_city),
+        csvCell(r.remarks || ''),
+        csvCell(`${baseUrl}/rates/${slug}`),
+        csvCell(publishedAt)
+      ].join(',');
+    });
+
+    const dailySeoCSV = [dailySeoHeaders, ...dailySeoRows].join('\n');
+    fs.writeFileSync(dailySeoPath, dailySeoCSV, 'utf8');
     console.log(`[publishRates] Wrote ${rows.length} rows → ${ratesPath}`);
 
     // ── 5. Respond ─────────────────────────────────
     res.json({
-      success:     true,
-      count:       rows.length,
-      ratesFile:   'frontend/data/rates.csv',
-      seoFile:     'frontend/data/seo-prices.csv',
+      success:      true,
+      count:        rows.length,
+      ratesFile:    'frontend/data/rates.csv',
+      seoFile:      'frontend/data/seo-prices.csv',
+      dailySeoFile: `frontend/data/seo/seo-${todayStr}.csv`,
       publishedAt,
-      message:     `${rows.length} rates published successfully`
+      message:      `${rows.length} rates published successfully`
     });
 
   } catch (err) {

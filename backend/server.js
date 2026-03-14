@@ -12,7 +12,7 @@ const requireBroker = require("./middleware/brokerAuth");
 /* ───────── ROUTE IMPORTS ───────── */
 
 const commodityRoutes  = require("./routes/commodityRoutes");
-const priceRoutes      = require("./routes/priceRoutes");
+const priceRoutes      = require("./routes/admin/priceRoutes");
 const broadcastRoutes  = require("./routes/broadcastRoutes");
 const factoryRoutes    = require("./routes/factoryRoutes");
 const visitorRoutes    = require("./routes/visitorRoutes");

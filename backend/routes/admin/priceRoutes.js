@@ -1,7 +1,35 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../db");
-const db = pool;   // ← add this line
+const pool = require("../../db");  // ← updated: routes/admin → backend root
+const db = pool;
+
+// ─── GET /api/prices?date=YYYY-MM-DD ────────────────
+// All records with optional date filter (defaults to last 90 days)
+router.get("/prices", async (req, res) => {
+  try {
+    const { date } = req.query;
+    const whereClause = date
+      ? `WHERE dp.price_date = $1`
+      : `WHERE dp.price_date >= CURRENT_DATE - INTERVAL '90 days'`;
+    const params = date ? [date] : [];
+    const result = await pool.query(`
+      SELECT
+        dp.id, dp.price_date, dp.price, dp.remarks,
+        dp.factory_id, dp.commodity_id,
+        f.name AS factory_name,
+        c.name AS commodity_name
+      FROM daily_prices dp
+      JOIN factories   f ON f.id = dp.factory_id
+      JOIN commodities c ON c.id = dp.commodity_id
+      ${whereClause}
+      ORDER BY dp.price_date DESC, f.name, c.name
+    `, params);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch prices" });
+  }
+});
 
 
 router.post("/prices", async (req, res) => {
@@ -94,18 +122,14 @@ router.get("/prices/today", async (req, res) => {
 
 });
 
-router.put("/prices/:id", async (req,res)=>{
-
-  const {id} = req.params;
-  const {price} = req.body;
-
+router.put("/prices/:id", async (req, res) => {
+  const { id } = req.params;
+  const { price, remarks } = req.body;
   await pool.query(
-    `UPDATE daily_prices SET price=$1 WHERE id=$2`,
-    [price,id]
+    `UPDATE daily_prices SET price=$1, remarks=$2 WHERE id=$3`,
+    [price, remarks ?? null, id]
   );
-
-  res.json({success:true});
-
+  res.json({ success: true });
 });
 
 router.delete("/prices/:id", async (req,res)=>{
