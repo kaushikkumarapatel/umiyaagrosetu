@@ -49,15 +49,27 @@ router.use(requireBroker);
 
 // ── GET /api/broker/me ───────────────────────────
 router.get('/me', async (req, res) => {
+
+  if (!req.session || !req.session.brokerId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
   try {
     const result = await pool.query(
       `SELECT id, name, mobile, email FROM brokers WHERE id = $1`,
       [req.session.brokerId]
     );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
     res.json(result.rows[0]);
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+
 });
 
 // ── GET /api/broker/dashboard ────────────────────
@@ -142,14 +154,14 @@ router.get('/dropdowns', async (req, res) => {
   try {
     const [factories, wholesalers, commodities] = await Promise.all([
       pool.query(`
-        SELECT f.id, f.name
+        SELECT f.id, f.name, f.brokerage_rate
         FROM broker_factories bf
         JOIN factories f ON f.id = bf.factory_id
         WHERE bf.broker_id = $1 AND f.is_active = true
         ORDER BY f.name
       `, [brokerId]),
       pool.query(`
-        SELECT w.id, w.name, w.mobile, w.city
+        SELECT w.id, w.name, w.mobile, w.city, w.brokerage_rate
         FROM broker_wholesalers bw
         JOIN wholesalers w ON w.id = bw.wholesaler_id
         WHERE bw.broker_id = $1 AND w.is_active = true
@@ -177,12 +189,22 @@ router.post('/trades', async (req, res) => {
     return res.status(400).json({ error: 'factory, wholesaler, commodity, bags and price are required' });
   }
   try {
+    // Fetch live brokerage rates for both parties
+    const [fRate, wRate] = await Promise.all([
+      pool.query(`SELECT brokerage_rate FROM factories   WHERE id=$1`, [factory_id]),
+      pool.query(`SELECT brokerage_rate FROM wholesalers WHERE id=$1`, [wholesaler_id]),
+    ]);
+    const factory_brokerage_rate    = parseFloat(fRate.rows[0]?.brokerage_rate ?? 3);
+    const wholesaler_brokerage_rate = parseFloat(wRate.rows[0]?.brokerage_rate ?? 2);
+
     const result = await pool.query(`
       INSERT INTO trades
-        (broker_id, factory_id, wholesaler_id, commodity_id, bags, price_per_bag, trade_date, remarks)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+        (broker_id, factory_id, wholesaler_id, commodity_id, bags, price_per_bag,
+         factory_brokerage_rate, wholesaler_brokerage_rate, trade_date, remarks)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
       RETURNING *, factory_brokerage, wholesaler_brokerage, total_brokerage
     `, [brokerId, factory_id, wholesaler_id, commodity_id, bags, price_per_bag,
+        factory_brokerage_rate, wholesaler_brokerage_rate,
         trade_date || new Date().toISOString().split('T')[0], remarks || null]);
 
     res.status(201).json(result.rows[0]);
@@ -301,7 +323,7 @@ router.get('/report', async (req, res) => {
 
     const factoryReport = await pool.query(`
       SELECT
-        f.id, f.name, f.city,
+        f.id, f.name, f.city, f.brokerage_rate,
         COUNT(t.id)                         AS trades,
         COALESCE(SUM(t.bags),0)             AS total_bags,
         COALESCE(SUM(t.factory_brokerage),0) AS brokerage_earned,
@@ -327,7 +349,7 @@ router.get('/report', async (req, res) => {
     // Reuse same pattern for wholesalers
     const wholesalerReport = await pool.query(`
       SELECT
-        s.id, s.name, s.mobile, s.city,
+        s.id, s.name, s.mobile, s.city, s.brokerage_rate,
         COUNT(t.id)                              AS trades,
         COALESCE(SUM(t.bags),0)                  AS total_bags,
         COALESCE(SUM(t.wholesaler_brokerage),0)  AS brokerage_earned,
@@ -447,12 +469,22 @@ router.post('/trades/batch', async (req, res) => {
     for (const t of trades) {
       const { factory_id, wholesaler_id, commodity_id, bags, price_per_bag, trade_date, remarks } = t;
       if (!factory_id || !wholesaler_id || !commodity_id || !bags || !price_per_bag) continue;
+      // Fetch brokerage rates for this trade's parties
+      const [fRate, wRate] = await Promise.all([
+        client.query(`SELECT brokerage_rate FROM factories   WHERE id=$1`, [factory_id]),
+        client.query(`SELECT brokerage_rate FROM wholesalers WHERE id=$1`, [wholesaler_id]),
+      ]);
+      const fBrokRate = parseFloat(fRate.rows[0]?.brokerage_rate ?? 3);
+      const wBrokRate = parseFloat(wRate.rows[0]?.brokerage_rate ?? 2);
+
       const r = await client.query(`
         INSERT INTO trades
-          (broker_id, factory_id, wholesaler_id, commodity_id, bags, price_per_bag, trade_date, remarks)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+          (broker_id, factory_id, wholesaler_id, commodity_id, bags, price_per_bag,
+           factory_brokerage_rate, wholesaler_brokerage_rate, trade_date, remarks)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
         RETURNING id, bags, total_brokerage, factory_brokerage, wholesaler_brokerage
       `, [brokerId, factory_id, wholesaler_id, commodity_id, bags, price_per_bag,
+          fBrokRate, wBrokRate,
           trade_date || new Date().toISOString().split('T')[0], remarks || null]);
       saved.push(r.rows[0]);
     }

@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const session = require("express-session");
+const MemoryStore = require('memorystore')(session);
 const path = require("path");
 const pool = require("./db");
 
@@ -30,16 +31,19 @@ app.use(express.urlencoded({ extended: true }));
 /* ───────── SESSION ───────── */
 
 app.use(session({
-  secret:            process.env.SESSION_SECRET || "agrosetu-secret-change-in-prod",
-  resave:            false,
+  name:  'agrosetu.sid',                          // custom name — clears all old cookies
+  store: new MemoryStore({ checkPeriod: 28800000 }),
+  secret: process.env.SESSION_SECRET || "agrosetu-secret-change-in-prod",
+  resave: true,
   saveUninitialized: false,
+  rolling: true,
   cookie: {
     maxAge:   8 * 60 * 60 * 1000,
     httpOnly: true,
-    secure:   false,   // keep false for localhost
+    secure:   false,
+    sameSite: 'lax',
   },
 }));
-
 /* ───────── DEBUG LOGGER ───────── */
 
 app.use((req, res, next) => {
@@ -130,12 +134,19 @@ app.post("/broker/login", async (req, res) => {
     const broker = result.rows[0];
     const match = await bcrypt.compare(password, broker.password_hash);
     if (!match) return res.redirect("/broker/login?error=invalid");
+
     req.session.brokerId   = broker.id;
     req.session.brokerName = broker.name;
+
     req.session.save(err => {
-      if (err) return res.redirect("/broker/login?error=session");
+      if (err) {
+        console.error('Session save failed:', err);
+        return res.redirect("/broker/login?error=session");
+      }
+      console.log('Login OK, brokerId:', req.session.brokerId);
       res.redirect("/broker/dashboard");
     });
+
   } catch (err) {
     console.error("[broker login]", err.message);
     res.redirect("/broker/login?error=server");
@@ -158,6 +169,10 @@ app.get("/broker/report",    requireBroker, (req, res) =>
   res.sendFile(path.join(__dirname, "public/broker-report.html"))
 );
 
+/* ───────── BROKER API ROUTES ───────── */
+
+app.use("/api/broker", requireBroker, brokerRoutes);
+
 /* ───────── ADMIN API ROUTES ───────── */
 
 app.use("/api/admin",  masterDataRoutes);  // all master data CRUD
@@ -170,11 +185,6 @@ app.use("/api", requireAdmin, priceRoutes);
 app.use("/api", broadcastRoutes);
 app.use("/api", factoryRoutes);
 app.use("/api", visitorRoutes);
-
-
-/* ───────── BROKER API ROUTES ───────── */
-
-app.use("/api/broker", brokerRoutes);
 
 /* ───────── MISC ───────── */
 
@@ -190,6 +200,8 @@ app.get("/test-db", async (req, res) => {
 });
 
 app.get("/debug-session", (req, res) => res.json(req.session));
+
+
 
 /* ───────── START ───────── */
 

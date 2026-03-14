@@ -269,7 +269,7 @@ let dashData = null;
 
 async function loadDashboard(){
   try{
-    const res  = await fetch('/api/broker/dashboard');
+    const res  = await fetch('/api/broker/dashboard', { credentials: 'same-origin' });
     if(res.status===401){ window.location.href='/broker/login'; return; }
     const data = await res.json();
     dashData   = data;
@@ -288,7 +288,7 @@ async function loadDashboard(){
 
 async function loadBrokerInfo(){
   try{
-    const res  = await fetch('/api/broker/me');
+    const res  = await fetch('/api/broker/me', { credentials: 'same-origin' });
     const data = await res.json();
     document.getElementById('brokerName').textContent = data.name;
     document.getElementById('navBroker').textContent  = '👤 ' + data.name;
@@ -366,7 +366,10 @@ async function confirmSettle(){
   };
   try{
     const res = await fetch('/api/broker/settlements', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
     });
     if(res.ok){ closeModal(); loadDashboard(); }
     else{ const d=await res.json(); alert('Error: '+d.error); }
@@ -374,8 +377,12 @@ async function confirmSettle(){
 }
 
 async function doLogout(){
-  await fetch('/api/broker/logout',{method:'POST'});
-  window.location.href='/broker/login';
+  await fetch('/api/broker/logout', {
+    method: 'POST',
+    credentials: 'same-origin'
+  });
+
+  window.location.href = '/broker/login';
 }
 
 // Init

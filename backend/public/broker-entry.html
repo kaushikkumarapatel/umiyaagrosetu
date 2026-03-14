@@ -384,7 +384,9 @@ let commodities = [];
 let rowData     = [];   // [{id, date, factory_id, wholesaler_id, commodity_id, bags, price, remarks, saved}]
 let sessionSaved= [];
 let rowIdSeq    = 0;
-const BROK_RATE = 2; // ₹2 per bag per party = ₹4 total
+// Rates are loaded from the dropdowns API (brokerage_rate per factory/wholesaler)
+function getPartyRate(arr, id, fallback){ return parseFloat((arr.find(x=>x.id==id)||{}).brokerage_rate||fallback); }
+function rowBrokerage(row){ return (parseFloat(row.bags)||0) * (getPartyRate(factories,row.factory_id,3) + getPartyRate(wholesalers,row.wholesaler_id,2)); }
 
 // ══════════════════════════════════════════════════
 // INIT
@@ -493,7 +495,7 @@ function renderGrid() {
     const fName = row.factory_id   ? (factories.find(f=>f.id==row.factory_id)||{name:''}).name   : '';
     const wName = row.wholesaler_id ? (wholesalers.find(w=>w.id==row.wholesaler_id)||{name:''}).name : '';
     const cName = row.commodity_id  ? (commodities.find(c=>c.id==row.commodity_id)||{name:''}).name  : '';
-    const brk   = row.bags && !isNaN(row.bags) ? row.bags * BROK_RATE * 2 : 0;
+    const brk   = row.bags && !isNaN(row.bags) ? rowBrokerage(row) : 0;
 
     el.innerHTML = `
       ${row.factory_id ? '<div class="group-bar"></div>' : ''}
@@ -673,7 +675,7 @@ function updateField(rowId, field, val) {
   if(!row) return;
   row[field] = field==='bags' ? (val===''?'':parseInt(val)) : field==='price' ? (val===''?'':parseFloat(val)) : val;
   // Update brokerage display
-  const brk = row.bags && !isNaN(row.bags) ? row.bags * BROK_RATE * 2 : 0;
+  const brk = row.bags && !isNaN(row.bags) ? rowBrokerage(row) : 0;
   const brkEl = document.getElementById(`brk_${rowId}`);
   if(brkEl) brkEl.textContent = brk > 0 ? '₹'+brk.toLocaleString('en-IN') : '—';
   // If factory changed, re-render to update group visuals
@@ -726,7 +728,7 @@ function updateTotals() {
   const valid = rowData.filter(r => r.bags && !isNaN(r.bags));
   const bags  = valid.reduce((s,r) => s + parseFloat(r.bags||0), 0);
   const val   = valid.reduce((s,r) => s + parseFloat(r.bags||0)*parseFloat(r.price||0), 0);
-  const brk   = valid.reduce((s,r) => s + parseFloat(r.bags||0)*BROK_RATE*2, 0);
+  const brk   = valid.reduce((s,r) => s + rowBrokerage(r), 0);
   document.getElementById('tot_rows').textContent = rowData.length;
   document.getElementById('tot_bags').textContent = bags.toLocaleString('en-IN');
   document.getElementById('tot_value').textContent= '₹'+val.toLocaleString('en-IN');
@@ -847,7 +849,7 @@ function renderSavedList() {
     const f   = (factories.find(x=>x.id==r.factory_id)||{name:'?'}).name;
     const w   = (wholesalers.find(x=>x.id==r.wholesaler_id)||{name:'?'}).name;
     const c   = (commodities.find(x=>x.id==r.commodity_id)||{name:'?'}).name;
-    const brk = r.bags * BROK_RATE * 2;
+    const brk = rowBrokerage(r);
     const d   = fmtDate(r.date);
     return `<div class="st-row">
       <span>${d}</span>

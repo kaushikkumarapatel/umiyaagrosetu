@@ -199,8 +199,8 @@ async function loadDropdowns(){
     const wSel = document.getElementById('wholesaler_id');
     const cSel = document.getElementById('commodity_id');
 
-    data.factories.forEach(f   => fSel.innerHTML += `<option value="${f.id}">${f.name}</option>`);
-    data.wholesalers.forEach(w => wSel.innerHTML += `<option value="${w.id}">${w.name}${w.city?' · '+w.city:''}</option>`);
+    data.factories.forEach(f   => fSel.innerHTML += `<option value="${f.id}" data-rate="${f.brokerage_rate||3}">${f.name}</option>`);
+    data.wholesalers.forEach(w => wSel.innerHTML += `<option value="${w.id}" data-rate="${w.brokerage_rate||2}">${w.name}${w.city?' · '+w.city:''}</option>`);
     data.commodities.forEach(c => cSel.innerHTML += `<option value="${c.id}">${c.name}</option>`);
   } catch(e){ console.error(e); }
 }
@@ -208,10 +208,17 @@ async function loadDropdowns(){
 // Set today's date
 document.getElementById('trade_date').value = new Date().toISOString().split('T')[0];
 
+function getRate(selectId, fallback){
+  const sel = document.getElementById(selectId);
+  const opt = sel.options[sel.selectedIndex];
+  return parseFloat(opt?.dataset?.rate || fallback);
+}
 function recalc(){
-  const bags  = parseInt(document.getElementById('bags').value)||0;
-  const fBrok = bags * 2;
-  const wBrok = bags * 2;
+  const bags   = parseInt(document.getElementById('bags').value)||0;
+  const fRate  = getRate('factory_id', 3);
+  const wRate  = getRate('wholesaler_id', 2);
+  const fBrok  = bags * fRate;
+  const wBrok  = bags * wRate;
   document.getElementById('prev_factory').textContent    = fmt(fBrok);
   document.getElementById('prev_wholesaler').textContent = fmt(wBrok);
   document.getElementById('prev_total').textContent      = fmt(fBrok + wBrok);
